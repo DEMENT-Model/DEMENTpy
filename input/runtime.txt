@@ -1,0 +1,15 @@
+pulse	6
+end_time	365
+x	10
+y	10
+gridsize	100
+n_enzymes	50
+n_substrates	12
+n_uptake	14
+n_taxa	10
+fb	0.0
+taxa_per_box	0.1
+direct	0.95
+dist	1
+interval	1
+Mic_reinit	1
