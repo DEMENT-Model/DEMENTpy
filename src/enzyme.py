@@ -20,7 +20,7 @@ class Enzyme():
     def __init__(self,runtime,parameters):
         
         """
-        Input:
+        Parameters:
             runtime:  runtime specifications by users
             parameters: inputted parameters
         """

@@ -12,4 +12,4 @@ taxa_per_box	0.1
 direct	0.95
 dist	1
 interval	1
-Mic_reinit	1
+mic_reinit	1

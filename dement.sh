@@ -1,8 +1,11 @@
 #!/bin/bash
 #$ -N dementpy
-#$ -q pub8i
+#$ -q mic
 #$ -m beas
 
 
 module load anaconda/3.7-5.3.0
-python dement.py runtime.txt
+
+cd src
+
+python dement.py runtime.txt 20191025
