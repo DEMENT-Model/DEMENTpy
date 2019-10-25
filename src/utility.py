@@ -53,6 +53,6 @@ def export(output,name):
     Save the output object as a .pickle file
     """
     
-    with open(str(name)+"pickle", "wb") as f:
+    with open(str(name)+".pickle", "wb") as f:
         pickle.dump(output, f, pickle.HIGHEST_PROTOCOL)
     
