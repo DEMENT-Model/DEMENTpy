@@ -33,8 +33,8 @@ class Monomer():
         #...1) get sums over the grids, which is further used to derive the average monomer distri. over the grids
         #...2) provide the data structure for MonomerRatios that stores monomer stoichiometry info.
         
-        #...Arguments:
-        #...substrates_init: dataframe; initial substrates pool; from the substrate module
+        Parameters:
+            substrates_init: dataframe; initial substrates pool; from the substrate module
         """
         
         # Monomer pool sizes for all elements

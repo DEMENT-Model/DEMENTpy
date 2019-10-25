@@ -1,6 +1,6 @@
 #!/bin/bash
 #$ -N dementpy
-#$ -q mic
+#$ -q pub8i
 #$ -m beas
 
 

@@ -118,7 +118,7 @@ class Enzyme():
         """
         
         # load in data of activation energies for different substrates
-        Ea_input = pd.read_csv("Enzyme_Ea.csv",header=0,index_col=0)
+        Ea_input = pd.read_csv("enzyme_ea.csv",header=0,index_col=0)
         
         #Ea_series: shape: (n_enzymes,)
         Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1)

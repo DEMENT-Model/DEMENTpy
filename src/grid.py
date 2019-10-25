@@ -1,6 +1,5 @@
 import numpy  as np
 import pandas as pd
-import sys
 
 from microbe import microbe_osmo_psi
 from microbe import microbe_mortality_prob as MMP
@@ -29,8 +28,7 @@ class Grid():
     Reminder:
         Keep a CLOSE EYE on the indexing throughout the matrix/dataframe operations
     ---------------------------------
-    -Author: Bin Wang
-    -Last modified: August 25th, 2019 
+    Last modified by Bin Wang on October 24th, 2019 
     """
     
     
@@ -175,7 +173,7 @@ class Grid():
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc))
         
         # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for Temperature sensitivity
-        Vmax = self.Vmax0 * np.exp((-self.Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) # * f_psi
+        Vmax = self.Vmax0 * np.exp((-self.Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
         Km   = self.Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
         Km.index = Sub_index # Reset the index to the Substrates
         
@@ -281,7 +279,7 @@ class Grid():
             f_psi = np.exp(0.5*(self.psi[day] - self.wp_fc))
         
         # Caculate enzyme kinetic parameters; monomer * Upt
-        Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) # * f_psi
+        Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
         Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
         
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
@@ -736,8 +734,8 @@ class Grid():
         # End of if else clause
         
         # Leaching of monomers
-        Leaching_N = Monomers.loc[is_NH4,"N"] * Leaching # * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
-        Leaching_P = Monomers.loc[is_PO4,"P"] * Leaching # * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
+        Leaching_N = Monomers.loc[is_NH4,"N"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
+        Leaching_P = Monomers.loc[is_PO4,"P"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
         # Update Monomers
         Monomers.loc[is_NH4,"N"] -= Leaching_N
         Monomers.loc[is_PO4,"P"] -= Leaching_P
@@ -878,20 +876,23 @@ class Grid():
             pulse: the pulse index
             day:   the day index
         """
+        # reinitialize substrates and monomers
+        self.Substrates = self.Substrates_init
+        self.Monomers   = self.Monomers_init
         
-        
+        # reinitialize microbial community
         if mic_reinit == 1.00:
             
-            New_microbes = self.Init_Microbes.copy()
+            New_microbes = self.Init_Microbes.copy() #NOTE copy()!! bloody lesson
             fb = self.fb[0:self.n_taxa]
             max_size_b = self.max_size_b
             max_size_f = self.max_size_f
             
             # cumulative abundance; note the column index
-            # cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
-            
+            # option 1
+            #cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             # option 2
-            cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1) 
+            cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             
             # account for different cell mass sizes of bacteria and fungi
             if sum(fb==1) == 0: # no fungal taxa
@@ -900,60 +901,48 @@ class Grid():
                 cum_abundance.loc[fb==1] = cum_abundance[fb==1]*max_size_b/max_size_f
                 frequencies = cum_abundance/cum_abundance.sum()
             frequencies = frequencies.fillna(0)
-            probs = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
             
-            #if day == 1*365 - 1:
-            #    probs.to_csv('probs.csv')
-                
+            probs = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
             
             # Randomly assign microbes to each grid box based on prior densities
             choose_taxa = np.array([0]* self.gridsize * self.n_taxa).reshape(self.n_taxa,self.gridsize)
             for i in range(self.n_taxa):
-                  
-               # Option 1
-               # choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-               # if choose_taxa[i,:].sum() == 0:
-               #     if fb[i] == 0:
-               #         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.1,0.9])
-               #     else:
-               #         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.004,0.996])
-
-
-               # Option 2
-               # if fb[i] == 0: # bacteria
-               #     if frequencies[i] <= 0.1:
-               #         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.1,0.9])
-               #     else:
-               #         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-               # else: #fungi
-               #     if frequencies[i] <= 0.004:
-               #         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.004,0.996])
-               #     else:
-               #         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-               
-               # Option 3
-               choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-            #if day == 2*365 - 1:
-            #   New_microbes.to_csv('New_microbes21.csv')
-            #if day == 3*365 - 1:
-            #   print(choose_taxa.sum(axis=1))
-            #   np.savetxt("choose_taxa.csv", choose_taxa, delimiter=",")
-            #   New_microbes.to_csv('New_microbes31.csv')
+                # Alternative 1
+                choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
+                
+                # Alternative 2
+# =============================================================================
+#                 choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
+#                 if choose_taxa[i,:].sum() == 0:
+#                     if fb[i] == 0:
+#                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.01,0.99])
+#                     else:
+#                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.0004,0.9996])
+# =============================================================================
+                        
+                # Aternative 3       
+# =============================================================================
+# # =============================================================================
+# #                 if fb[i] == 0: # bacteria
+# #                     if frequencies[i] <= 0.01:
+# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.01,0.99])
+# #                     else:
+# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
+# #                 else: #fungi
+# #                     if frequencies[i] <= 0.0004:
+# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.0004,0.9996])
+# #                     else:
+# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
+# # =============================================================================
+# =============================================================================
+                        
             # Note order='F'
             New_microbes.loc[np.ravel(choose_taxa,order='F')==0] = 0
             
-            #if day == 2*365 - 1:
-            #   New_microbes.to_csv('New_microbes22.csv')
-            #if day == 3*365 - 1:
-            #   New_microbes.to_csv('New_microbes32.csv')
-            #   sys.exit()
-
             # reinitialize the microbial community
-            self.Microbes   = New_microbes
+            self.Microbes = New_microbes
         
-        # reinitialize substrates and monomers
-        self.Substrates = self.Substrates_init
-        self.Monomers   = self.Monomers_init
+        
         
         
         

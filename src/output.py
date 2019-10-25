@@ -4,62 +4,41 @@ import pandas as pd
 class Output():
 
     """
-    This module sets up the output properties by accepting data derived from the grid.py module
-    and uses one method--output()--to record data generated from each time step.
-    
-    ----------
-    Author: Bin Wang
-    Last modified: 06/07/2019
+    This module sets up the output properties by accepting data derived from
+    the initialization.py and grid.py modules and uses two methods to record
+    data generated from each iteration:
+        output():
+        microbes_df():
+    ---------------------------------------------------------------------------
+    Last modified by Bin Wang on 10/22/2019
     """
     
     def __init__(self,runtime,data_init):
         
         """
         Define and initialize variables in the Output class
-        
-        Inputs:
+        -----------------------------------------------------------------------
+        Parameters:
             runtime:   user-specified parameters when running the model
-            data_init: all inititialed data from the 'initialization.py' module (dictionary)
+            data_init: data dictionary;all inititialed data from the 'initialization.py' module
             
-        Outputs:
-            -----------------
-            |initialized
-            -----------------
-              -Initialization:   all data initialized preceding the execution of grid.py: dictionary
-              -Microbial_traits: microbial traits only pulled out from Initialization: dataframe
-            -----------------
-            |substrate-related:
-            -----------------
-              -SubstratesSeries: substrate-specific total mass over the grid: Substrate * C
-              -Substrates_Sum:   total substrates over the grid: day * C
-            -----------------
-            |monomer-related:
-            -----------------
-              -MonomersSeries: monomoer-specific total mass over the grid: Monomer * C
-              -Monomers_Sum:   total monomers over the grid: day * C
-              -NH4Series:
-              -PO4Series:  
-            -----------------
-            |microbe-related:
-            -----------------
-              -MicrobesSeries: taxon-specific total biomass over the grid: Taxon * (C,N,P)
-              -Microbes_Sum:   total biomass over the grid: day * (C,N,P)
-            -----------------
-            |transporter-related:
-            -----------------
-              -TransporterSeries: taxon-specific total transporter production over the grid
-            -----------------
-            |enzyme-related:
-            -----------------
-              -EnzymesSeries: enzyme-specific total mass over the grid: Enzyme * C
-              -Enzymes_Sum:   total enzyme summed up over the grid: list
-            -----------------
-            |Osmolyte-related:
-            -----------------
-              -OsmolyteSeries: taxon-specific total osmolyte production over the grid
-            |emergent -----------------
-              -RespSeries: total respiration over the grid
-              -CUE
+        Returns:
+            Initialization:   all data initialized preceding the execution of grid.py: dictionary
+            Microbial_traits: microbial traits only pulled out from Initialization: dataframe
+            SubstratesSeries: substrate-specific total mass over the grid: Substrate * C
+            Substrates_Sum:   total substrates over the grid: day * C
+            MonomersSeries: monomoer-specific total mass over the grid: Monomer * C
+            Monomers_Sum:   total monomers over the grid: day * C
+            NH4Series:
+            PO4Series:  
+            MicrobesSeries: taxon-specific total biomass over the grid: Taxon * (C,N,P)
+            Microbes_Sum:   total biomass over the grid: day * (C,N,P)
+            TransporterSeries: taxon-specific total transporter production over the grid
+            EnzymesSeries: enzyme-specific total mass over the grid: Enzyme * C
+            Enzymes_Sum:   total enzyme summed up over the grid: list
+            OsmolyteSeries: taxon-specific total osmolyte production over the grid
+            RespSeries: total respiration over the grid
+            CUE:
         """
         
         # A few vars used in processing outputs 
@@ -68,6 +47,8 @@ class Output():
         n_taxa = int(runtime.loc['n_taxa',1])
         Mic_index = ["Tax" + str(i) for i in range(1,n_taxa + 1)] # Microbial taxa index
         
+        # Pass all runtime parameters to Runtime
+        self.Runtime = runtime
         # Pass all initialized data (a dictionary) to 'Initialization'
         self.Initialization = data_init
         
@@ -179,15 +160,14 @@ class Output():
         This method records outputs in various variables at a daily time step.
         
         Input:
-            ecosystem: from the grid.py module
-            day:       specify the day when outputs are recorded
+            ecosystem: object from the grid.py module
+            day:       the day to record to outputs
         """
         
         
         # Account for inputs in mass balance
         # self.Cum_Substrate = self.Cum_Substrate + ecosystem.SubInput.sum(axis = 0)
         # self.Cum_Monomer = self.Cum_Monomer + (ecosystem.MonInput.mul(ecosystem.Cum_Monomer_ratios,axis=0)).sum(axis=0)
-        
         
         # DecayRates
         # DecayRates_grid = ecosystem.DecayRates.groupby(level=0,sort=False).sum()
@@ -318,3 +298,7 @@ class Output():
         Taxon_index.name = day + 1
         taxon_count = Taxon_index.groupby(level=0,sort=False).sum()
         self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count],axis=1,sort=False)
+        
+        
+        
+        

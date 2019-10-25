@@ -14,7 +14,7 @@ from scipy.stats import distributions
 def LHS(n,loc,scale,dist):
     
     """
-    Inputs:
+    Parameters:
         n:     integer;size of desired sampling
         loc:   scalar;para 1 for specifying a desired probability distribution
         scale: scalar;para 2 for specifying a distribution
@@ -40,7 +40,7 @@ def LHS(n,loc,scale,dist):
 
 def expand(df,gridsize):
     """
-    Put data on a spatial grid
+    Put data (df) on a spatial grid
     """
     df_expanded = pd.concat([df]*gridsize)
     
@@ -48,10 +48,11 @@ def expand(df,gridsize):
     
 
 
-def export(output):
+def export(output,name):
+    """
+    Save the output object as a .pickle file
     """
     
-    """
-    with open("Output.pickle", "wb") as f:
+    with open(str(name)+"pickle", "wb") as f:
         pickle.dump(output, f, pickle.HIGHEST_PROTOCOL)
     

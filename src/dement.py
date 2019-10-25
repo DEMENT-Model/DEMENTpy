@@ -1,19 +1,17 @@
 """
 -------------------------------------------------------------------------------
-    DEMENTpy:Decomposition Model of Enzymatic Traits in Python,v1.0
-                   Bin Wang
-    Department of Ecology and Evolutionary Biology
-           University of California Irvine
-                 2019-09-29
+      DEMENTpy--Decomposition Model of Enzymatic Traits in Python,v1.0
+                              Bin Wang, Ph.D.
+           Department of Ecology and Evolutionary Biology
+                  University of California Irvine
+                  Emails: wbwenwu@gmail.com or bwang7@uci.edu
+                      Twitter: @bio_atmosphere
 -------------------------------------------------------------------------------
-Direct correspondance to: 
-    Bin Wang (wbwenwu@gmail.com/bwang7@uci.edu)
 """
 
-
+#import time
 import os
 import sys
-#import time
 import pandas as pd
 import numpy  as np
 
@@ -26,28 +24,31 @@ def main():
     
     
     print("""
-    ----------------------------------------------
-    DEMENTpy (DEcomposition Model of Enzymatic Traits in Python) Version 1.0
-    Department of Ecology and Evolutionary Biology
-    University of California Irvine
-    ---------------------------------------------       
+    ---------------------------------------------------------------------------
+         DEMENTpy (DEcomposition Model of Enzymatic Traits in Python)
+                               Version 1.0
+               Department of Ecology and Evolutionary Biology
+                     University of California Irvine
+    ---------------------------------------------------------------------------       
     """)
     
-    
-    np.random.seed(2)
      
-    #...obtain the command line argument of runtime_file.txt
-    filename = sys.argv[1]  
-    runtime = pd.read_csv(filename,header=None,index_col=0,sep='\t')
+    #...Obtain the command line arguments of runtime file name and output object name
+    runtime = sys.argv[1]
+    outname = sys.argv[2]
     
-    #... a few system constants
-    pulse = int(runtime.loc['pulse',1])
-    cycle = int(runtime.loc['end_time',1])
-    interval = int(runtime.loc['interval',1])
-    mic_reinit = runtime.loc['Mic_reinit',1]
+    #...Set up the working directory
+    os.chdir('../input')
     
-    #...set up the working directory
-    os.chdir('../input_output')
+    #...a few system constants
+    runtime = pd.read_csv(runtime,header=None,index_col=0,sep='\t')
+    pulse = int(runtime.loc['pulse',1])         # number of pulses
+    cycle = int(runtime.loc['end_time',1])      # number of time steps in each pulse
+    interval = int(runtime.loc['interval',1])   # interval of time step to record outputs
+    mic_reinit = runtime.loc['Mic_reinit',1]    # indicate whether or not reinitialize microbial community on the spatial grid in a new pulse
+    
+    #...grow a seed of random number generator
+    np.random.seed(2)
     
     #...start timing
     #start_time = time.time()
@@ -99,8 +100,9 @@ def main():
                 Ecosystem.repopulation(Output_init,i,mic_reinit)
         
         
-    #...use the export() funtion from the utility module
-    export(Output_init)
+    #...export the Output_init object using the export() funtion in the utility module 
+    os.chdir('../output')
+    export(Output_init,outname)
     
     #print out time used
     #print('   ',"Cumulative time:", time.time() - start_time)

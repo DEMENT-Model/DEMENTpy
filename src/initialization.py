@@ -8,7 +8,7 @@ Bin Wang
 Last modified: 07/09/2019
 
 """
-import sys
+
 import pandas as pd
 
 from substrate import Substrate
@@ -22,7 +22,7 @@ from utility   import expand
 def initialize_data(runtime_parameters):
     
     """
-    Input:
+    Parameters:
         runtime_parameters: user-specified parameters setting up the system;
                             all other paras loaded by reading the parameters.csv
     Return:
@@ -80,7 +80,7 @@ def initialize_data(runtime_parameters):
     #...an instance of Microbe class
     Microbes = Microbe(runtime_parameters,parameters)
     #...Microbial community initialization#...note microbial_community is a tuple
-    microbial_community = Microbes.microbial_community_initialization()  
+    microbial_community = Microbes.microbial_community_initialization() 
     #...Microbial minimum ratios
     microbial_min_ratios = Microbes.minimum_cell_quota()
     #...Microbial enzyme genes
@@ -114,28 +114,24 @@ def initialize_data(runtime_parameters):
                        "SubInput":   expand(substrates_input_rate,gridsize),
                        'ReqEnz':           substrates_req_enzyme,
                        "MonomersProduced": substrates_produced_monomers,
-                       
                        "Monomers":     expand(monomers_initial_pool,gridsize),
                        "Monomer_ratio":expand(monomer_ratio_inital,gridsize),
                        "MonInput":     expand(monomers_input_rate,gridsize),
                        "Uptake_ReqEnz":expand(monomers_uptake_reqenzyme,gridsize),
-                       
                        "Enzymes":      expand(enzymes_initial_pool,gridsize),
-                       "Km0":          expand(enzymes_Km,gridsize),
-                       "Uptake_Km0":   expand(enzymes_uptake_Km,gridsize),
-                       "Uptake_Ea":    expand(enzymes_uptake_Ea,gridsize),
-                       "Uptake_Vmax0": expand(enzymes_uptake_Vmax,gridsize),
-                       "Ea":           expand(enzymes_Ea,gridsize),
-                       "Vmax0":        expand(enzymes_Vmax_T,gridsize),
-                       "EnzAttrib":    enzymes_attributes,
-                       
-                       "Microbes_pp": microbial_community[0],   # tuple[0]: microbes preceding placement
-                       "Microbes":    microbial_community[1],   # tuple[1]: initialized microbes
-                       "fb":          microbial_community[2],   # tuple[2]: fungi index
-                       "Bac_density": microbial_community[3],   # tuple[3]: bacterial density
-                       "Fun_density": microbial_community[4],   # tuple[4]: fungi density
+                       "Km0":          expand(enzymes_Km,gridsize),            # enzyme half-saturation constant
+                       "Uptake_Km0":   expand(enzymes_uptake_Km,gridsize),     # transporter half-saturation constant
+                       "Uptake_Ea":    expand(enzymes_uptake_Ea,gridsize),     # transporter acitivation energy
+                       "Uptake_Vmax0": expand(enzymes_uptake_Vmax,gridsize),   # transporter reaction rate
+                       "Ea":           expand(enzymes_Ea,gridsize),            # enzyme activation energy
+                       "Vmax0":        expand(enzymes_Vmax_T,gridsize),        # enzyme reaction rate
+                       "EnzAttrib":    enzymes_attributes,                     # enzyme stoichiometry and energy cost
+                       "Microbes_pp": microbial_community[0],                  # tuple[0]: microbes preceding placement
+                       "Microbes":    microbial_community[1],                  # tuple[1]: initialized microbes
+                       "fb":          microbial_community[2],                  # tuple[2]: fungi index
+                       "Bac_density": microbial_community[3],                  # tuple[3]: bacterial density
+                       "Fun_density": microbial_community[4],                  # tuple[4]: fungi density
                        "MinRatios":   expand(microbial_min_ratios,gridsize),
-                       
                        "UptakeGenes": expand(microbial_uptake_gene,gridsize),  # Gene distribution across taxa
                        "OsmoGenes":   expand(microbial_osmolyte_gene,gridsize),
                        "EnzGenes":    expand(microbial_enzyme_gene,gridsize),
@@ -150,18 +146,17 @@ def initialize_data(runtime_parameters):
                        "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),
                        "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),
                        "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),  # distribution of taxon-specific drought tol.
-                       'beta':         microbial_mortality[0], #
-                       'death_rate':   microbial_mortality[1], #
+                       'beta':         microbial_mortality[0],                  # basal death probability
+                       'death_rate':   microbial_mortality[1],                  # sensitivity death to mositure
                        "AE_ref":            parameters.loc["CUE_ref",1],        # Reference assimilation efficiency: 0.5
                        "AE_temp":           parameters.loc["CUE_temp",1],       # AE temperature sensitivity; default: -0.016
-                       "Enzyme_Loss_Rate":  parameters.loc['Enzyme_Loss_Rate',1],
-                       'Uptake_Maint_cost': parameters.loc['Uptake_Maint_cost',1],
-                       'C_min':             parameters.loc['C_min',1],          # Threshold C concentration for cell death
-                       'N_min':             parameters.loc['N_min',1],
-                       'P_min':             parameters.loc['P_min',1],
+                       "Enzyme_Loss_Rate":  parameters.loc['Enzyme_Loss_Rate',1],  # constant of enzyme turnover rate
+                       'Uptake_Maint_cost': parameters.loc['Uptake_Maint_cost',1], # constant of transporter maintenence cost
+                       'C_min':             parameters.loc['C_min',1],             # C threshold of cell lysis
+                       'N_min':             parameters.loc['N_min',1],             # N threshold of cell lysis
+                       'P_min':             parameters.loc['P_min',1],             # P threshold of cell lysis
                        'max_size_b':        parameters.loc['max_size_b',1],     # C quota threshold for bacterial cell division
                        'max_size_f':        parameters.loc['max_size_f',1],     # C quota threshold for fungal cell division
-                       
                        "Temp": daily_temp,
                        "Psi":  daily_psi
                       }
