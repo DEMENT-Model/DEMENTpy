@@ -1,6 +1,5 @@
 # DEMENTpy
 
-**ALERT**: This version is fully functional and ready for sensitivity analyses.
 ----
 
 **A trait- and individual-based spatially explicit soil microbial systems modelling framework -- DEMENTpy v1.0**
