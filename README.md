@@ -33,7 +33,7 @@ This model is built upon its predecessor--DEMENT, an R-based framework initially
 - 2.4 Reproduction
 
 
-** References **
+**References**
 - Allison 2012 Ecology Letters
 - Wang and Allison 2019 Soil Biology and Biochemistry
 - Read this blog post on how to make this project open-sourced: https://dev.to/yvonnickfrin/preparing-your-project-being-open-sourced-5bdp?utm_source=digest_mailer&utm_medium=email&utm_campaign=digest_email
