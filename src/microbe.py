@@ -1,13 +1,12 @@
 """
 This microbe module has one class and two functions:
     
-    Microbe(): class
-    microbe_osmo_psi(): function
-    microbe_mortality_psi(): function
+    Microbe(): class;
+    microbe_osmo_psi(): function; inducible osmolyte production efficiency
+    microbe_mortality_prob(): function; cell mortality probability
         
 -------------------------------------------------------------------------------
-Authored by Bin Wang (wbwenwu@gmail.com/bwang7@uci.edu)
-Last modified: Sep. 5th, 2019
+Last modified by Bin Wang on October 25th, 2019
 """
 
 
@@ -20,7 +19,7 @@ class Microbe():
     """
     This class holds all variables related to microbes and methods involving
     composition,stoichiometry, enzyme and gene production, as well as responses
-    to environmental factors. Methods include:
+    to environmental factors. These methods include:
         1) microbial_community_initialization(): initialize microbial community on the spatial grid
         2) minimum_cell_quota():          get minimum ratios
         3) microbe_enzyme_gene():         derive taxon-specific genes for enzyme
@@ -29,6 +28,8 @@ class Microbe():
         6) microbe_uptake_cost():         metabolic cost of producing transporter
         7) microbe_enzproduction_rate():  cost of producing enzymes
         8) microbe_osmoproduction_rate(): cost of producing osmolytes
+        9) microbe_drought_tol():         microbial drougth tolerance
+       10) microbe_mortality():           paramters pertaining to microbial mortality
     
     """
     
@@ -476,7 +477,7 @@ class Microbe():
             Osmo_Induci_Prod_max:
             NormalizeProd:  0
             
-        Output:
+        Returns:
             Tax_OsmoProd_Consti_series:
             Tax_OsmoProd_Induci_series:
             Tax_Consti_Osmo_C: taxon-specific fraction of available C as osmolytes for each gene
@@ -511,9 +512,11 @@ class Microbe():
         Drought tolerance is postively correlated with taxon-specific inducible
         osmotic allocation efficiency.
         --------------------------
-        input:
+        Parameter:
             Tax_Induci_Osmo_C:
         
+        Return:
+            Tax_tolerance:
         """
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) #+ Tax_Consti_Osmo_C.sum(axis=1)
         #Tax_tolerance = Tax_Osmo_Alloc.rank(axis=0,method='min')/self.n_taxa
