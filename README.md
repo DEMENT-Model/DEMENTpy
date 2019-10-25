@@ -12,7 +12,7 @@ DEMENTpy is devoted to longterm maintainence and development with continuous upd
 
 **Structure and Process**
 
-This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Allison (2012). Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessbile to the community. The structure and processes of this model are detailed below:
+This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Allison (2012). Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessible to the research and teaching community revolving around microbial ecology, theoretical ecology, and ecosystem ecology, as well as biology. The structure of this model and processes therein are detailed below:
 
 1. Structure:
 
@@ -33,5 +33,7 @@ This model is built upon its predecessor--DEMENT, an R-based framework initially
 - 2.4 Reproduction
 
 
-## References
-Read this blog post on how to make this project open-sourced: https://dev.to/yvonnickfrin/preparing-your-project-being-open-sourced-5bdp?utm_source=digest_mailer&utm_medium=email&utm_campaign=digest_email
+** References **
+- Allison 2012 Ecology Letters
+- Wang and Allison 2019 Soil Biology and Biochemistry
+- Read this blog post on how to make this project open-sourced: https://dev.to/yvonnickfrin/preparing-your-project-being-open-sourced-5bdp?utm_source=digest_mailer&utm_medium=email&utm_campaign=digest_email
