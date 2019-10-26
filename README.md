@@ -1,6 +1,6 @@
  
 
-<p align="center";fontsize=2em> <b>DEMENTpy</b> </p>
+<p align="center";size='12'> <b>DEMENTpy</b> </p>
 
 ----
 
