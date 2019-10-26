@@ -1,4 +1,6 @@
-# DEMENTpy
+ 
+
+<p align="center"> <b>DEMENTpy</b> </p>
 
 ----
 
@@ -8,7 +10,7 @@ This model is spatially and mechanistically explicit in simulating a soil microb
 
 **Vision**
 
-DEMENTpy is devoted to longterm maintainence and development with continuous updates not only from ourselves but also, hopefully, from the communities that are as broad as microbial ecology, systems biology, theoretical ecology, etc. Just b/c community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy development.
+DEMENTpy is devoted to longterm maintanence and development with continuous updates not only from ourselves but also, hopefully, from the communities that can be as broad as microbial ecology, systems biology, theoretical ecology, etc. Just because of community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy or applying it to your own research.
 
 **Structure and Process**
 
@@ -32,6 +34,17 @@ This model is built upon its predecessor--DEMENT, an R-based framework initially
 
 - 2.4 Reproduction
 
+**Running DEMENTpy**
+
+File structure:
+
+./src: all source code
+
+./input: data required to drive the model
+
+./output: folder where the output object in .pickle will be residing
+
+dementpy.sh: bash script for submitting job to HPC.
 
 **References**
 - Allison 2012 Ecology Letters
