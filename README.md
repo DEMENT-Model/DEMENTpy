@@ -1,4 +1,4 @@
- <p align="center";size='5'> <b>DEMENTpy</b> </p>
+ <p align="center"><font size="6"><b>DEMENTpy</b></font></p>
 
 ----
 
