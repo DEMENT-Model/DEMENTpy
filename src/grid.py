@@ -909,32 +909,6 @@ class Grid():
             for i in range(self.n_taxa):
                 # Alternative 1
                 choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-                
-                # Alternative 2
-# =============================================================================
-#                 choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-#                 if choose_taxa[i,:].sum() == 0:
-#                     if fb[i] == 0:
-#                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.01,0.99])
-#                     else:
-#                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.0004,0.9996])
-# =============================================================================
-                        
-                # Aternative 3       
-# =============================================================================
-# # =============================================================================
-# #                 if fb[i] == 0: # bacteria
-# #                     if frequencies[i] <= 0.01:
-# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.01,0.99])
-# #                     else:
-# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-# #                 else: #fungi
-# #                     if frequencies[i] <= 0.0004:
-# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=[0.0004,0.9996])
-# #                     else:
-# #                         choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-# # =============================================================================
-# =============================================================================
                         
             # Note order='F'
             New_microbes.loc[np.ravel(choose_taxa,order='F')==0] = 0

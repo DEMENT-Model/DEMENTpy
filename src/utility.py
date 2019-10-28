@@ -51,6 +51,10 @@ def expand(df,gridsize):
 def export(output,name):
     """
     Save the output object as a .pickle file
+    
+    Parameters:
+        output:
+        name:
     """
     
     with open(str(name)+".pickle", "wb") as f:
