@@ -58,7 +58,7 @@ class Grid():
         self.Km0          = data_init['Km0']           #
         
         #Uptake
-        self.Init_Microbes  = data_init['Microbes_pp']    # microbial community before placement
+        self.Init_Microbes  = data_init['Microbes_pp'] # microbial community before placement
         self.Microbes       = data_init['Microbes']    # microbial community after placement
         self.Monomers_init  = data_init['Monomers']    # 
         self.Monomers       = data_init['Monomers']    # 
@@ -868,8 +868,8 @@ class Grid():
         """
         deal with reinitialization of microbial community, subsrates, and
         monomers  on the grid
-        ----------------------------
-        inputs:
+        -----------------------------------------------------------------------
+        Parameters:
             output: an instance of the Output class, in which a variable
                     referring to taxon-specific total mass over the grid of
                     every iteration is used--MicrobesSeries_repop
@@ -889,9 +889,9 @@ class Grid():
             max_size_f = self.max_size_f
             
             # cumulative abundance; note the column index
-            # option 1
+            # option 1: mass-based.
             #cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
-            # option 2
+            # option 2: abundance-based
             cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             
             # account for different cell mass sizes of bacteria and fungi

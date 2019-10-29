@@ -8,4 +8,4 @@ module load anaconda/3.7-5.3.0
 
 cd src
 
-python dement.py runtime.txt 20191025
+python dementpy.py runtime.txt 20191025

@@ -277,16 +277,19 @@ class Output():
         """
         seperately output Microbes from each time step and put them in a dataframe:
             MicrobesSeries_repop
+            Taxon_count_repop
+        aiming to eventually deal with relocating microbial community on the
+        grid after a pulse via computing the average frequency of different
+        taxa over each cycle, based on which initialize a new community on the
+        grid at the very start of a new cycle.
         
-        aiming to eventually deal with relocating microbial community on the grid after a pulse.
-        via computing the average frequency of different taxa over each cycle,
-        based on which initializing a new community on the grid at the very start of a new cycle
-        
-        The reason of having this seperate method instead of using the method above is b/c of
-        the need to track very timestep's output, whereas the method above only track outputs wiith a certain interval.
-        -----------------------------------------------
-        input:
-            ecosystem: an instance of the Grid object, in which the Microbes property is intended to be used here.
+        The reason to have this seperate method instead of using the method
+        above is b/c of the need to track very timestep's output, whereas the
+        method above only track outputs with a certain interval.
+        -----------------------------------------------------------------------
+        Parameters:
+            ecosystem: an instance of the Grid object, in which the Microbes is used.
+            day:
         """
         
         Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()

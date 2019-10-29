@@ -60,7 +60,7 @@ class Microbe():
         self.Cfrac_f    = parameters.loc['Cfrac_f',1]     # Fungal C fraction: 0.9	mg mg-1
         self.Nfrac_f    = parameters.loc['Nfrac_f',1]     # Fungal N fraction: 0.09	mg mg-1
         self.Pfrac_f    = parameters.loc['Pfrac_f',1]     # Fungal P fraction: 0.01	mg mg-1
-        self.max_size_b = parameters.loc['max_size_b',1]  # C quota threshold for bacterial cell division: 2	mg cm-3
+        self.max_size_b = parameters.loc['max_size_b',1]  # C quota threshold for bacterial cell division: 2 mg cm-3
         self.max_size_f = parameters.loc['max_size_f',1]  # C quota threshold for fungal cell division: 50 mg cm-3
         self.Crange     = parameters.loc['Crange',1]      # Tolerance on C fraction: 0.09 mg mg-1
         self.Nrange     = parameters.loc['Nrange',1]      # Tolerance on N fraction: 0.04 mg mg-1
@@ -71,8 +71,8 @@ class Microbe():
         self.Uptake_C_cost_max = parameters.loc['Uptake_C_cost_max',1]  # Maximum C cost of one transporter gene being encoded
         self.NormalizeUptake   = parameters.loc['NormalizeUptake',1]    # Normalize uptake investment for the number of uptake genes;default:0
         
-        self.Enz_per_taxon_min = int(parameters.loc['Enz_per_taxon_min',1]) # Minimum number of enzyme genes a taxon can hold
-        self.Enz_per_taxon_max = int(parameters.loc['Enz_per_taxon_max',1]) # Maximum number of enzyme genes a taxon can hold
+        self.Enz_per_taxon_min = int(parameters.loc['Enz_per_taxon_min',1]) # =0;Minimum number of enzyme genes a taxon can hold
+        self.Enz_per_taxon_max = int(parameters.loc['Enz_per_taxon_max',1]) # =40;Maximum number of enzyme genes a taxon can hold
         self.Constit_Prod_min  = parameters.loc['Constit_Prod_min',1] # =0.00001;Minimum per enzyme production cost as a fraction of biomass
         self.Constit_Prod_max  = parameters.loc['Constit_Prod_max',1] # =0.0001; Maximum per enzyme production cost as a fraction of biomass
         self.Enz_Prod_min      = parameters.loc['Enz_Prod_min',1]     # =0.00001;Minimum per enzyme production cost as a fraction of C uptake rate
@@ -80,7 +80,7 @@ class Microbe():
         self.NormalizeProd     = parameters.loc['NormalizeProd',1]    # Normalize enzyme production for the number of enzyme genes;default:0
         
         
-        self.n_osmolyte = 10            # system-specified number of osmotic compound
+        self.n_osmolyte = 10           # system-allowed number of osmotic compound
         
         self.Osmo_per_taxon_min = 100  # Minimum number of osmotic gene 
         self.Osmo_per_taxon_max = 101  # Max. of osmotic gene
@@ -278,23 +278,25 @@ class Microbe():
     def microbe_osmolyte_gene(self):
         
         """
-        Derive the taxon-specific number of genes encoding for metabolic production of osmolytes
+        Derive the taxon-specific number of genes encoding osmolytes
         this method draws the number of genes per taxon from a uniform distribution.
+        Every taxon must have an osmotic gene.
         -----------------------------------------------------------------------
         Parameters:
-            n_osmolyte:
-            Osmo_per_taxon_min:
-            Osmo_per_taxon_max:
+            n_osmolyte:         total number of different genes allowed by a system
+            Osmo_per_taxon_min: 
+            Osmo_per_taxon_max: 
                 
         Return:
-            OsmoGenes_df: row: taxon; col: genes; values: 0/1
+            OsmoGenes_df: row: taxon; col: genes
         """
+        # The number of osmolyte gene each taxon can have
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
         
         # Number of genes needed to produce the system-required number of osmolytes
         n_genes = self.n_osmolyte
         
-        # EnzGenes_list = [None]*self.n_taxa
+        # Determine different genes of a taxon.
         def trial(i):
             probability_list = [0]*n_genes
             probability_list[0:int(genes_per_taxon[i])] = [1]*int(genes_per_taxon[i])
@@ -415,7 +417,7 @@ class Microbe():
             Enz_Prod_max:
             NormalizeProd: Normalize enzyme production for the number of enzyme genes (0 for no, 1 for yes)
             
-        Outputs:
+        Returns:
             Tax_Induce_Enzyme_C:  taxon-specific fraction of available C as enzyme for each enzyme
             Tax_Constit_Enzyme_C: taxon-specific fraction of available C as enzyme for each enzyme
         """
@@ -484,13 +486,8 @@ class Microbe():
             Tax_Induce_Osmo_C: taxon-specific fraction of available C as osmolytes for each gene
         """
         
-        #n_osmo = int(1)
-        #Tax_OsmoProd_Constit = np.random.uniform(self.Osmo_Constit_Prod_min,self.Osmo_Constit_Prod_max,self.n_taxa)
-        #Tax_OsmoProd_Induci  = np.random.uniform(self.Osmo_Induci_Prod_min,self.Osmo_Induci_Prod_max,self.n_taxa)
-        
         Tax_OsmoProd_Consti = LHS(self.n_taxa,self.Osmo_Consti_Prod_min,self.Osmo_Consti_Prod_max-self.Osmo_Consti_Prod_min,'uniform')
         Tax_OsmoProd_Induci = LHS(self.n_taxa,self.Osmo_Induci_Prod_min,self.Osmo_Induci_Prod_max-self.Osmo_Induci_Prod_min,'uniform')
-        
         
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         #columns = ['Osmo'+ str(i) for i in range(1,n_osmo+1)]
@@ -604,7 +601,7 @@ def microbe_mortality_prob(wp,wp_fc,death_rate,beta,tolerance):
     else:
         tolerance = tolerance.to_numpy()
         # option 1
-        mortality_rate = death_rate*(1 - beta*(wp-wp_fc)*(1-tolerance))
+        #mortality_rate = death_rate*(1 - beta*(wp-wp_fc)*(1-tolerance))
         # option 2
         mortality_rate = death_rate*(1 - beta*(wp-wp_fc)) * (1/np.exp(tolerance))
 
