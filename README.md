@@ -1,4 +1,4 @@
- <---! <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> --->
+ <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
  
 # DEMENTpy
 
