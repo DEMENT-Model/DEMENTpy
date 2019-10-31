@@ -1,8 +1,7 @@
  <p align="center"><b><font size="6">DEMENTpy</font></b></p>
 
 ----
-
-https://img.shields.io/static/v1?label=<LABEL>&message=<MESSAGE>&color=<COLOR>
+https://img.shields.io/badge/left-right-f39f37
 
 **A trait- and individual-based spatially explicit soil microbial systems modelling framework -- DEMENTpy v1.0**
 
