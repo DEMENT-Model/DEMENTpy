@@ -490,7 +490,6 @@ class Microbe():
         Tax_OsmoProd_Induci = LHS(self.n_taxa,self.Osmo_Induci_Prod_min,self.Osmo_Induci_Prod_max-self.Osmo_Induci_Prod_min,'uniform')
         
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
-        #columns = ['Osmo'+ str(i) for i in range(1,n_osmo+1)]
         Tax_OsmoProd_Consti_series = pd.Series(data=Tax_OsmoProd_Consti,index = index)
         Tax_OsmoProd_Induci_series = pd.Series(data=Tax_OsmoProd_Induci,index = index)
                                               

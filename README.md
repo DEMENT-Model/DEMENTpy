@@ -47,4 +47,7 @@ dementpy.sh: bash script for submitting job to HPC.
 **References**
 - Allison 2012 Ecology Letters
 - Wang and Allison 2019 Soil Biology and Biochemistry
+
+**To-read List for improving the design of this open source project**
+- How to write a kickass README: https://dev.to/scottydocs/how-to-write-a-kickass-readme-5af9?utm_source=digest_mailer&utm_medium=email&utm_campaign=digest_email
 - Read this blog post on how to make this project open-sourced: https://dev.to/yvonnickfrin/preparing-your-project-being-open-sourced-5bdp?utm_source=digest_mailer&utm_medium=email&utm_campaign=digest_email
