@@ -1,7 +1,6 @@
- <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
+﻿ <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
  
 # DEMENTpy
-
 ## A trait- and individual-based spatially explicit soil microbial systems modelling framework
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/bioatmosphere/DEMENTpy)
@@ -10,7 +9,7 @@
 ![GitHub forks](https://img.shields.io/github/forks/bioatmosphere/DEMENTpy?style=social)
 ![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)
 
-This model is spatially and mechanistically explicit in simulating a soil microbial system comprised of a large number of microbial taxa. As indicated by the py in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT which is R-based.
+This model is spatially and mechanistically explicit in simulating microbial systems comprised of a large number of microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT which is R-based.
 
 **Vision**
 
