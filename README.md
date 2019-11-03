@@ -53,6 +53,5 @@ dementpy.sh: bash script for submitting job to HPC.
 
 Please follow these rules if you want to contribute to this open source model:
 
-**References**
-- Allison 2012 Ecology Letters
-- Wang and Allison 2019 Soil Biology and Biochemistry
+**License**
+
