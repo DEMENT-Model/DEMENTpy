@@ -243,7 +243,7 @@ class Microbe():
         """ 
         Not all taxa need to have an enzyme gene; this method draws the
         number of genes per taxon from a uniform distribution:
-        ----------------------------------    
+        -----------------------------------------------------------------------   
         Parameters:
             Enz_per_taxon_min: minimum # genes a taxon can have (0)
             Enz_per_taxon_max: maximum # genes a taxon can have (40)
@@ -251,11 +251,11 @@ class Microbe():
         Return:
             'EnzGenes_df': Rows are taxa; cols are genes;values: 0/1
         """
-        
-        genes_per_taxon = np.random.choice(range(self.Enz_per_taxon_min,self.Enz_per_taxon_max+1),self.n_taxa,replace=True)
-        
         # Number of genes needed to produce the number of enzymes that system requires 
         n_genes = self.n_enzymes
+        
+        # Taxon-specific number of genes
+        genes_per_taxon = np.random.choice(range(self.Enz_per_taxon_min,self.Enz_per_taxon_max+1),self.n_taxa,replace=True)
         
         #EnzGenes_list = [None]*self.n_taxa
         def trial(i):
@@ -290,11 +290,11 @@ class Microbe():
         Return:
             OsmoGenes_df: row: taxon; col: genes
         """
-        # The number of osmolyte gene each taxon can have
-        genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
-        
         # Number of genes needed to produce the system-required number of osmolytes
         n_genes = self.n_osmolyte
+        
+        # The number of osmolyte gene each taxon can have
+        genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
         
         # Determine different genes of a taxon.
         def trial(i):

@@ -27,18 +27,23 @@ class Output():
             Microbial_traits: microbial traits only pulled out from Initialization: dataframe
             SubstratesSeries: substrate-specific total mass over the grid: Substrate * C
             Substrates_Sum:   total substrates over the grid: day * C
-            MonomersSeries: monomoer-specific total mass over the grid: Monomer * C
-            Monomers_Sum:   total monomers over the grid: day * C
-            NH4Series:
-            PO4Series:  
-            MicrobesSeries: taxon-specific total biomass over the grid: Taxon * (C,N,P)
-            Microbes_Sum:   total biomass over the grid: day * (C,N,P)
-            TransporterSeries: taxon-specific total transporter production over the grid
-            EnzymesSeries: enzyme-specific total mass over the grid: Enzyme * C
-            Enzymes_Sum:   total enzyme summed up over the grid: list
-            OsmolyteSeries: taxon-specific total osmolyte production over the grid
-            RespSeries: total respiration over the grid
+            MonomersSeries:   monomoer-specific total mass over the grid: Monomer * C
+            Monomers_Sum:     total monomers over the grid: day * C
+            MicrobesSeries:   taxon-specific total biomass over the grid: Taxon * (C,N,P)
+            Microbes_Sum:     total biomass over the grid: day * (C,N,P)
+            TransporterSeries:taxon-specific total transporter production over the grid
+            EnzymesSeries:    enzyme-specific total mass over the grid: Enzyme * C
+            Enzymes_Sum:      total enzyme summed up over the grid: list
+            OsmolyteSeries:   taxon-specific total osmolyte production over the grid
+            RespSeries:       total respiration over the grid
             CUE:
+        
+        Notes:
+            Variables that are not tracked but instead by DEMENT(R version):
+                NH4Series:
+                PO4Series:  
+            
+            
         """
         
         # A few vars used in processing outputs 
