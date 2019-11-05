@@ -558,7 +558,7 @@ class Grid():
         
 
         #...Pass variables back to the global ones 
-        self.Microbes_interim = Microbes_interim          # Spatially ...
+        self.Microbes_interim = Microbes_interim           # Spatially ...
         self.Transporters= Taxon_Transporter_Cost          # Spaitally taxon-specific transporters 
         self.Osmolyte_Con= Taxon_Osmo_Consti.sum(axis=1)   # Spatially taxon-specific Constitutive Osmolytes
         self.Osmolyte_Ind= Taxon_Osmo_Induci.sum(axis=1)   # ......inducible...
@@ -884,9 +884,9 @@ class Grid():
         if mic_reinit == 1.00:
             
             New_microbes = self.Init_Microbes.copy() #NOTE copy()!! bloody lesson
-            fb = self.fb[0:self.n_taxa]
-            max_size_b = self.max_size_b
-            max_size_f = self.max_size_f
+            #fb = self.fb[0:self.n_taxa]
+            #max_size_b = self.max_size_b
+            #max_size_f = self.max_size_f
             
             # cumulative abundance; note the column index
             # option 1: mass-based.
@@ -895,11 +895,14 @@ class Grid():
             cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             
             # account for different cell mass sizes of bacteria and fungi
-            if sum(fb==1) == 0: # no fungal taxa
-                frequencies = cum_abundance/cum_abundance.sum()
-            else:
-                cum_abundance.loc[fb==1] = cum_abundance[fb==1]*max_size_b/max_size_f
-                frequencies = cum_abundance/cum_abundance.sum()
+            #if sum(fb==1) == 0: # no fungal taxa
+            #    frequencies = cum_abundance/cum_abundance.sum()
+            #else:
+            #    cum_abundance.loc[fb==1] = cum_abundance[fb==1]*max_size_b/max_size_f
+            #    frequencies = cum_abundance/cum_abundance.sum()
+            
+            # Switched to taxon abundance-based, so no more adjustments
+            frequencies = cum_abundance/cum_abundance.sum()
             frequencies = frequencies.fillna(0)
             
             probs = pd.concat([frequencies,1-frequencies],axis=1,sort=False)

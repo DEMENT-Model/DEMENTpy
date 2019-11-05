@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  2 NOV 2019 19:10
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  4 NOV 2019 20:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -261,31 +261,36 @@ File: Fig1_Structure.pdf Graphic file (type pdf)
 <use Fig1_Structure.pdf>
 Package pdftex.def Info: Fig1_Structure.pdf  used on input line 35.
 (pdftex.def)             Requested size: 430.00462pt x 394.12411pt.
- [1 <./Fig1_Structure.pdf>] [2]
-<Fig2_Microbial_mortality_prob.pdf, id=39, 403.89647pt x 272.53004pt>
+ [1 <./Fig1_Structure.pdf>]
+<Fig3_Repopulation_method.png, id=35, 905.3825pt x 837.1275pt>
+File: Fig3_Repopulation_method.png Graphic file (type png)
+<use Fig3_Repopulation_method.png>
+Package pdftex.def Info: Fig3_Repopulation_method.png  used on input line 61.
+(pdftex.def)             Requested size: 430.00462pt x 397.5886pt.
+ [2] [3 <./Fig3_Repopulation_method.png>]
+<Fig2_Microbial_mortality_prob.pdf, id=45, 403.89647pt x 272.53004pt>
 File: Fig2_Microbial_mortality_prob.pdf Graphic file (type pdf)
 <use Fig2_Microbial_mortality_prob.pdf>
 Package pdftex.def Info: Fig2_Microbial_mortality_prob.pdf  used on input line 
-76.
+90.
 (pdftex.def)             Requested size: 430.00462pt x 290.16127pt.
- [3 <./Fig2_Microbial_mortality_prob.pdf>] [4]
-(./DEMENTpy Documentation.aux) ) 
+ [4] [5 <./Fig2_Microbial_mortality_prob.pdf>] (./DEMENTpy Documentation.aux) )
+ 
 Here is how much of TeX's memory you used:
- 3795 strings out of 492649
- 56943 string characters out of 6129622
- 130530 words of memory out of 5000000
- 7648 multiletter control sequences out of 15000+600000
+ 3802 strings out of 492649
+ 57128 string characters out of 6129622
+ 129538 words of memory out of 5000000
+ 7653 multiletter control sequences out of 15000+600000
  8722 words of font info for 33 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,8n,39p,657b,306s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2018/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmbxti10.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmr12.pfb>
-Output written on "DEMENTpy Documentation.pdf" (5 pages, 276110 bytes).
+ 41i,8n,39p,784b,306s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
+/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb>
+</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
+Output written on "DEMENTpy Documentation.pdf" (6 pages, 503832 bytes).
 PDF statistics:
- 89 PDF objects out of 1000 (max. 8388607)
- 43 compressed objects within 1 object stream
+ 95 PDF objects out of 1000 (max. 8388607)
+ 46 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

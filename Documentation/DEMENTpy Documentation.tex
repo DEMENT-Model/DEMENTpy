@@ -50,6 +50,20 @@ This is the foremost step in DEMENTpy, as only after this can a microbial commun
 
 \textcolor{red}{\textbf{\emph{Example code can be displayed showing how trait values are drawn from distributions and assigned to different individuals.}}}
 
+It must be noteworthy that community initialization goes beyond the very beginning model setup that just initializes a community to start the simulation with. DEMENTpy is built with mimicking the Grassland systems in Southern California, CA. In each new year, microbial community is reinitialized. This reinitialization serves to capturing new community while new litters input into the systems in a new year. To achieve this reinitialization, we calculate cumulative frequency of every taxa over the past year in terms of their abundance, based on which a new spatially explicit microbial community for a new year is derived from the microbial community pool. These steps are executed in DEMENTpy using the repopulation () method in the grid.py module.
+
+Please be aware that this method of reinitialization is different from R-based DEMENT, which instead uses biomass-based frequency calculation.
+
+
+% insert a figure here
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Fig3_Repopulation_method.png}
+  \caption{Repopulation method in the grid.py module}
+  \label{fig:reinitialization}
+\end{figure}
+
+
 
 
 \section{Processes}

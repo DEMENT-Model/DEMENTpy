@@ -89,8 +89,8 @@ def main():
                 Output_init.output(Ecosystem,i)  # interval
             
             # if only 1 pusle, skip all following lines within this loop
-            if pulse == 1:
-                continue
+            #if pulse == 1:
+            #    continue
             
             # output every day's microbial mass 
             Output_init.microbes_df(Ecosystem,i)

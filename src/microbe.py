@@ -103,7 +103,7 @@ class Microbe():
         """
         Initialize a microbial community on the grid with bacteria and/or fungi:
         -> Firstly create a dataframe with only bacteria
-        -> Substitute part of bacteria with fungi to create a community comprised of both bacteria and fungi
+        -> Substitute part of bacteria with fungi
         -> Randomly place this communtiy on the sptatial grid
         -> Perform stats to the initialized community and output them for record
         -----------------------------------------------------------------------
