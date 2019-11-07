@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  6 NOV 2019 20:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  6 NOV 2019 20:54
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -312,7 +312,7 @@ Here is how much of TeX's memory you used:
 </usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 ></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pf
 b></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on "DEMENTpy Documentation.pdf" (7 pages, 1003757 bytes).
+Output written on "DEMENTpy Documentation.pdf" (7 pages, 1003839 bytes).
 PDF statistics:
  104 PDF objects out of 1000 (max. 8388607)
  50 compressed objects within 1 object stream
