@@ -2,10 +2,10 @@
 -------------------------------------------------------------------------------
       DEMENTpy--Decomposition Model of Enzymatic Traits in Python,v1.0
                               Bin Wang, Ph.D.
-           Department of Ecology and Evolutionary Biology
-                  University of California Irvine
+              Department of Ecology and Evolutionary Biology
+                       University of California Irvine
                   Emails: wbwenwu@gmail.com or bwang7@uci.edu
-                      Twitter: @bio_atmosphere
+                           Twitter: @bio_atmosphere
 -------------------------------------------------------------------------------
 """
 
