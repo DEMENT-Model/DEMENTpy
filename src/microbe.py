@@ -80,10 +80,10 @@ class Microbe():
         self.NormalizeProd     = parameters.loc['NormalizeProd',1]    # Normalize enzyme production for the number of enzyme genes;default:0
         
         
-        self.n_osmolyte = 10           # system-allowed number of osmotic compound
+        self.n_osmolyte = 20           # system-allowed number of osmotic compound
         
-        self.Osmo_per_taxon_min = 100  # Minimum number of osmotic gene 
-        self.Osmo_per_taxon_max = 101  # Max. of osmotic gene
+        self.Osmo_per_taxon_min = 10  # Minimum number of osmotic gene 
+        self.Osmo_per_taxon_max = 10  # Max. of osmotic gene
         
         self.Osmo_Consti_Prod_min = 0.00001 # constitutive cost min
         self.Osmo_Consti_Prod_max = 0.0001  # constitutive cost max

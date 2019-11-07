@@ -19,7 +19,7 @@ class Grid():
         3) metabolism():   cellular processes and emergent CUE and respiration
         4) mortality():    determine mortality of microbial cells based on mass thresholds
         5) reproduction(): compute cell division and dispersal
-        6) repopulation(): resample taxa from the pool and place them on grid
+        6) repopulation(): resample taxa from the microbial pool and place them on the grid
     ----------------------------------
     Coding philosophy:
         Each method starts with passing some global variables to local ones and creating
@@ -271,7 +271,7 @@ class Grid():
         MR_transition[np.isinf(MR_transition)] = 0
         
         
-        #=========> Start computing monomer Uptake
+        # Start computing monomer Uptake
         # Moisture impacts on uptake, mimicking the diffusivity implications
         if self.psi[day] >= self.wp_fc:
             f_psi = 1.0
@@ -352,10 +352,10 @@ class Grid():
         
         #...Pass back to the global variable
         self.Taxon_Uptake_C = TUC_df.values.sum(axis=1) # spatial C uptake: array (sum across monomers)
-        self.Taxon_Uptake_N = TUN_df.values.sum(axis=1) # spatial N uptake
-        self.Taxon_Uptake_P = TUP_df.values.sum(axis=1) # spatial P uptake
-        self.Monomer_ratios = MR_transition             # Update Monomer_ratios    
-        self.Monomers = Monomers
+        self.Taxon_Uptake_N = TUN_df.values.sum(axis=1) # spatial N uptake: ...
+        self.Taxon_Uptake_P = TUP_df.values.sum(axis=1) # spatial P uptake: ...
+        self.Monomer_ratios = MR_transition             # update Monomer_ratios    
+        self.Monomers = Monomers                        # update Monomers
                    
 
         

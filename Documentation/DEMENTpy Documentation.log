@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  4 NOV 2019 20:38
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  6 NOV 2019 20:48
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -127,7 +127,14 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
 )
-(./DEMENTpy Documentation.aux)
+(./DEMENTpy Documentation.aux
+
+LaTeX Warning: Label `fig:reinitialization' multiply defined.
+
+
+LaTeX Warning: Label `fig:reinitialization' multiply defined.
+
+)
 \openout1 = `"DEMENTpy Documentation.aux"'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
@@ -265,32 +272,50 @@ Package pdftex.def Info: Fig1_Structure.pdf  used on input line 35.
 <Fig3_Repopulation_method.png, id=35, 905.3825pt x 837.1275pt>
 File: Fig3_Repopulation_method.png Graphic file (type png)
 <use Fig3_Repopulation_method.png>
-Package pdftex.def Info: Fig3_Repopulation_method.png  used on input line 61.
+Package pdftex.def Info: Fig3_Repopulation_method.png  used on input line 58.
 (pdftex.def)             Requested size: 430.00462pt x 397.5886pt.
- [2] [3 <./Fig3_Repopulation_method.png>]
-<Fig2_Microbial_mortality_prob.pdf, id=45, 403.89647pt x 272.53004pt>
+ [2]
+<Fig_Mass_based_reinitialization.png, id=41, 1093.58563pt x 215.30438pt>
+File: Fig_Mass_based_reinitialization.png Graphic file (type png)
+<use Fig_Mass_based_reinitialization.png>
+Package pdftex.def Info: Fig_Mass_based_reinitialization.png  used on input lin
+e 68.
+(pdftex.def)             Requested size: 430.00462pt x 84.65826pt.
+ [3 <./Fig3_Repopulation_method.png>]
+<Fig_Abundance_based_reinitialization.png, id=46, 1093.58563pt x 215.30438pt>
+File: Fig_Abundance_based_reinitialization.png Graphic file (type png)
+<use Fig_Abundance_based_reinitialization.png>
+Package pdftex.def Info: Fig_Abundance_based_reinitialization.png  used on inpu
+t line 75.
+(pdftex.def)             Requested size: 430.00462pt x 84.65826pt.
+ [4 <./Fig_Mass_based_reinitialization.png> <./Fig_Abundance_based_reinitializa
+tion.png>]
+<Fig2_Microbial_mortality_prob.pdf, id=52, 403.89647pt x 272.53004pt>
 File: Fig2_Microbial_mortality_prob.pdf Graphic file (type pdf)
 <use Fig2_Microbial_mortality_prob.pdf>
 Package pdftex.def Info: Fig2_Microbial_mortality_prob.pdf  used on input line 
-90.
+104.
 (pdftex.def)             Requested size: 430.00462pt x 290.16127pt.
- [4] [5 <./Fig2_Microbial_mortality_prob.pdf>] (./DEMENTpy Documentation.aux) )
- 
+ [5 <./Fig2_Microbial_mortality_prob.pdf>] [6] (./DEMENTpy Documentation.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3802 strings out of 492649
- 57128 string characters out of 6129622
- 129538 words of memory out of 5000000
- 7653 multiletter control sequences out of 15000+600000
+ 3812 strings out of 492649
+ 57541 string characters out of 6129622
+ 129577 words of memory out of 5000000
+ 7661 multiletter control sequences out of 15000+600000
  8722 words of font info for 33 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  41i,8n,39p,784b,306s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
-/usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb>
-</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on "DEMENTpy Documentation.pdf" (6 pages, 503835 bytes).
+</usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
+></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pf
+b></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
+Output written on "DEMENTpy Documentation.pdf" (7 pages, 1003757 bytes).
 PDF statistics:
- 95 PDF objects out of 1000 (max. 8388607)
- 46 compressed objects within 1 object stream
+ 104 PDF objects out of 1000 (max. 8388607)
+ 50 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 26 words of extra memory for PDF output out of 10000 (max. 10000000)
 
