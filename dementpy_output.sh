@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N dementpy
+#$ -N dementjupyter
 #$ -q mic
 #$ -m beas
 
