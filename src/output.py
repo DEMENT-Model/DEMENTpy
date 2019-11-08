@@ -245,7 +245,6 @@ class Output():
         GY_grid.name = day + 1
         self.Growth_Yield = pd.concat([self.Growth_Yield,GY_grid],axis=1,sort=False)
         
-        
         # Microbe-Taxon-specific CUE
         CUE_Taxon_grid = ecosystem.CUE_Taxon.groupby(level=0,sort=False).sum()
         CUE_Taxon_grid = CUE_Taxon_grid/taxon_count
@@ -280,23 +279,21 @@ class Output():
     def microbes_df(self,ecosystem,day):
         
         """
-        seperately output Microbes from each time step and put them in a dataframe:
-            MicrobesSeries_repop
-            Taxon_count_repop
-        aiming to eventually deal with relocating microbial community on the
-        grid after a pulse via computing the average frequency of different
-        taxa over each cycle, based on which initialize a new community on the
-        grid at the very start of a new cycle.
-        
-        The reason to have this seperate method instead of using the method
-        above is b/c of the need to track very timestep's output, whereas the
-        method above only track outputs with a certain interval.
+        Seperately output Microbes from each time step and put them in a dataframe:
+            MicrobesSeries_repop:
+            Taxon_count_repop:
+        aiming to eventually deal with reinitializing microbial community on the
+        grid in a new pulse via calculating the cumulative frequency of different
+        taxa over each cycle.
+            The reason to have this seperate method instead of using the method
+        above is b/c of the need to track outputs in every iteration, whereas the
+        method above only track outputs with a certain time interval.
         -----------------------------------------------------------------------
         Parameters:
-            ecosystem: an instance of the Grid object, in which the Microbes is used.
-            day:
+            ecosystem: an instance of the Grid object, in which only the Microbes is used.
+            day: the iteration index
         """
-        
+        # Track biomass of every taxon
         Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()
         Microbes_grid['C'].name = day + 1
         self.MicrobesSeries_repop = pd.concat([self.MicrobesSeries_repop,Microbes_grid['C']],axis=1,sort=False)
@@ -306,7 +303,3 @@ class Output():
         Taxon_index.name = day + 1
         taxon_count = Taxon_index.groupby(level=0,sort=False).sum()
         self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count],axis=1,sort=False)
-        
-        
-        
-        
