@@ -1,3 +1,7 @@
+#----------------------------------------------------------------------------#
+#--- Script mving output files from various folers over to the same Folder---#
+#----------------------------------------------------------------------------#
+
 #!/bin/bash
 
 cd dDEMENTpy/output
