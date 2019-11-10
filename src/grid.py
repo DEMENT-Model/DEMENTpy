@@ -7,7 +7,6 @@ from microbe import microbe_mortality_prob as MMP
 from utility import expand
 
 
-
 class Grid():
     
     """
@@ -918,11 +917,3 @@ class Grid():
             
             # reinitialize the microbial community
             self.Microbes = New_microbes
-        
-        
-        
-        
-        
-        
-        
-        
