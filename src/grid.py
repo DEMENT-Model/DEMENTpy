@@ -76,10 +76,10 @@ class Grid():
         #self.Psi_slope_leach= data_init
         
         #Metabolism
-        self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding for constitutive enzyme
-        self.Induci_Enzyme_C   = data_init["EnzProdInduce"]     # C Cost of encoding for inducible enzyme 
-        self.Consti_Osmo_C     = data_init['OsmoProdConsti']    # C Cost of encoding for constitutive osmolyte
-        self.Induci_Osmo_C     = data_init['OsmoProdInduci']    # C Cost of encoding for inducible osmolyte 
+        self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
+        self.Induci_Enzyme_C   = data_init["EnzProdInduce"]     # C Cost of encoding inducible enzyme 
+        self.Consti_Osmo_C     = data_init['OsmoProdConsti']    # C Cost of encoding constitutive osmolyte
+        self.Induci_Osmo_C     = data_init['OsmoProdInduci']    # C Cost of encoding inducible osmolyte 
         self.Uptake_Maint_Cost = data_init['Uptake_Maint_cost'] # Respiration cost of uptake transporters: 0.01	mg C transporter-1 day-1     
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature
@@ -293,9 +293,7 @@ class Grid():
         
         # Define Max_Uptake: (Monomer*gridsize) * Taxon
         Max_Uptake_array = np.array([0]*self.gridsize*self.n_monomers*self.n_taxa).reshape(self.gridsize*self.n_monomers,self.n_taxa)
-        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,
-                                  index = Monomers.index,
-                                  columns = Microbes.index[0:self.n_taxa])
+        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index = Monomers.index,columns = Microbes.index[0:self.n_taxa])
         # Matrix multiplication to get max possible uptake by monomer
         # ...Must extract each grid point separately for operation
         for i in range(self.gridsize):
@@ -361,7 +359,7 @@ class Grid():
     def metabolism(self,day):
         
         """
-        explicitly calculate intra-cell metabolites production from both constitutive (standing biomass)
+        explicitly calculate intra-cell production of metabolites from both constitutive (standing biomass)
         and inducible pathways (the monomers taken up by microbial cells) as follows:
         -> 1. constitutive enzyme and osmolyte production
         -> 2. inducible enzyme and osmolyte production
@@ -453,9 +451,8 @@ class Grid():
         Taxon_Growth_Respiration = Taxon_Uptake_C * (1 - Taxon_AE)
         
         # 2) Inducible Osmolyte production only when psi reaches below wp_fc
-        # Scalar of water potential achieved with the function microbe_osmo_psi()
+        # Scalar of water potential impact: call the function microbe_osmo_psi()
         f_psi = microbe_osmo_psi(self.psi[day],self.alpha,self.wp_fc,self.wp_th)
-        
         Taxon_Osmo_Induci = self.Induci_Osmo_C.mul(Taxon_Uptake_C,axis=0) * f_psi
         # Total osmotic N cost of each taxon (.sum(axis=1))
         Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)
@@ -490,7 +487,7 @@ class Grid():
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(Enzyme_attributes["N_cost"], axis=1)).sum(axis=1)
         Taxon_Enzyme_Induci_Cost_P = (Taxon_Enzyme_Induci.mul(Enzyme_attributes["P_cost"], axis=1)).sum(axis=1)
         
-        # 6) Derive C,N,&P deposited as biomass from Uptake; ensure no negative values
+        # 6) Derive C, N, & P deposited as biomass from Uptake; ensure no negative values
         Microbe_C_Gain = Taxon_Uptake_C - Taxon_Growth_Respiration - Taxon_Enzyme_Induci_Cost_C - Taxon_Osmo_Induci_Cost_C
         Microbe_C_Gain[Microbe_C_Gain<0] = 0
         Microbe_N_Gain = Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N
@@ -498,20 +495,19 @@ class Grid():
         Microbe_P_Gain = Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
         Microbe_P_Gain[Microbe_P_Gain<0] = 0
         
-        # Update Microbial pools with gains from uptake and losses from constitutive production
+        # Update Microbial pools with GAINS (from uptake) and LOSSES (from constitutive production)
         Growth_yield = Microbe_C_Gain - Microbe_C_Loss
         Microbes.loc[:,"C"] += Growth_yield
         Microbes.loc[:,"N"] += Microbe_N_Gain - Microbe_N_Loss
         Microbes.loc[:,"P"] += Microbe_P_Gain - Microbe_P_Loss
         Microbes[Microbes<0] = 0 #Avoid negative values
         
-        # Emergent CUE of each taxon
-        # Create a dataframe and set all vals to 0
-        CUE_taxon = Microbes['C'].copy()
+        # Emergent CUE from each taxon: taxon-specific CUE
+        CUE_taxon = Microbes['C'].copy() # create a dataframe and set all vals to 0
         CUE_taxon[:] = 0
         CUE_taxon[Taxon_Uptake_C>0] = Microbe_C_Gain[Taxon_Uptake_C>0]/Taxon_Uptake_C[Taxon_Uptake_C>0]
         
-        # Emergent CUE over the spatial grid: system-level CUE
+        # Emergent CUE from the spatial grid: system-level CUE
         Taxon_Uptake_C_grid = Taxon_Uptake_C.sum()  # Total C Uptake
         if Taxon_Uptake_C_grid == 0:
             CUE_system = 0
@@ -522,11 +518,7 @@ class Grid():
         # Constitutive + Inducible Production
         Taxon_Osmo_Maint = Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint
         Taxon_Enzyme_Maint = Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint
-        Respiration = Taxon_Transporter_Maint.sum(axis=0) +\
-                      Taxon_Growth_Respiration.sum(axis=0) +\
-                      Taxon_Osmo_Maint.sum(axis=0) +\
-                      Taxon_Enzyme_Maint.sum(axis=0)
-        
+        Respiration = Taxon_Transporter_Maint.sum(axis=0) + Taxon_Growth_Respiration.sum(axis=0) + Taxon_Osmo_Maint.sum(axis=0) + Taxon_Enzyme_Maint.sum(axis=0)
         
         # Derive the Total Enzyme(C) produced by different taxa for each grid cell
         #.....first transform the df from "(taxon*gridsize) * enzyme" to "(enzyme * gridsize) * taxon"
@@ -549,7 +541,7 @@ class Grid():
         DeadEnz_df = pd.concat([Enzyme_Loss,
                                 Enzyme_Loss.mul(Enzyme_attributes["N_cost"].tolist()*self.gridsize,axis=0),
                                 Enzyme_Loss.mul(Enzyme_attributes["P_cost"].tolist()*self.gridsize,axis=0)],
-                               axis=1)
+                                axis=1)
         # Calculate the dead mass across taxa in each grid cell
         DeadEnz_df = DeadEnz_df.reset_index(drop=True)
         DeadEnz_gridcell = DeadEnz_df.groupby(DeadEnz_df.index//self.n_enzymes).sum(axis=0)
@@ -865,8 +857,8 @@ class Grid():
     def repopulation(self,output,day,mic_reinit):
         
         """
-        deal with reinitialization of microbial community, subsrates, and
-        monomers  on the grid
+        deal with reinitialization of microbial community and start with new subsrates
+        and monomers on the grid.
         -----------------------------------------------------------------------
         Parameters:
             output: an instance of the Output class, in which a variable
@@ -874,6 +866,8 @@ class Grid():
                     every iteration is used--MicrobesSeries_repop
             pulse: the pulse index
             day:   the day index
+        Returns:
+            update Substrates, Monomers, and Microbes
         """
         # reinitialize substrates and monomers
         self.Substrates = self.Substrates_init
