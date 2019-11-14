@@ -1,9 +1,9 @@
-PWD /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation
+PWD /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation
 INPUT /usr/local/texlive/2018/texmf.cnf
 INPUT /usr/local/texlive/2018/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2018/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex
-OUTPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.log
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex
+OUTPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.log
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/base/size12.clo
@@ -44,9 +44,9 @@ INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/xcolor/xcolor.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/xcolor/xcolor.sty
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/graphics-cfg/color.cfg
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/graphics-cfg/color.cfg
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
-OUTPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
+OUTPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
 INPUT /usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
@@ -88,29 +88,29 @@ INPUT /usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/umsb.fd
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
-OUTPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf
+OUTPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf
 INPUT /usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmr17.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmbxti10.tfm
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf
-INPUT /Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf
+INPUT /Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb
 INPUT /usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb

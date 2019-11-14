@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  8 NOV 2019 10:07
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  14 NOV 2019 10:44
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**"/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex"
-(/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex
+**"/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex"
+(/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex
 LaTeX2e <2018-04-01> patch level 2
 Babel <3.18> and hyphenation patterns for 84 language(s) loaded.
 (/usr/local/texlive/2018/texmf-dist/tex/latex/base/article.cls
@@ -109,7 +109,7 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
-) (/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
+) (/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux
 
 LaTeX Warning: Label `fig:reinitialization' multiply defined.
 
@@ -234,7 +234,7 @@ File: Fig1_Structure.pdf Graphic file (type pdf)
 <use Fig1_Structure.pdf>
 Package pdftex.def Info: Fig1_Structure.pdf  used on input line 35.
 (pdftex.def)             Requested size: 430.00462pt x 394.12411pt.
- [1 </Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf>]
+ [1 </Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig1_Structure.pdf>]
 <Fig3_Repopulation_method.png, id=35, 905.3825pt x 837.1275pt>
 File: Fig3_Repopulation_method.png Graphic file (type png)
 <use Fig3_Repopulation_method.png>
@@ -246,33 +246,33 @@ File: Fig_Mass_based_reinitialization.png Graphic file (type png)
 <use Fig_Mass_based_reinitialization.png>
 Package pdftex.def Info: Fig_Mass_based_reinitialization.png  used on input line 68.
 (pdftex.def)             Requested size: 430.00462pt x 84.65826pt.
- [3 </Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png>]
+ [3 </Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig3_Repopulation_method.png>]
 <Fig_Abundance_based_reinitialization.png, id=46, 1093.58563pt x 215.30438pt>
 File: Fig_Abundance_based_reinitialization.png Graphic file (type png)
 <use Fig_Abundance_based_reinitialization.png>
 Package pdftex.def Info: Fig_Abundance_based_reinitialization.png  used on input line 75.
 (pdftex.def)             Requested size: 430.00462pt x 84.65826pt.
- [4 </Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png> </Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png>]
+ [4 </Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Mass_based_reinitialization.png> </Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig_Abundance_based_reinitialization.png>]
 <Fig2_Microbial_mortality_prob.pdf, id=52, 403.89647pt x 272.53004pt>
 File: Fig2_Microbial_mortality_prob.pdf Graphic file (type pdf)
 <use Fig2_Microbial_mortality_prob.pdf>
 Package pdftex.def Info: Fig2_Microbial_mortality_prob.pdf  used on input line 104.
 (pdftex.def)             Requested size: 430.00462pt x 290.16127pt.
- [5 </Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf>] [6] (/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux)
+ [5 </Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/Fig2_Microbial_mortality_prob.pdf>] [6] (/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
  3813 strings out of 492649
- 58509 string characters out of 6129622
- 129577 words of memory out of 5000000
+ 58102 string characters out of 6129622
+ 129573 words of memory out of 5000000
  7661 multiletter control sequences out of 15000+600000
  8722 words of font info for 33 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,8n,39p,892b,306s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,8n,39p,847b,306s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf" (7 pages, 1004095 bytes).
+Output written on "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf" (7 pages, 1003966 bytes).
 PDF statistics:
  104 PDF objects out of 1000 (max. 8388607)
  50 compressed objects within 1 object stream

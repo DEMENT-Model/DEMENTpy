@@ -232,7 +232,7 @@ class Grid():
             -> Uptake by Taxon:
         """
         
-        # Use local variables to calculate for convenience
+        # Use local variables for convenience
         Monomers = self.Monomers
         Microbes = self.Microbes
         Monomer_req_enz = self.Uptake_ReqEnz

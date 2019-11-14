@@ -1,7 +1,7 @@
 # Fdb version 3
-["pdflatex"] 1573236458 "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex" "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf" "DEMENTpy Documentation" 1573241348
-  "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux" 1573236459 1823 028af9257a5dc87f02c2e592054c5703 ""
-  "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex" 1573241348 6399 0fb2c076eb292163a598d07bb201aaf3 ""
+["pdflatex"] 1573757049 "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex" "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf" "DEMENTpy Documentation" 1573757053
+  "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.aux" 1573757053 1823 028af9257a5dc87f02c2e592054c5703 ""
+  "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.tex" 1573757048 6395 c53ab61468136e1384b334a3d3b5403a ""
   "/usr/local/texlive/2018/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1480098698 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1480098698 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -55,16 +55,18 @@
   "/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1523934492 2717033 f61a5287d9c22a39a74f1979fe3f905c ""
   "/usr/local/texlive/2018/texmf-var/web2c/pdftex/pdflatex.fmt" 1523934516 4220280 10cab8fbd7c5a7c52aba9917e190d018 ""
   "/usr/local/texlive/2018/texmf.cnf" 1523934483 577 0b39adfd7c93507ff20c9c14c2f1a33f ""
-  "DEMENTpy Documentation.aux" 1573236459 1823 028af9257a5dc87f02c2e592054c5703 ""
-  "DEMENTpy Documentation.tex" 1573241348 6399 0fb2c076eb292163a598d07bb201aaf3 ""
+  "DEMENTpy Documentation.aux" 1573757053 1823 028af9257a5dc87f02c2e592054c5703 ""
+  "DEMENTpy Documentation.tex" 1573757048 6395 c53ab61468136e1384b334a3d3b5403a ""
   "Fig1_Structure.pdf" 1563662557 218572 642aed19d15be5c8b3fd4e53b884994b ""
   "Fig2_Microbial_mortality_prob.pdf" 1563643833 11379 7141010c682ca9b5c649a3c4684e0386 ""
   "Fig3_Repopulation_method.png" 1572928189 451934 58d4c6e08e2e725ca98862d2866aa2ad ""
   "Fig_Abundance_based_reinitialization.png" 1573100729 350166 c5a93bd501e2206e9bcf103451918222 ""
   "Fig_Mass_based_reinitialization.png" 1573100668 282050 1a16ad9306064b05dc9cf9c9555684d9 ""
   (generated)
+  "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf"
+  "DEMENTpy Documentation.log"
+  "DEMENTpy Documentation.aux"
   "DEMENTpy Documentation.pdf"
   "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.log"
-  "DEMENTpy Documentation.log"
   "/Users/Ben/OneDrive - University of California - Irvine/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.pdf"
-  "DEMENTpy Documentation.aux"
+  "/Users/Ben/DEMENTpy/Versions/version_10/DEMENTpy/Documentation/DEMENTpy Documentation.log"
