@@ -747,8 +747,8 @@ class Grid():
                    
         """
         Calculate reproduction and dispersal, and update microbial composition/distrituion on the spatial grid
-        which is comprised of 4 steps:
-        ----------
+        in 4 steps:
+        ------------------------------------------------
         
         Parameters:
             fb         : index of fungal taxa
