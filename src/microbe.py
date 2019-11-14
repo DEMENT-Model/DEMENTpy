@@ -548,20 +548,20 @@ class Microbe():
 def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
     
     """
-    Inducible osmolytes' production triggered when PSI declines to a **threshold** value,wp_fc,
-    below which the production increaseas and reaches maxima at water potential of wp_th
+    Inducible production of osmolytes triggered when PSI declines to a **threshold** value,wp_fc,
+    below which the production increases and reaches maxima at water potential of wp_th
     ---------------------------------------------------------------------------
     Parameters:
-        wp: water potential at a daiy step 
-        alfa: shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
-        wp_fc: water potential at field capacity
-        wp_th: water potential threshold
+        wp:    scalar;water potential at a daiy step 
+        alfa:  scalar;shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
+        wp_fc: scalar;water potential at field capacity
+        wp_th: scalar;water potential threshold
         
     Returns:
-        f_osmo: scalar
+        f_osmo: scalar; modifier of inducible production of osmoylte
         
     References:
-        Modified from Manzoni et al. 2012 Ecology 
+        Based on Manzoni et al. 2012 Ecology, a synthesis study. 
     """
     
     if wp >= wp_fc:
@@ -582,11 +582,11 @@ def microbe_mortality_prob(wp,wp_fc,death_rate,beta,tolerance):
     microbial mortality probability as a function of water potential and drought tolerance
     ---------------------------------------------------------------------------
     Paramters:
-        wp:    water potential;scalar
-        wp_fc: field capacity;scalar
-        death_rate: basal mortality prob. distinguished btw fungi and bacteria;array
-        beta:       distinguished btw fungi and bacteria;array
-        tolerance: taxon-specific drought tolerance;dataframe;values: 0 - 1
+        wp:         water potential;scalar
+        wp_fc:      field capacity;scalar
+        death_rate: array; basal mortality prob. distinguished btw fungi and bacteria
+        beta:       array; mortality change rate with moisture
+        tolerance:  dataframe; taxon-specific drought tolerance
         
     Returns:
         mortality_rate: taxon-specific mortality probability

@@ -298,7 +298,7 @@ class Output():
         Microbes_grid['C'].name = day + 1
         self.MicrobesSeries_repop = pd.concat([self.MicrobesSeries_repop,Microbes_grid['C']],axis=1,sort=False)
         
-        # Count each taxon
+        # Track abundance of each taxon
         Taxon_index = (ecosystem.Microbes)['C'] > 0
         Taxon_index.name = day + 1
         taxon_count = Taxon_index.groupby(level=0,sort=False).sum()
