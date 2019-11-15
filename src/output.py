@@ -251,10 +251,8 @@ class Output():
         CUE_Taxon_grid.name = day + 1
         self.CUE_TaxonSeries = pd.concat([self.CUE_TaxonSeries,CUE_Taxon_grid],axis=1,sort=False)
         
-        
         # Microbe
         Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()
-        
         # for outputs
         Microbes_grid['C'].name = day + 1
         self.MicrobesSeries = pd.concat([self.MicrobesSeries,Microbes_grid['C']],axis=1,sort=False)

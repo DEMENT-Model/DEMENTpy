@@ -4,18 +4,14 @@
 
 #!/bin/bash
 
-cd dDEMENTpy
+cd dementpy0
 qsub dementpy.sh
 cd ..
 
-cd dDEMENTpy1
+cd dementpy1
 qsub dementpy.sh
 cd ..
 
-cd dDEMENTpy2
-qsub dementpy.sh
-cd ..
-
-cd dDEMENTpy3
+cd dementpy2
 qsub dementpy.sh
 cd ..
