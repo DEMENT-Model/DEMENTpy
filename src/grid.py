@@ -90,9 +90,9 @@ class Grid():
         self.death_rate= data_init['death_rate']    # Basal death rate of microbes
         self.beta      = data_init['beta']          # Change rate of death mortality with water potential
         self.tolerance = data_init['TaxDroughtTol'] # taxon drought tolerance
-        self.wp_fc     = data_init['wp_fc']   #-1.0
-        self.wp_th     = data_init['wp_th']   #-6.0
-        self.alpha     = data_init['alpha']   #1
+        self.wp_fc     = data_init['wp_fc']         # -1.0
+        self.wp_th     = data_init['wp_th']         # -6.0
+        self.alpha     = data_init['alpha']         # 1
 
         #Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
