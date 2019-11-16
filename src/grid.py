@@ -34,9 +34,9 @@ class Grid():
     def __init__(self,runtime,data_init): 
         
         """
-        Inputs:
+        Parameters:
             runtime:   user-specified parameters
-            data_init: initialized data from the module 'initialization.py'
+            data_init: dictionary;initialized data from the module 'initialization.py'
         """
         self.cycle          = int(runtime.loc['end_time',1])
         self.gridsize       = int(runtime.loc['gridsize',1])
@@ -81,11 +81,9 @@ class Grid():
         self.Consti_Osmo_C     = data_init['OsmoProdConsti']    # C Cost of encoding constitutive osmolyte
         self.Induci_Osmo_C     = data_init['OsmoProdInduci']    # C Cost of encoding inducible osmolyte 
         self.Uptake_Maint_Cost = data_init['Uptake_Maint_cost'] # Respiration cost of uptake transporters: 0.01	mg C transporter-1 day-1     
+        self.Enz_Attrib        = data_init['EnzAttrib']         # Enzyme attributes; dataframe
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature
-        self.Enz_Attrib        = data_init['EnzAttrib']         # Enzyme attributes; dataframe
-        self.Enzyme_Loss_Rate  = data_init['Enzyme_Loss_Rate']  # Enzyme turnover rate; scalar
-        
         
         #Mortality
         self.MinRatios = data_init['MinRatios']     # ...
@@ -95,7 +93,10 @@ class Grid():
         self.death_rate= data_init['death_rate']    # Basal death rate of microbes
         self.beta      = data_init['beta']          # Change rate of death mortality with water potential
         self.tolerance = data_init['TaxDroughtTol'] # taxon drought tolerance
-        
+        self.wp_fc     = data_init['wp_fc']   #-1.0
+        self.wp_th     = data_init['wp_th']   #-6.0
+        self.alpha     = data_init['alpha']   #1
+
         #Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
         self.max_size_b =  data_init['max_size_b']         # threshold of cell division
@@ -109,15 +110,6 @@ class Grid():
         self.temp = data_init['Temp']     # Temperature
         self.psi  = data_init['Psi']      # Soil water potential
         
-        self.wp_fc = -1.0
-        self.wp_th = -6.0
-        self.alpha = 1
-        
-        # Constants
-        self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
-        self.Tref  = 293.0      # reference temperature of 20 celcius
-        self.k     = 0.008314   # Gas constant = 0.008314 kJ/(mol K)
-        
         #variables used for output
         self.SubstrateRatios= float('nan') # Substrate stoichiometry
         self.DecayRates   = float('nan')   # Substrate decay rate
@@ -128,13 +120,17 @@ class Grid():
         self.Enzyme_Ind   = float('nan')
         self.Growth_Yield = float('nan')
         self.CUE_Taxon    = float('nan')
-        
         self.Respiration  = float('nan')
         self.CUE_System   = float('nan')
         self.Microbes_w   = float('nan')
         self.Kill         = float('nan')
+
+        # Constants
+        self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
+        self.Tref  = 293.0      # reference temperature of 20 celcius
+        self.k     = 0.008314   # Gas constant = 0.008314 kJ/(mol K)
     
-    
+
     def degradation(self,pulse,day):
         
         """
@@ -156,14 +152,12 @@ class Grid():
         # constant
         LCI_slope = -0.8  # lignocellulose index--LCI
         
-        
         # Total mass of each substrate: C+N+P
         rss = Substrates.sum(axis=1)
         # Calculate the substrate stoichiometry; note: ensure NA = 0
         SubstrateRatios = Substrates.divide(rss,axis=0)
         SubstrateRatios = SubstrateRatios.fillna(0)
         SubstrateRatios[np.isinf(SubstrateRatios)] = 0
-        
         
         # Moisture effects on enzymatic kinetics
         if self.psi[day] >= self.wp_fc:
@@ -185,7 +179,6 @@ class Grid():
         tev.index = Sub_index
         tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical order
         
-        
         # Michaelis-Menten equation
         Decay  = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
         
@@ -203,7 +196,6 @@ class Grid():
         DecayRates_transiton = pd.concat([DecayRates0,(rss - 1e-9*rss)],axis=1,sort=False)
         DecayRates = DecayRates_transiton.min(axis=1,skipna=True)
         
-
         # Adjust cellulose rate by linking cellulose degradation to lignin concentration (LCI) 
         ss7 = Substrates.loc[is_lignin].sum(axis=1)
         transition2 = 1 + LCI_slope * (ss7/(ss7 + Substrates.loc[is_cellulose,'C'].tolist()))
@@ -212,15 +204,12 @@ class Grid():
         # Update Substrates Pool by removing decayed C,N, & P and adding inputs
         Substrates = Substrates - SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
         
-        
         # Pass these back to the global variables
         self.Substrates = Substrates
         self.SubstrateRatios = SubstrateRatios
         self.DecayRates = DecayRates
 
 
-        
-    
     def uptake(self,pulse,day):
         
         """
@@ -384,7 +373,7 @@ class Grid():
         # Constants
         Osmo_N_cost     = 0.3
         Osmo_Maint_cost = 5.0
-        #Enzyme_Loss_Rate=
+        Enzyme_Loss_Rate= 0.04
         
         #---------------------------------------------------------------------#
         #......................Phase 1: constitutive processes................#
@@ -532,7 +521,7 @@ class Grid():
         Enzyme_Production = EP_df.values.sum(axis=1)
         
         # Enzyme turnover: dealt with linearly with an 'enzyme turnover rate' (=0.04; Allison 2006)
-        Enzyme_Loss = Enzymes * self.Enzyme_Loss_Rate
+        Enzyme_Loss = Enzymes * Enzyme_Loss_Rate
         
         # Update Enzyme pools by substracting the 'dead' enzymes
         Enzymes = (Enzymes - Enzyme_Loss).add(Enzyme_Production,axis=0) 

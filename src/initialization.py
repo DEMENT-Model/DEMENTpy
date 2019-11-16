@@ -150,15 +150,17 @@ def initialize_data(runtime_parameters):
                        'death_rate':   microbial_mortality[1],                  # sensitivity death to mositure
                        "AE_ref":            parameters.loc["CUE_ref",1],        # Reference assimilation efficiency: 0.5
                        "AE_temp":           parameters.loc["CUE_temp",1],       # AE temperature sensitivity; default: -0.016
-                       "Enzyme_Loss_Rate":  parameters.loc['Enzyme_Loss_Rate',1],  # constant of enzyme turnover rate
                        'Uptake_Maint_cost': parameters.loc['Uptake_Maint_cost',1], # constant of transporter maintenence cost
                        'C_min':             parameters.loc['C_min',1],             # C threshold of cell lysis
                        'N_min':             parameters.loc['N_min',1],             # N threshold of cell lysis
                        'P_min':             parameters.loc['P_min',1],             # P threshold of cell lysis
                        'max_size_b':        parameters.loc['max_size_b',1],     # C quota threshold for bacterial cell division
                        'max_size_f':        parameters.loc['max_size_f',1],     # C quota threshold for fungal cell division
-                       "Temp": daily_temp,
-                       "Psi":  daily_psi
+                       'wp_fc':             parameters.loc['wp_fc',1],          # threshold below which microbes start to respond to drought
+                       'wp_th':             parameters.loc['wp_th',1],          # threshold below which microbes in full swing to respond to drought
+                       'alpha':             parameters.loc['alpha',1],          # factor delineating curve concavity of microbial response to drought
+                       'Temp': daily_temp,
+                       'Psi':  daily_psi
                       }
 
     return Data_Dictionary

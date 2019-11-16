@@ -45,7 +45,7 @@ def main():
     pulse = int(runtime.loc['pulse',1])         # number of pulses
     cycle = int(runtime.loc['end_time',1])      # number of time steps in each pulse
     interval = int(runtime.loc['interval',1])   # interval of time step to record outputs
-    mic_reinit = runtime.loc['mic_reinit',1]    # indicate whether or not reinitialize microbial community on the spatial grid in a new pulse
+    mic_reinit = runtime.loc['mic_reinit',1]    # indicate whether or not reinitialize microbial community on the grid in a new pulse
     
     #...grow a seed of random number generator
     np.random.seed(2)

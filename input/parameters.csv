@@ -23,6 +23,12 @@ Enz_Prod_max,0.0001
 Constit_Prod_min,0.00001
 Constit_Prod_max,0.0001
 NormalizeProd,0
+Osmo_per_taxon_min,10
+Osmo_per_taxon_max,10
+Osmo_Consti_Prod_min,0.00001
+Osmo_Consti_Prod_max,0.0001
+Osmo_Induci_Prod_min,0.0001
+Osmo_Induci_Prod_max,0.001
 CUE_ref,0.5
 CUE_temp,-0.016
 Enz_min,0
@@ -37,7 +43,6 @@ Uptake_Vmax0_min,1
 Uptake_Vmax0_max,10
 Uptake_Ea_min,35
 Uptake_Ea_max,35
-Km_Ea,20
 Km_min,0.01
 Uptake_Km_min,0.001
 Vmax_Km,1
@@ -54,7 +59,10 @@ Init_NH4,0
 Init_PO4,0
 Input_NH4,0
 Input_PO4,0
-Leaching,0.1
-Enzyme_Loss_Rate,0.04
-Death_Rate,0.001
-Death_Ratio,0.2
+death_rate_bac,0.001
+death_rate_fun,0.0002
+beta_bac,10
+beta_fun,10
+wp_fc,-1
+wp_th,-6
+alpha,1
