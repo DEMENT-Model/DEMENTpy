@@ -6,7 +6,7 @@ This microbe module has one class and two functions:
     microbe_mortality_prob(): function; cell mortality probability
         
 -------------------------------------------------------------------------------
-Last modified by Bin Wang on October 25th, 2019
+Last modified by Bin Wang on November 15th, 2019
 """
 
 
@@ -49,7 +49,7 @@ class Microbe():
         self.n_substrates= int(runtime.loc['n_substrates',1])
         self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # why+2? b/c two inorganic monomers
         self.n_uptake    = int(runtime.loc['n_uptake',1])        # Number of uptake transporters for each taxon
-        self.n_osmolyte  = int(runtime,loc['n_osmolytes',1])    # system-allowed number of osmotic compound
+        self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])    # system-allowed number of osmotic compound
         self.taxa_per_box= runtime.loc['taxa_per_box',1]         # Probability of each taxon entering a grid cell
         fb = runtime.loc['fb',1]                                 # Probability of fungal taxa 
         self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[fb,(1-fb)]) #Index of fungal taxa
@@ -80,8 +80,8 @@ class Microbe():
         self.Enz_Prod_max      = parameters.loc['Enz_Prod_max',1]     # =0.0001; Maximum ...
         self.NormalizeProd     = parameters.loc['NormalizeProd',1]    # Normalize enzyme production for the number of enzyme genes;default:0
         
-        self.Osmo_per_taxon_min = parameters.loc['Osmo_per_taxon_min',1]      # Minimum number of osmotic gene 
-        self.Osmo_per_taxon_max = parameters.loc['Osmo_per_taxon_max',1]      # Max. of osmotic gene
+        self.Osmo_per_taxon_min = int(parameters.loc['Osmo_per_taxon_min',1]) # Minimum number of osmotic gene 
+        self.Osmo_per_taxon_max = int(parameters.loc['Osmo_per_taxon_max',1]) # Max. of osmotic gene
         self.Osmo_Consti_Prod_min = parameters.loc['Osmo_Consti_Prod_min',1]  # constitutive cost min
         self.Osmo_Consti_Prod_max = parameters.loc['Osmo_Consti_Prod_max',1]  # constitutive cost max
         self.Osmo_Induci_Prod_min = parameters.loc['Osmo_Induci_Prod_min',1]  # inducible cost min

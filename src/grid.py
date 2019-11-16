@@ -70,10 +70,7 @@ class Grid():
         self.Uptake_Enz_Cost= data_init['UptakeGenesCost']  # Cost of encoding each uptake gene
         self.Taxon_Uptake_C = 0                             # taxon uptake of C 
         self.Taxon_Uptake_N = 0                             # taxon uptake of N 
-        self.Taxon_Uptake_P = 0                             # taxon uptake of P 
-        #self.Cum_Monomer_ratios = float('nan')             # this one for the output
-        #self.Leaching       = data_init
-        #self.Psi_slope_leach= data_init
+        self.Taxon_Uptake_P = 0                             # taxon uptake of P
         
         #Metabolism
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
