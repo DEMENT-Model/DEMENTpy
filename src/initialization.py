@@ -159,8 +159,8 @@ def initialize_data(runtime_parameters):
                        'wp_fc':             parameters.loc['wp_fc',1],          # threshold below which microbes start to respond to drought
                        'wp_th':             parameters.loc['wp_th',1],          # threshold below which microbes in full swing to respond to drought
                        'alpha':             parameters.loc['alpha',1],          # factor delineating curve concavity of microbial response to drought
-                       'Temp': daily_temp,
-                       'Psi':  daily_psi
+                       'Temp': daily_temp,                                      # temperature
+                       'Psi':  daily_psi                                        # water potential
                       }
 
     return Data_Dictionary

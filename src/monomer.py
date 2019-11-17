@@ -15,26 +15,28 @@ class Monomer():
     def __init__(self,runtime,parameters):
         
         
-        self.n_monomers  = int(runtime.loc['n_substrates',1]) + 2
-        self.n_uptake    = int(runtime.loc['n_uptake',1]) # Number of uptake transporters for each taxon
-        
+        self.n_monomers  = int(runtime.loc['n_substrates',1]) + 2                  # Number of monomers within the system
+        self.n_uptake    = int(runtime.loc['n_uptake',1])                          # Number of uptake transporters for each taxon
         self.Monomer_Substrate_Ratio = parameters.loc['Monomer_Substrate_Ratio',1] # default:0; amount of initial monomer relative to substrate per grid box
         self.Uptake_per_monomer      = int(parameters.loc['Uptake_per_monomer',1]) # default:1; number of transporters per monomer 
-        self.Init_NH4  = parameters.loc['Init_NH4',1]  # Initial NH4
-        self.Init_PO4  = parameters.loc['Init_PO4',1]  # Initial PO4
-        self.Input_NH4 = parameters.loc['Input_NH4',1] # Input of NH4
-        self.Input_PO4 = parameters.loc['Input_PO4',1] # Input of PO4
+        self.Init_NH4  = parameters.loc['Init_NH4',1]                              # Initial NH4
+        self.Init_PO4  = parameters.loc['Init_PO4',1]                              # Initial PO4
+        self.Input_NH4 = parameters.loc['Input_NH4',1]                             # Input of NH4
+        self.Input_PO4 = parameters.loc['Input_PO4',1]                             # Input of PO4
         
         
     def monomer_initialization(self,substrates_init):
         
         """
-        #...derive the initial Monomers: dataframe; used for later calculations for two purposes:
-        #...1) get sums over the grids, which is further used to derive the average monomer distri. over the grids
+        #...derive the initial Monomers: dataframe; used for later calculations w/ two purposes:
+        #...1) get sums over the grid, which is further used to derive the average monomer distri. over the grid
         #...2) provide the data structure for MonomerRatios that stores monomer stoichiometry info.
-        
+        ------------------------------------------
         Parameters:
             substrates_init: dataframe; initial substrates pool; from the substrate module
+        Return:
+            Monomers_df: dataframe (shape:14*3).
+
         """
         
         # Monomer pool sizes for all elements
@@ -56,7 +58,13 @@ class Monomer():
     
     def monomer_ratios(self,Monomers):
         
-        """initialization of 'monomer_ratio'"""
+        """initialization of 'monomer_ratio
+        
+        Parameter:
+            Monomers:
+        Return:
+            Monomer_ratios
+        '"""
         
         is_NH4 = Monomers.index == "NH4"
         is_PO4 = Monomers.index == "PO4"
@@ -65,7 +73,6 @@ class Monomer():
         Monomer_ratios[:] = 0
         Monomer_ratios.loc[is_NH4,'N'] = 1
         Monomer_ratios.loc[is_PO4,'P'] = 1
-        
         
         return Monomer_ratios
         
