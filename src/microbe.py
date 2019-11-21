@@ -49,7 +49,7 @@ class Microbe():
         self.n_substrates= int(runtime.loc['n_substrates',1])
         self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # why+2? b/c two inorganic monomers
         self.n_uptake    = int(runtime.loc['n_uptake',1])        # Number of uptake transporters for each taxon
-        self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])    # system-allowed number of osmotic compound
+        self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])     # system-allowed number of osmotic compound
         self.taxa_per_box= runtime.loc['taxa_per_box',1]         # Probability of each taxon entering a grid cell
         fb = runtime.loc['fb',1]                                 # Probability of fungal taxa 
         self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[fb,(1-fb)]) #Index of fungal taxa
@@ -88,8 +88,8 @@ class Microbe():
         self.Osmo_Induci_Prod_max = parameters.loc['Osmo_Induci_Prod_max',1]  # inducible cost max
         self.death_rate_bac = parameters.loc['death_rate_bac',1]              # Bacterial basal mortality prob.
         self.death_rate_fun = parameters.loc['death_rate_fun',1]              # Fungal basal mortality probability
-        self.beta_bac       = parameters.loc['beta_bac',1]                    # mortality coefficient
-        self.beta_fun       = parameters.loc['beta_fun',1]                    # mortality coefficient
+        self.beta_bac = parameters.loc['beta_bac',1]                          # mortality coefficient
+        self.beta_fun = parameters.loc['beta_fun',1]                          # mortality coefficient
         
     
     
@@ -130,17 +130,15 @@ class Microbe():
         BacP = BacC * self.Pfrac_b/self.Cfrac_b
         microbes_array = np.tile([BacC,BacN,BacP],(self.n_taxa*self.gridsize,1))
         index = ["Tax" + str(i) for i in range(1,self.n_taxa + 1)] * self.gridsize
-        microbes_df = pd.DataFrame(data = microbes_array,
-                                   index = index,
-                                   columns = ["C","N","P"])
+        microbes_df = pd.DataFrame(data = microbes_array, index = index, columns = ["C","N","P"])
         
         # Obtain the Fungi index by expanding the fb to the spatial grid
         fb_grid = np.tile(self.fb,self.gridsize)
         
         # Fungal pool sizes for all elements
         FunC = 0.5 * self.max_size_f
-        FunN = FunC* self.Nfrac_f/self.Cfrac_f
-        FunP = FunC* self.Pfrac_f/self.Cfrac_f
+        FunN = FunC * self.Nfrac_f/self.Cfrac_f
+        FunP = FunC * self.Pfrac_f/self.Cfrac_f
         
         #...Substitute with fungal pools of elements: fb_grid == 1
         microbes_df.loc[fb_grid == 1, "C"] = FunC
@@ -302,9 +300,7 @@ class Microbe():
         
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns = ['Osmo' + str(i) for i in range(1,n_genes+1)]
-        OsmoGenes_df = pd.DataFrame(data = np.vstack(OsmoGenes_list).reshape(self.n_taxa,n_genes),
-                                    index = index, 
-                                    columns = columns)
+        OsmoGenes_df = pd.DataFrame(data = np.vstack(OsmoGenes_list).reshape(self.n_taxa,n_genes),index = index,columns = columns)
         
         return OsmoGenes_df
         
@@ -597,14 +593,7 @@ def microbe_mortality_prob(wp,wp_fc,death_rate,beta,tolerance):
         # option 1
         #mortality_rate = death_rate*(1 - beta*(wp-wp_fc)*(1-tolerance))
         # option 2
-        mortality_rate = death_rate*(1 - beta*(wp-wp_fc)) * (1/np.exp(tolerance))
+        mortality_rate = death_rate * (1 - beta*(wp-wp_fc)) * (1/np.exp(tolerance))
 
     
     return mortality_rate
-    
-
-
-
-    
-    
-        

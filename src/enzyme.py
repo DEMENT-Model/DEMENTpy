@@ -54,9 +54,7 @@ class Enzyme():
         self.Uptake_Km_min      = parameters.loc['Uptake_Km_min',1]         # Minimum uptake Km: 0.001
         self.Km_error           = parameters.loc['Km_error',1]              # Error term: default = 0
         
-        
-        
-        
+      
     def enzyme_pool_initialization(self):
         
         """
@@ -70,12 +68,10 @@ class Enzyme():
         """
         
         Enzymes_array  = np.random.uniform(self.Enz_min,self.Enz_max,self.n_enzymes)
-        
         Enzymes_array  = Enzymes_array.reshape(self.n_enzymes,1)
         index = ['Enz'+str(i) for i in range(1,self.n_enzymes+1)]
-        Enzymes_df = pd.DataFrame(data = Enzymes_array,
-                                  index = index,
-                                  columns= ['C'])
+        Enzymes_df = pd.DataFrame(data = Enzymes_array, index = index, columns = ['C'])
+
         return Enzymes_df
     
     
@@ -94,12 +90,9 @@ class Enzyme():
             EnzAttrib_df
         """
         
-        EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],
-                                  (self.n_enzymes,1))
+        EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
         index = ["Enz" + str(i) for i in range(1,self.n_enzymes + 1)]
-        EnzAttrib_df   = pd.DataFrame(data = EnzAttrib_array,
-                                      index = index,
-                                      columns = ["C_cost","N_cost","P_cost","Maint_cost"])
+        EnzAttrib_df = pd.DataFrame(data = EnzAttrib_array,index = index, columns = ["C_cost","N_cost","P_cost","Maint_cost"])
         
         return EnzAttrib_df
     
@@ -113,7 +106,7 @@ class Enzyme():
         -----------
         Input:
             user-supplied activation energy range for each substrate (for now min.= max.)
-        Output:
+        Return:
             Rows:enzymes; cols: substrates
         """
         
@@ -125,9 +118,7 @@ class Enzyme():
         
         index   = ['Sub' + str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz' + str(i) for i in range(1,self.n_enzymes + 1)]
-        Ea_df = pd.DataFrame(data = Ea_series.tolist(),  # note: .tolist() !!!!!!!!
-                             index = index,
-                             columns = columns)
+        Ea_df = pd.DataFrame(data = Ea_series.tolist(), index = index, columns = columns) # note: .tolist() !!!!!!!!
         
         return Ea_df.T
     
@@ -140,7 +131,7 @@ class Enzyme():
         Parameters:
             Uptake_Ea_min: 35
             Uptake_Ea_max: 35
-        Output:
+        Return:
             Rows are monomers; cols are uptake enzymes
         """
         
@@ -149,9 +140,7 @@ class Enzyme():
         
         index = ['Mon'+str(i) for i in range(1,self.n_monomers+1)]
         columns = ['Upt'+str(i) for i in range(1,self.n_uptake+1)]
-        Uptake_Ea_df = pd.DataFrame(data = Uptake_Ea_array,
-                                    index= index,
-                                    columns= columns)
+        Uptake_Ea_df = pd.DataFrame(data = Uptake_Ea_array,index = index,columns = columns)
         
         return Uptake_Ea_df
         
@@ -229,7 +218,7 @@ class Enzyme():
                                        index = index,
                                        columns = columns)
         
-        #... implement the tradeoff with specificity
+        # implement the tradeoff with specificity
         total_monomers = Uptake_ReqEnz.sum(axis=0)
         if self.Specif_factor == 0:
             total_monomers[total_monomers>1] = 1
@@ -239,7 +228,6 @@ class Enzyme():
         Uptake_Vmax0_df = Uptake_Vmax0_df.divide(total_monomers,axis=1)
         Uptake_Vmax0_df = Uptake_Vmax0_df.fillna(0)
         Uptake_Vmax0_df[np.isinf(Uptake_Vmax0_df)] = 0
-        
         
         return Uptake_Vmax0_df
     
@@ -258,7 +246,7 @@ class Enzyme():
           Km_error:    error term (0);error term normally distributed with magnitude Km_error.)
           Km_min:      to which the minimum Km is constrained; 0.01
         Return:
-            Km_df 
+          Km_df:
         """
         
         mean = Vmax0.mean().mean()*self.Km_error
@@ -269,9 +257,7 @@ class Enzyme():
         
         index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Km_df = pd.DataFrame(data = Km_array,
-                             index = index,
-                             columns = columns)
+        Km_df = pd.DataFrame(data = Km_array, index = index, columns = columns)
         
         return Km_df
     
@@ -294,13 +280,9 @@ class Enzyme():
         
         mean = Uptake_Vmax0.mean().mean()*self.Km_error
         Uptake_Km_array = abs(Uptake_Vmax0.apply(lambda df:np.random.normal(df*self.Uptake_Vmax_Km,mean))+self.Uptake_Vmax_Km_int)
-        
         Uptake_Km_array[Uptake_Km_array < self.Uptake_Km_min] = self.Uptake_Km_min
-        
         index = ['Mon'+str(i) for i in range(1,self.n_monomers + 1)]
         columns = ['Upt'+str(i) for i in range(1,self.n_uptake + 1)]
-        Uptake_Km_df = pd.DataFrame(data = Uptake_Km_array,
-                                    index = index,
-                                    columns = columns)
+        Uptake_Km_df = pd.DataFrame(data = Uptake_Km_array,index = index,columns = columns)
         
         return Uptake_Km_df
