@@ -97,8 +97,6 @@ class Enzyme():
         return EnzAttrib_df
     
     
-    
-    
     def enzyme_Ea(self):
         
         """ 
@@ -167,9 +165,7 @@ class Enzyme():
         
         index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Vmax0_df = pd.DataFrame(data  = Vmax0_array,
-                                index = index,
-                                columns = columns)
+        Vmax0_df = pd.DataFrame(data  = Vmax0_array,index = index,columns = columns)
         
         # Account for efficiency-specificity tradeoff by dividing Vmax_0 by the number of substrates (or monomers)
         # targeted and multiplied by a specificity factor
@@ -214,9 +210,7 @@ class Enzyme():
         
         index = ['Mon'+str(i) for i in range(1,self.n_monomers+1)]
         columns = ['Upt'+str(i) for i in range(1,self.n_uptake+1)]
-        Uptake_Vmax0_df = pd.DataFrame(data = Uptake_Vmax0_array,
-                                       index = index,
-                                       columns = columns)
+        Uptake_Vmax0_df = pd.DataFrame(data = Uptake_Vmax0_array,index = index,columns = columns)
         
         # implement the tradeoff with specificity
         total_monomers = Uptake_ReqEnz.sum(axis=0)

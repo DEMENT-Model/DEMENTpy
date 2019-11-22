@@ -26,7 +26,7 @@ class Grid():
     Reminder:
         Keep a CLOSE EYE on the indexing throughout the matrix/dataframe operations
     ---------------------------------
-    Last modified by Bin Wang on October 24th, 2019 
+    Last modified by Bin Wang on November 21st, 2019 
     """
     
     
@@ -93,7 +93,7 @@ class Grid():
         self.wp_th     = data_init['wp_th']         # -6.0
         self.alpha     = data_init['alpha']         # 1
 
-        #Reproduction
+        # Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
         self.max_size_b =  data_init['max_size_b']         # threshold of cell division
         self.max_size_f =  data_init['max_size_f']         # threshold of cell division
@@ -102,7 +102,7 @@ class Grid():
         self.dist       =  int(runtime.loc['dist',1])      # maximum dispersal distance: 1 cell
         self.direct     =  int(runtime.loc['direct',1])    # dispersal direction: 0.95
         
-        #Climate data
+        # Climate data
         self.temp = data_init['Temp']     # Temperature
         self.psi  = data_init['Psi']      # Soil water potential
         
@@ -173,10 +173,10 @@ class Grid():
         tev_transition.index = index_xx
         tev = tev_transition.stack().unstack(1)
         tev.index = Sub_index
-        tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical order
+        tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
         
         # Michaelis-Menten equation
-        Decay  = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
+        Decay = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
         
         # Pull out each batch of required enzymes and sums across redundant enzymes
         batch1 = Decay * (self.ReqEnz.loc['set1'].values)
@@ -209,7 +209,7 @@ class Grid():
     def uptake(self,pulse,day):
         
         """
-        Explicit uptake of different monomers  by transporters following the Michaelis-Menten equation:
+        Explicit uptake of different monomers by transporters following the Michaelis-Menten equation:
             -> Determine monomers: average over the grid, add degradation and input, update stoichimoetry
             -> Repositon microbial community: at the start of a new pulse.
             -> Maximum uptake:
@@ -302,7 +302,7 @@ class Grid():
         Uptake = Uptake - 1e-9*Uptake
         # ensure negative values to be 0
         # Uptake[Uptake<0] = 0
-        #==========>  End of computing monomer uptake
+        # End computing monomer uptake
         
         
         # By monomer: total uptake (monomer*gridsize) * 3(C-N-P)
@@ -369,7 +369,7 @@ class Grid():
         # Constants
         Osmo_N_cost     = 0.3
         Osmo_Maint_cost = 5.0
-        Enzyme_Loss_Rate= 0.04
+        Enzyme_Loss_Rate= 0.04 # enzyme turnover rate
         
         #---------------------------------------------------------------------#
         #......................Phase 1: constitutive processes................#
@@ -378,7 +378,7 @@ class Grid():
         # 1)"Transporters' maintenence" 
         #...Taxon-specific uptake cost determined by total biomass C: 0.1 - 0.01
         #Taxon_Transporter_Total = (self.Uptake_Cost.mul(Microbes.sum(axis=1),axis=0)).sum(axis=1)
-        Taxon_Transporter_Cost  = (self.Uptake_Enz_Cost.mul(Microbes['C'],axis=0)).sum(axis=1)
+        Taxon_Transporter_Cost = (self.Uptake_Enz_Cost.mul(Microbes['C'],axis=0)).sum(axis=1)
         #...Taxon-specific respiration cost of uptake transporters: self.uptake_maint_cost = 0.01
         Taxon_Transporter_Maint = Taxon_Transporter_Cost * self.Uptake_Maint_Cost
         
@@ -760,9 +760,7 @@ class Grid():
         
         #...STEP 1: count the fungal taxa before cell division 
         # Set the vector of fungal locations to a blank vector
-        Fungi_df = pd.DataFrame(data = np.array([0]*self.n_taxa*self.gridsize).reshape(self.n_taxa*self.gridsize,1),
-                                index= Mic_index,
-                                columns = ['Count'])
+        Fungi_df = pd.DataFrame(data = np.array([0]*self.n_taxa*self.gridsize).reshape(self.n_taxa*self.gridsize,1),index= Mic_index,columns = ['Count'])
         # Add one or two fungi to the count vector based on size
         Fungi_df.loc[(fb==1)&(Microbes["C"]>0)] = 1
         Fungi_df.loc[(fb==1)&(Microbes['C']>self.max_size_f)] = 2
