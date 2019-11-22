@@ -45,21 +45,21 @@ class Grid():
         self.n_monomers     = self.n_substrates + 2
         
         #Degradation
-        self.Substrates_init = data_init['Substrates'] # 
-        self.Substrates   = data_init['Substrates']    # 
+        self.Substrates_init = data_init['Substrates'] # Substrates initialized
+        self.Substrates   = data_init['Substrates']    # Substrates
         self.SubInput     = data_init['SubInput']      # Substrate inputs
-        self.Enzymes      = data_init['Enzymes']       # 
-        self.ReqEnz       = data_init['ReqEnz']        # 
+        self.Enzymes      = data_init['Enzymes']       # Enzymes
+        self.ReqEnz       = data_init['ReqEnz']        # Enzymes required by substrates
         self.EnzAttrib    = data_init['EnzAttrib']     # Enzyme stoichiometry
-        self.Ea           = data_init['Ea']            #
-        self.Vmax0        = data_init['Vmax0']         #      
-        self.Km0          = data_init['Km0']           #
+        self.Ea           = data_init['Ea']            # Enzyme activatin energy
+        self.Vmax0        = data_init['Vmax0']         # Max. reaction speed
+        self.Km0          = data_init['Km0']           # Half-saturation constant
         
         #Uptake
         self.Init_Microbes  = data_init['Microbes_pp'] # microbial community before placement
         self.Microbes       = data_init['Microbes']    # microbial community after placement
-        self.Monomers_init  = data_init['Monomers']    # 
-        self.Monomers       = data_init['Monomers']    # 
+        self.Monomers_init  = data_init['Monomers']    # Monomers initialized
+        self.Monomers       = data_init['Monomers']    # Monomers
         self.MonInput       = data_init['MonInput']    # Inputs of monomers
         self.Uptake_Ea      = data_init['Uptake_Ea']
         self.Uptake_Vmax0   = data_init['Uptake_Vmax0']
