@@ -88,8 +88,7 @@ def initialize_data(runtime_parameters):
     #...Microbial osmolyte genes
     microbial_osmolyte_gene = Microbes.microbe_osmolyte_gene()
     #...Microbial uptake genes
-    microbial_uptake_gene = Microbes.microbe_uptake_gene(substrates_req_enzyme,microbial_enzyme_gene,
-                                                         substrates_produced_monomers)
+    microbial_uptake_gene = Microbes.microbe_uptake_gene(substrates_req_enzyme,microbial_enzyme_gene,substrates_produced_monomers)
     #...Microbial uptake cost
     microbial_uptake_cost = Microbes.microbe_uptake_cost(microbial_uptake_gene)
     #...Microbial enzyme production rate

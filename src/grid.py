@@ -220,7 +220,6 @@ class Grid():
         # Use local variables for convenience
         Monomers = self.Monomers
         Microbes = self.Microbes
-        Monomer_req_enz = self.Uptake_ReqEnz
         MR_transition   = self.Monomer_ratios
         
         # Indices
@@ -267,7 +266,7 @@ class Grid():
         Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
         
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
-        Potential_Uptake_Comp_1 = (Monomer_req_enz * Uptake_Vmax).mul(rsm.tolist(),axis=0)
+        Potential_Uptake_Comp_1 = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)
         Potential_Uptake = Potential_Uptake_Comp_1/Uptake_Km.add(rsm.tolist(),axis=0)
         
         # Derive "mass of each uptake enzyme" by taxon via multiplying "microbial biomass (in C)"
@@ -332,7 +331,7 @@ class Grid():
         TUP_df = TUP_df[Mon_index]
         
         
-        #...Pass back to the global variable
+        #...Pass back to the global variables
         self.Taxon_Uptake_C = TUC_df.values.sum(axis=1) # spatial C uptake: array (sum across monomers)
         self.Taxon_Uptake_N = TUN_df.values.sum(axis=1) # spatial N uptake: ...
         self.Taxon_Uptake_P = TUP_df.values.sum(axis=1) # spatial P uptake: ...
@@ -880,9 +879,7 @@ class Grid():
             # Switched to taxon abundance-based, so no more adjustments
             frequencies = cum_abundance/cum_abundance.sum()
             frequencies = frequencies.fillna(0)
-            
             probs = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
-            
             # Randomly assign microbes to each grid box based on prior densities
             choose_taxa = np.array([0]* self.gridsize * self.n_taxa).reshape(self.n_taxa,self.gridsize)
             for i in range(self.n_taxa):
