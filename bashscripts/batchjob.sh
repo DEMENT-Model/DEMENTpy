@@ -4,6 +4,7 @@
 # HOW to modify dementpy.sh before being qsubed??
 # i.e. supply output file names from this script without need to change one by one.
 
+# version_1
 
 #!/bin/bash
 current="20191117"
@@ -23,3 +24,5 @@ cd dementpy2
 sed -i -e "s/$current/$substitute/" dementpy2.sh
 qsub dementpy.sh
 cd ..
+
+

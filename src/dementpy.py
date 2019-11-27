@@ -33,22 +33,23 @@ def main():
     """)
     
      
-    #...Obtain the command line arguments of runtime file name and output object name
-    runtime = sys.argv[1]
-    outname = sys.argv[2]
+    #...Obtain the command line arguments
+    input_folder = sys.argv[1] # input folder name
+    out_folder = sys.argv[2]   # output folder name
+    outname = sys.argv[3]      # output file name
     
     #...Set up the working directory
-    os.chdir('../input')
+    os.chdir('../'+input_folder)
     
     #...a few system constants
-    runtime = pd.read_csv(runtime,header=None,index_col=0,sep='\t')
+    runtime = pd.read_csv('runtime.txt',header=None,index_col=0,sep='\t')
     pulse = int(runtime.loc['pulse',1])         # number of pulses
     cycle = int(runtime.loc['end_time',1])      # number of time steps in each pulse
     interval = int(runtime.loc['interval',1])   # interval of time step to record outputs
     mic_reinit = runtime.loc['mic_reinit',1]    # indicate whether or not reinitialize microbial community on the grid in a new pulse
     
     #...grow a seed of random number generator
-    np.random.seed(2)
+    np.random.seed(int(outname))
     
     #...start timing
     #start_time = time.time()
@@ -101,7 +102,7 @@ def main():
         
         
     #...export the Output_init object using the export() funtion in the utility module 
-    os.chdir('../output')
+    os.chdir('../'+out_folder)
     export(Output_init,outname)
     
     #print out time used

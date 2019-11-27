@@ -553,7 +553,7 @@ class Grid():
                    
         """
         Calculate microbial mortality and update stoichiometry of the alive and microbial pools,
-        as well as substrates, monomers, and respiration.
+        as well as substrates(input of dead microbes), monomers, and respiration.
         
         -> Kill microbes that are starving and drought intolerant
         -> Monomers leaching is dealt with here

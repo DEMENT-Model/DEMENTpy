@@ -211,18 +211,14 @@ class Microbe():
         OptimalRatios_list = [self.Cfrac_b,self.Nfrac_b,self.Pfrac_b] * self.n_taxa
         OptimalRatios_array = np.array(OptimalRatios_list).reshape(self.n_taxa,3)
         index = ["Tax" + str(i) for i in range(1,self.n_taxa + 1)]
-        OptimalRatios_df = pd.DataFrame(data = OptimalRatios_array,
-                                        index = index,
-                                        columns = ["C","N","P"])
+        OptimalRatios_df = pd.DataFrame(data = OptimalRatios_array,index = index,columns = ["C","N","P"])
         # Then substitute with fungal stoichiometry
         OptimalRatios_df[self.fb==1] = np.tile([self.Cfrac_f,self.Nfrac_f,self.Pfrac_f],(sum(self.fb),1)) 
         
         # Calcualte ratio range
         RangeRatios_list  = [self.Crange,self.Nrange,self.Prange] * self.n_taxa
         RangeRatios_array = np.array(RangeRatios_list).reshape(self.n_taxa,3)
-        RangeRatios_df    = pd.DataFrame(data = RangeRatios_array,
-                                         index = index,
-                                         columns = ["C","N","P"])
+        RangeRatios_df    = pd.DataFrame(data = RangeRatios_array,index = index,columns = ["C","N","P"])
   
         # Calculate minimum cell quotas regarding C, N, & P
         MinRatios = OptimalRatios_df - RangeRatios_df
@@ -261,9 +257,7 @@ class Microbe():
         
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns = ['Enz' + str(i) for i in range(1,n_genes+1)]
-        EnzGenes_df = pd.DataFrame(data = np.vstack(EnzGenes_list).reshape(self.n_taxa,n_genes),
-                                   index = index, 
-                                   columns = columns)
+        EnzGenes_df = pd.DataFrame(data = np.vstack(EnzGenes_list).reshape(self.n_taxa,n_genes),index = index,columns = columns)
         
         return EnzGenes_df
     
@@ -591,9 +585,8 @@ def microbe_mortality_prob(wp,wp_fc,death_rate,beta,tolerance):
     else:
         tolerance = tolerance.to_numpy()
         # option 1
-        #mortality_rate = death_rate*(1 - beta*(wp-wp_fc)*(1-tolerance))
+        #mortality_rate = death_rate * (1-(1-tolerance)*(wp-wp_fc)*beta)
         # option 2
-        mortality_rate = death_rate * (1 - beta*(wp-wp_fc)) * (1/np.exp(tolerance))
-
+        mortality_rate = death_rate * (1/np.exp(tolerance)) * (1 - beta*(wp-wp_fc))
     
     return mortality_rate
