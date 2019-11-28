@@ -1,11 +1,11 @@
-#!/bin/bash
-#$ -N dementpy
-#$ -q mic
+#!/bin/bas3
+#$ -N bas3
+#$ -q pub8i
 #$ -m beas
 
 
-module load anaconda/3.7-5.3.0
+module load anaconda
 
 cd src
 
-python dementpy.py input output 20191126
+python dementpy.py mode1/input mode1/output 201911263

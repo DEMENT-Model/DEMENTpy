@@ -8,5 +8,5 @@ module load anaconda
 
 cd src
 
-python dementpy.py mode/input_ mode/output 20191126
+python dementpy.py input_ output 20191126
 

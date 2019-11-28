@@ -8,8 +8,6 @@
                           Twitter: @bio_atmosphere
 -------------------------------------------------------------------------------
 """
-
-#import time
 import os
 import sys
 import pandas as pd
@@ -34,25 +32,23 @@ def main():
     
      
     #...Obtain the command line arguments
-    input_folder = sys.argv[1] # input folder name
-    out_folder = sys.argv[2]   # output folder name
-    outname = sys.argv[3]      # output file name
+    input_folder = sys.argv[1]    # input folder name
+    output_folder = sys.argv[2]   # output folder name
+    outname = sys.argv[3]         # output file name
     
     #...Set up the working directory
     os.chdir('../'+input_folder)
-    
+
+    #...grow a seed of random number generator
+    np.random.seed(int(outname[-:4]))
+
     #...a few system constants
     runtime = pd.read_csv('runtime.txt',header=None,index_col=0,sep='\t')
     pulse = int(runtime.loc['pulse',1])         # number of pulses
     cycle = int(runtime.loc['end_time',1])      # number of time steps in each pulse
     interval = int(runtime.loc['interval',1])   # interval of time step to record outputs
-    mic_reinit = runtime.loc['mic_reinit',1]    # indicate whether or not reinitialize microbial community on the grid in a new pulse
+    mic_reinit = runtime.loc['mic_reinit',1]    # indicate reinitialization of microbial community or not
     
-    #...grow a seed of random number generator
-    np.random.seed(int(outname))
-    
-    #...start timing
-    #start_time = time.time()
     
     #...Initialize data by calling the Function: Initialize_Data()
     data_initialization = initialize_data(runtime)
@@ -101,11 +97,8 @@ def main():
                 Ecosystem.repopulation(Output_init,i,mic_reinit)
         
         
-    #...export the Output_init object using the export() funtion in the utility module 
-    os.chdir('../'+out_folder)
+    #...export the Output_init object to the output_folder using the export() funtion in the utility module 
+    os.chdir('../'+output_folder)
     export(Output_init,outname)
-    
-    #print out time used
-    #print('   ',"Cumulative time:", time.time() - start_time)
     
 main()
