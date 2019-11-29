@@ -114,7 +114,7 @@ class Grid():
         self.Osmolyte_Ind = float('nan')
         self.Enzyme_Con   = float('nan')
         self.Enzyme_Ind   = float('nan')
-        self.Growth_Yield = float('nan')
+        #self.Growth_Yield = float('nan')
         self.CUE_Taxon    = float('nan')
         self.Respiration  = float('nan')
         self.CUE_System   = float('nan')
@@ -371,7 +371,7 @@ class Grid():
         Enzyme_Loss_Rate= 0.04 # enzyme turnover rate
         
         #---------------------------------------------------------------------#
-        #......................Phase 1: constitutive processes................#
+        #......................constitutive processes.........................#
         #---------------------------------------------------------------------#
         
         # 1)"Transporters' maintenence" 
@@ -381,52 +381,49 @@ class Grid():
         #...Taxon-specific respiration cost of uptake transporters: self.uptake_maint_cost = 0.01
         Taxon_Transporter_Maint = Taxon_Transporter_Cost * self.Uptake_Maint_Cost
         
-        
         # 2) Osmolyte before adjustment
         Taxon_Osmo_Consti = self.Consti_Osmo_C.mul(Microbes['C'],axis=0)
         Taxon_Osmo_Consti_Cost_N = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
-        
         # 3) Enzyme before adjustment
         Taxon_Enzyme_Consti = self.Consti_Enzyme_C.mul(Microbes['C'],axis=0)
-        # Calculate the total taxon-specific N cost;NOTE axis = 1 when multiplying enzyme attributes
-        Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1)
+        Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # NOTE axis=1 of .mul
         
-        # Constrain osmolyte & enzyme production with currently available in microbial biomass
-        # Total N cost
-        Osmo_Enzyme_Consti_Cost_N = Taxon_Osmo_Consti_Cost_N + Taxon_Enzyme_Consti_Cost_N
-        i_osmo_enzyme_consti = Osmo_Enzyme_Consti_Cost_N > 0
-        # N available
-        Osmo_Enzyme_Consti_Avail_N = Microbes.loc[:,"N"]
+        
+        # Variable reference
+        # OECCN : Osmo_Enzyme_Consti_Cost_N
+        # ARROEC: Avail_Req_ratio_osmo_enzyme_consti
+        # OECAN:  Osmo_Enzyme_Consti_Avail_N
+        # MNAOEC: Min_N_Avail_Osmo_Enzyme_Consti
+
+        # Adjust osmolyte & enzyme production with available N in microbial biomass
+        OECCN = Taxon_Osmo_Consti_Cost_N + Taxon_Enzyme_Consti_Cost_N # Total N cost
+        OECAN = Microbes.loc[:,"N"]                                   # N available
         # Get the minimum value
-        transit_df_osmo_enzyme_consti = pd.concat([Osmo_Enzyme_Consti_Cost_N[i_osmo_enzyme_consti],Osmo_Enzyme_Consti_Avail_N[i_osmo_enzyme_consti]],axis=1)
-        Min_N_Avail_Osmo_Enzyme_Consti = transit_df_osmo_enzyme_consti.min(axis=1,skipna=True)
-        # Derive ratio of availabe N to required N
-        Avail_Req_ratio_osmo_enzyme_consti = Min_N_Avail_Osmo_Enzyme_Consti/Osmo_Enzyme_Consti_Cost_N[i_osmo_enzyme_consti]
-        Avail_Req_ratio_osmo_enzyme_consti = Avail_Req_ratio_osmo_enzyme_consti.fillna(0)
+        #transit_df_osmo_enzyme_consti = pd.concat([OECCN[OECCN>0],OECAN[OECCN>0]],axis=1)
+        #MNAOEC = transit_df_osmo_enzyme_consti.min(axis=1,skipna=True)
+        MNAOEC = (pd.concat([OECCN[OECCN>0],OECAN[OECCN>0]],axis=1)).min(axis=1,skipna=True)
+        ARROEC = (MNAOEC/OECCN[OECCN>0]).fillna(0)  # Derive ratio of availabe N to required N
         
         # 3) Osmolyte adjusted
-        Taxon_Osmo_Consti.loc[i_osmo_enzyme_consti] = Taxon_Osmo_Consti.loc[i_osmo_enzyme_consti].mul(Avail_Req_ratio_osmo_enzyme_consti,axis=0)
-        # Calculate maintenece and N cost
-        Taxon_Osmo_Consti_Maint  = (Taxon_Osmo_Consti * Osmo_Maint_cost).sum(axis=1)
-        Taxon_Osmo_Consti_Cost_C = Taxon_Osmo_Consti.sum(axis=1) + Taxon_Osmo_Consti_Maint
-        Taxon_Osmo_Consti_Cost_N = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
+        Taxon_Osmo_Consti.loc[OECCN>0] = Taxon_Osmo_Consti.loc[OECCN>0].mul(ARROEC,axis=0)
+        Taxon_Osmo_Consti_Maint  = (Taxon_Osmo_Consti * Osmo_Maint_cost).sum(axis=1)        # maintenece
+        Taxon_Osmo_Consti_Cost_C = Taxon_Osmo_Consti.sum(axis=1) + Taxon_Osmo_Consti_Maint  # Total C consumption
+        Taxon_Osmo_Consti_Cost_N = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)            # N cost
         
         # 4) Enzyme adjusted
-        Taxon_Enzyme_Consti.loc[i_osmo_enzyme_consti]  = Taxon_Enzyme_Consti.loc[i_osmo_enzyme_consti].mul(Avail_Req_ratio_osmo_enzyme_consti,axis=0)
-        #...Calculate maintinence and N,P cost
-        Taxon_Enzyme_Consti_Maint  = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1)
-        Taxon_Enzyme_Consti_Cost_C = Taxon_Enzyme_Consti.sum(axis=1) + Taxon_Enzyme_Consti_Maint                        
-        Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["N_cost"], axis=1)).sum(axis=1)
-        Taxon_Enzyme_Consti_Cost_P = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["P_cost"], axis=1)).sum(axis=1)
+        Taxon_Enzyme_Consti.loc[OECCN>0]  = Taxon_Enzyme_Consti.loc[OECCN>0].mul(ARROEC,axis=0)
+        Taxon_Enzyme_Consti_Maint  = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1) #maintinence
+        Taxon_Enzyme_Consti_Cost_C = Taxon_Enzyme_Consti.sum(axis=1) + Taxon_Enzyme_Consti_Maint                 # C cost (total)
+        Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["N_cost"], axis=1)).sum(axis=1)    # N cost
+        Taxon_Enzyme_Consti_Cost_P = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["P_cost"], axis=1)).sum(axis=1)    # P cost
         
-        # 5) Derive Microbial biomass loss from constitutive production
-        #...Note transporters are counted as biomass
-        Microbe_C_Loss = Taxon_Enzyme_Consti_Cost_C + Taxon_Osmo_Consti_Cost_C + Taxon_Transporter_Maint
-        Microbe_N_Loss = Taxon_Enzyme_Consti_Cost_N + Taxon_Osmo_Consti_Cost_N 
-        Microbe_P_Loss = Taxon_Enzyme_Consti_Cost_P
+        # 5) Derive microbial biomass loss from constitutive production (NOTE transporters counted toward biomass)
+        #Microbe_C_Loss = Taxon_Enzyme_Consti_Cost_C + Taxon_Osmo_Consti_Cost_C + Taxon_Transporter_Maint
+        #Microbe_N_Loss = Taxon_Enzyme_Consti_Cost_N + Taxon_Osmo_Consti_Cost_N 
+        #Microbe_P_Loss = Taxon_Enzyme_Consti_Cost_P
         
         #---------------------------------------------------------------------#
-        #......................Phase 2: Inducible processes...................#
+        #...............................Inducible processes...................#
         #---------------------------------------------------------------------#
         
         # 1) Assimilation efficiency constrained by temperature
@@ -434,37 +431,36 @@ class Grid():
         Taxon_Growth_Respiration = self.Taxon_Uptake_C * (1 - Taxon_AE)
         
         # 2) Inducible Osmolyte production only when psi reaches below wp_fc
-        # Scalar of water potential impact: call the function microbe_osmo_psi()
-        f_psi = microbe_osmo_psi(self.psi[day],self.alpha,self.wp_fc,self.wp_th)
+        f_psi = microbe_osmo_psi(self.psi[day],self.alpha,self.wp_fc,self.wp_th)       # Scalar of water potential impact: call the function microbe_osmo_psi()
         Taxon_Osmo_Induci = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C,axis=0) * f_psi
-        # Total osmotic N cost of each taxon (.sum(axis=1))
-        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)
+        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)       # Total osmotic N cost of each taxon (.sum(axis=1))
         
         # 3) Inducible enzyme production
         Taxon_Enzyme_Induci = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C,axis=0)
-        # Total enzyme N cost of each taxon (.sum(axis=1))
-        Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1)
+        Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
         
-        # Total N cost of osmolyte and enzymes
-        Osmo_Enzyme_Induci_Cost_N = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N
-        i_osmo_enzyme_induci = Osmo_Enzyme_Induci_Cost_N > 0
-        # N available
-        Osmo_Enzyme_Induci_Avail_N = pd.Series(data=self.Taxon_Uptake_N,index=Microbes.index)
+        # Variable definition:
+        # OEICN : Osmo_Enzyme_Induci_Cost_N
+        # OEIAN : Osmo_Enzyme_Induci_Avail_N
+        # ARROEI: Avail_Req_ratio_osmo_enzyme_induci
+        OEICN = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N    # Total N cost of osmolyte and enzymes
+        OEIAN = pd.Series(data=self.Taxon_Uptake_N,index=Microbes.index) # N available
         # Get the minimum value by comparing N cost to N available
-        transit_df_osmo_enzyme_induci = pd.concat([Osmo_Enzyme_Induci_Cost_N[i_osmo_enzyme_induci],Osmo_Enzyme_Induci_Avail_N[i_osmo_enzyme_induci]],axis=1)
-        Min_N_Avail_Osmo_Enzyme_Induci= transit_df_osmo_enzyme_induci.min(axis=1,skipna=True)
+        #transit_df_osmo_enzyme_induci = pd.concat([OEICN[OEICN>0],OEIAN[OEICN>0]],axis=1)
+        #Min_N_Avail_Osmo_Enzyme_Induci= transit_df_osmo_enzyme_induci.min(axis=1,skipna=True)
+        Min_N_Avail_Osmo_Enzyme_Induci= (pd.concat([OEICN[OEICN>0],OEIAN[OEICN>0]],axis=1)).min(axis=1,skipna=True)
         # Ratio of Available to Required
-        Avail_Req_ratio_osmo_enzyme_induci = Min_N_Avail_Osmo_Enzyme_Induci/Osmo_Enzyme_Induci_Cost_N[i_osmo_enzyme_induci]
-        Avail_Req_ratio_osmo_enzyme_induci = Avail_Req_ratio_osmo_enzyme_induci.fillna(0)
+        ARROEI = (Min_N_Avail_Osmo_Enzyme_Induci/OEICN[OEICN > 0]).fillna(0)
+        #ARROEI = ARROEI.fillna(0)
         
         # 4) Osmolyte adjusted: accompanying maintenence and N cost
-        Taxon_Osmo_Induci.loc[i_osmo_enzyme_induci] = Taxon_Osmo_Induci.loc[i_osmo_enzyme_induci].mul(Avail_Req_ratio_osmo_enzyme_induci,axis=0)
-        Taxon_Osmo_Induci_Maint  = (Taxon_Osmo_Induci * Osmo_Maint_cost).sum(axis=1) #.mul(Osmo_attributes['Maint_cost'],axis=1)
+        Taxon_Osmo_Induci.loc[OEICN>0] = Taxon_Osmo_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
+        Taxon_Osmo_Induci_Maint  = (Taxon_Osmo_Induci * Osmo_Maint_cost).sum(axis=1) 
         Taxon_Osmo_Induci_Cost_C = Taxon_Osmo_Induci.sum(axis=1) + Taxon_Osmo_Induci_Maint
-        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)     #.mul(Osmo_attributes['N_cost'],axis=1)
+        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)
         
         # 5) Enzyme adjusted: Total enzyme carbon cost (+ CO2 loss), N cost, and P cost for each taxon
-        Taxon_Enzyme_Induci.loc[i_osmo_enzyme_induci] = Taxon_Enzyme_Induci.loc[i_osmo_enzyme_induci].mul(Avail_Req_ratio_osmo_enzyme_induci,axis=0)
+        Taxon_Enzyme_Induci.loc[OEICN > 0] = Taxon_Enzyme_Induci.loc[OEICN > 0].mul(ARROEI,axis=0)
         Taxon_Enzyme_Induci_Maint  = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1)
         Taxon_Enzyme_Induci_Cost_C = Taxon_Enzyme_Induci.sum(axis=1) + Taxon_Enzyme_Induci_Maint
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["N_cost"], axis=1)).sum(axis=1)
@@ -478,11 +474,15 @@ class Grid():
         Microbe_P_Gain = self.Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
         Microbe_P_Gain[Microbe_P_Gain<0] = 0
         
+        #---------------------------------------------------------------------#
+        #...............................Integration...........................#
+        #---------------------------------------------------------------------#
+
         # Update Microbial pools with GAINS (from uptake) and LOSSES (from constitutive production)
-        Growth_yield = Microbe_C_Gain - Microbe_C_Loss
-        Microbes.loc[:,"C"] += Growth_yield
-        Microbes.loc[:,"N"] += Microbe_N_Gain - Microbe_N_Loss
-        Microbes.loc[:,"P"] += Microbe_P_Gain - Microbe_P_Loss
+        # Growth_yield = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
+        Microbes.loc[:,"C"] += Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
+        Microbes.loc[:,"N"] += Microbe_N_Gain - Taxon_Enzyme_Consti_Cost_N - Taxon_Osmo_Consti_Cost_N 
+        Microbes.loc[:,"P"] += Microbe_P_Gain - Taxon_Enzyme_Consti_Cost_P
         Microbes[Microbes<0] = 0 #Avoid negative values
         
         # Taxon-specific emergent CUE
@@ -498,19 +498,16 @@ class Grid():
         else:
             CUE_system = Microbe_C_Gain.sum()/Taxon_Uptake_C_grid
         
-        # Emergent "Respiration" (Note: without sum(MicLoss[,"C"]) in the Mortality below)
-        # Constitutive + Inducible Production
+        # Emergent "Respiration" (NOTE: missing sum(MicLoss[,"C"]) in the Mortality below) from Constitutive + Inducible
         Taxon_Osmo_Maint = Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint
         Taxon_Enzyme_Maint = Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint
         Respiration = Taxon_Transporter_Maint.sum(axis=0) + Taxon_Growth_Respiration.sum(axis=0) + Taxon_Osmo_Maint.sum(axis=0) + Taxon_Enzyme_Maint.sum(axis=0)
         
         # Sum each enzyme across taxon in each grid cell
-        # gene-specific prod of enzyme of each taxon: "(taxon*gridsize) * enzyme"
-        Taxon_Enzyme_Production = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci 
-        # create a multi-index
-        Taxon_Enzyme_Production.index = [np.arange(self.gridsize).repeat(self.n_taxa),Taxon_Enzyme_Production.index]
+        Taxon_Enzyme_Production = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci # gene-specific prod of enzyme of each taxon: "(taxon*gridsize) * enzyme"
+        Taxon_Enzyme_Production.index = [np.arange(self.gridsize).repeat(self.n_taxa),Taxon_Enzyme_Production.index] # create a multi-index
 
-        # =====> old method:
+        # ====> old method:
         # first reshape the df from "(taxon*gridsize) * enzyme" to "(enzyme * gridsize) * taxon"
         # EP_df = Taxon_Enzyme_Production.stack().unstack(1)
         # EP_df = EP_df[Mic_index] # reorder the columns
@@ -520,8 +517,8 @@ class Grid():
         EP_df = Taxon_Enzyme_Production.groupby(level=[0]).sum()
         Enzyme_Production = EP_df.stack().values
         
-        # Enzyme turnover: dealt with linearly with an 'enzyme turnover rate' (=0.04; Allison 2006)
-        Enzyme_Loss = Enzymes * Enzyme_Loss_Rate
+        # Enzyme turnover
+        Enzyme_Loss = Enzymes * Enzyme_Loss_Rate # enzyme turnover rate' (=0.04; Allison 2006)
         
         # Update Enzyme pools by substracting the 'dead' enzymes
         Enzymes = (Enzymes - Enzyme_Loss).add(Enzyme_Production,axis=0) 
@@ -539,12 +536,12 @@ class Grid():
 
         #...Pass variables back to the global ones 
         #self.Microbes_interim = Microbes_interim          # Spatially ...
+        #self.Growth_Yield= Growth_yield                   # Spatially taxon-specific growth yield
         self.Transporters= Taxon_Transporter_Cost          # Spaitally taxon-specific transporters 
         self.Osmolyte_Con= Taxon_Osmo_Consti.sum(axis=1)   # Spatially taxon-specific Constitutive Osmolytes
         self.Osmolyte_Ind= Taxon_Osmo_Induci.sum(axis=1)   # ......inducible...
         self.Enzyme_Con  = Taxon_Enzyme_Consti.sum(axis=1) # ......constitutive enzyme ...
         self.Enzyme_Ind  = Taxon_Enzyme_Induci.sum(axis=1) # ......inducible enzyme ...
-        self.Growth_Yield= Growth_yield                    # Spatially taxon-specific growth yield
         self.CUE_Taxon   = CUE_taxon                       # Spatially taxon-specific CUE
         self.Microbes    = Microbes                        # Spatially taxon_specific biomass
         self.Substrates  = Substrates                      # Spatially substrate-specific mass
