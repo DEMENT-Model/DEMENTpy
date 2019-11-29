@@ -169,8 +169,7 @@ class Grid():
         # Multiply Vmax by enzyme concentration
         # Transform "(enz*gridsize) * sub" --> tev of "(sub*gridsize) * enz"
         tev_transition = Vmax.mul(Enzymes['C'],axis=0)
-        index_xx = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index]
-        tev_transition.index = index_xx
+        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index]
         tev = tev_transition.stack().unstack(1)
         tev.index = Sub_index
         tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
@@ -223,7 +222,7 @@ class Grid():
         MR_transition   = self.Monomer_ratios
         
         # Indices
-        Mon_index  = Monomers.index[0:self.n_monomers]
+        #Mon_index  = Monomers.index[0:self.n_monomers]
         is_org     = (Monomers.index != "NH4") & (Monomers.index != "PO4")
         is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
         
@@ -320,21 +319,28 @@ class Grid():
         N_uptake_df.index = index_xx
         P_uptake_df.index = index_xx
         
+        #====> old method
         # df: (taxon*gridsize) * monomer
-        TUC_df = C_uptake_df.stack().unstack(1)
-        TUN_df = N_uptake_df.stack().unstack(1)
-        TUP_df = P_uptake_df.stack().unstack(1)
-        
+        #TUC_df = C_uptake_df.stack().unstack(1)
+        #TUN_df = N_uptake_df.stack().unstack(1)
+        #TUP_df = P_uptake_df.stack().unstack(1)
         #Re-order the columns
-        TUC_df = TUC_df[Mon_index]
-        TUN_df = TUN_df[Mon_index]
-        TUP_df = TUP_df[Mon_index]
+        #TUC_df = TUC_df[Mon_index]
+        #TUN_df = TUN_df[Mon_index]
+        #TUP_df = TUP_df[Mon_index]
         
-        
+        #====> new method
+        TUC_df = C_uptake_df.groupby(level=[0]).sum()
+        TUN_df = N_uptake_df.groupby(level=[0]).sum()
+        TUP_df = P_uptake_df.groupby(level=[0]).sum()
+
         #...Pass back to the global variables
-        self.Taxon_Uptake_C = TUC_df.values.sum(axis=1) # spatial C uptake: array (sum across monomers)
-        self.Taxon_Uptake_N = TUN_df.values.sum(axis=1) # spatial N uptake: ...
-        self.Taxon_Uptake_P = TUP_df.values.sum(axis=1) # spatial P uptake: ...
+        #self.Taxon_Uptake_C = TUC_df.values.sum(axis=1) # spatial C uptake: array (sum across monomers)
+        #self.Taxon_Uptake_N = TUN_df.values.sum(axis=1) # spatial N uptake: ...
+        #self.Taxon_Uptake_P = TUP_df.values.sum(axis=1) # spatial P uptake: ...
+        self.Taxon_Uptake_C = TUC_df.stack().values     # spatial C uptake: array (sum across monomers)
+        self.Taxon_Uptake_N = TUN_df.stack().values     # spatial N uptake: ...
+        self.Taxon_Uptake_P = TUP_df.stack().values     # spatial P uptake: ...
         self.Monomer_ratios = MR_transition             # update Monomer_ratios    
         self.Monomers = Monomers                        # update Monomers
                    
@@ -362,7 +368,7 @@ class Grid():
         Taxon_Uptake_P    = self.Taxon_Uptake_P
         
         # Some indices
-        Mic_index  = Microbes.index[0:self.n_taxa]
+        # Mic_index  = Microbes.index[0:self.n_taxa]
         is_deadEnz = Substrates.index == "DeadEnz"
         
         # Constants
@@ -504,16 +510,21 @@ class Grid():
         Taxon_Enzyme_Maint = Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint
         Respiration = Taxon_Transporter_Maint.sum(axis=0) + Taxon_Growth_Respiration.sum(axis=0) + Taxon_Osmo_Maint.sum(axis=0) + Taxon_Enzyme_Maint.sum(axis=0)
         
-        # Derive the Total Enzyme(C) produced by different taxa for each grid cell
-        #.....first transform the df from "(taxon*gridsize) * enzyme" to "(enzyme * gridsize) * taxon"
-        #.....create a multi-index
-        Taxon_Enzyme_Production = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci # gene-specific prod. of enzyme of each taxon
-        
-        index_xx = [np.arange(self.gridsize).repeat(self.n_taxa),Taxon_Enzyme_Production.index]
-        Taxon_Enzyme_Production.index = index_xx
-        EP_df = Taxon_Enzyme_Production.stack().unstack(1)
-        EP_df = EP_df[Mic_index] # reorder the columns
-        Enzyme_Production = EP_df.values.sum(axis=1)
+        # Sum each enzyme across taxon in each grid cell
+        # gene-specific prod of enzyme of each taxon: "(taxon*gridsize) * enzyme"
+        Taxon_Enzyme_Production = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci 
+        # create a multi-index
+        Taxon_Enzyme_Production.index = [np.arange(self.gridsize).repeat(self.n_taxa),Taxon_Enzyme_Production.index]
+
+        # =====> old method:
+        # first reshape the df from "(taxon*gridsize) * enzyme" to "(enzyme * gridsize) * taxon"
+        # EP_df = Taxon_Enzyme_Production.stack().unstack(1)
+        # EP_df = EP_df[Mic_index] # reorder the columns
+        # Enzyme_Production = EP_df.values.sum(axis=1)
+
+        # ====> new method:
+        EP_df = Taxon_Enzyme_Production.groupby(level=[0]).sum()
+        Enzyme_Production = EP_df.stack().values
         
         # Enzyme turnover: dealt with linearly with an 'enzyme turnover rate' (=0.04; Allison 2006)
         Enzyme_Loss = Enzymes * Enzyme_Loss_Rate
