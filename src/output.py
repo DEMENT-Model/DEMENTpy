@@ -82,7 +82,6 @@ class Output():
         # self.Cum_Monomer = (data_init['Monomers'].groupby(level=0,sort=False).sum()).sum(axis=0)
         # self.Cum_Monomer_ratios = ecosystem.Cum_Monomer_ratios
         
-        
         # Degradation rates
         #DecayRates_list = [0] * n_substrates * gridsize
         #DecayRates_array= np.array(DecayRates_list).reshape(n_substrates * gridsize,1)
@@ -91,7 +90,10 @@ class Output():
         #                               columns= ['C'])
         #self.DecayRatesSeries = DecayRates_df.groupby(level=0,sort=False).sum()
         
-        
+        # Leaching
+        #self.Cum_Leaching_N   = pd.Series([0],index=[0])
+        #self.Cum_Leaching_P   = pd.Series([0],index=[0])
+
         # Substrates
         Substrates_grid = data_init['Substrates'].groupby(level=0,sort=False).sum()
         Substrates_grid['C'].name = 0 # reset the index to 0
@@ -105,20 +107,14 @@ class Output():
         self.NH4Series        = pd.Series([Monomers_grid.loc["NH4","N"]],index=[0])
         self.PO4Series        = pd.Series([Monomers_grid.loc["PO4","P"]],index=[0])
         
-        # Leaching
-        #self.Cum_Leaching_N   = pd.Series([0],index=[0])
-        #self.Cum_Leaching_P   = pd.Series([0],index=[0])
-        
-        
-        # Total microbial biomass summed over the grid by taxon
-        Microbes_grid = data_init['Microbes'].groupby(level=0,sort=False).sum()
-        Microbes_grid['C'].name = 0
-        
-        self.MicrobesSeries_repop = Microbes_grid['C'] #
-        self.MicrobesSeries = Microbes_grid['C']       #
-        self.Microbes_Interim = Microbes_grid['C']     # Microbes right before executing metabolism calcualtion
-        self.Microbes_Sum = pd.Series([Microbes_grid['C'].sum(axis=0)],index=[0])
-        
+        # Microbes
+        Microbes_grid = data_init['Microbes'].groupby(level=0,sort=False).sum() 
+        Microbes_grid['C'].name = 0                      # Rename the series name to 0
+        self.MicrobesSeries = Microbes_grid['C']         # Taxon-specific total biomass summed over the grid
+        self.Microbes_Sum = pd.Series([Microbes_grid['C'].sum(axis=0)],index=[0]) # Total biomass summed over the grid
+        #self.Microbes_Interim = Microbes_grid['C']      # Microbes right before executing metabolism calcualtion
+        #self.MicrobesSeries_repop = Microbes_grid['C']  # Originally created for reinitialization
+
         # Number of individuals of Taxon count
         Taxon_index = data_init['Microbes']['C'] > 0
         Taxon_index.name = 0
@@ -144,18 +140,15 @@ class Output():
         # Taxon-specific CUE
         self.CUE_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
         
-        
         # Enzymes
-        # Total enzyme summed over the spatial grid by enzyme 
-        Enzymes_grid = data_init['Enzymes'].groupby(level=0,sort=False).sum()
+        Enzymes_grid = data_init['Enzymes'].groupby(level=0,sort=False).sum() # Total enzyme summed over the spatial grid by enzyme 
         self.EnzymesSeries = Enzymes_grid 
         self.Enzymes_Sum   = pd.Series([Enzymes_grid.sum()],index=[0])
-        
         
         # Emergent properties over the grid
         self.RespSeries         = pd.Series([0],index=[0])
         self.CUE_System_Series  = pd.Series([0],index=[0])
-        self.Kill               = pd.Series([0],index=[0]) # number of taxon killed
+        self.Kill               = pd.Series([0],index=[0]) # number of taxon killed stochastically
         
         
         
@@ -163,8 +156,8 @@ class Output():
         
         """
         This method records outputs in various variables at a daily time step.
-        
-        Input:
+        ----------------------------------------------------------------------
+        Parameters:
             ecosystem: object from the grid.py module
             day:       the day to record to outputs
         """
@@ -185,56 +178,58 @@ class Output():
         self.SubstratesSeries = pd.concat([self.SubstratesSeries,Substrates_grid['C']],axis=1,sort=False)
         self.Substrates_Sum = pd.concat([self.Substrates_Sum,pd.Series([Substrates_grid['C'].sum()],index=[day+1])],axis=0,sort=False)
         
-        
-        # Monomers: note leaching is missing
+        # Monomers
         Monomers_grid = ecosystem.Monomers.groupby(level=0,sort=False).sum()
         self.MonomersSeries = pd.concat([self.MonomersSeries,Monomers_grid["C"]],axis=1,sort=False)
         self.NH4Series = pd.concat([self.NH4Series,pd.Series([Monomers_grid.loc["NH4","N"]],index=[day+1])],axis=0,sort=False)
         self.PO4Series = pd.concat([self.PO4Series,pd.Series([Monomers_grid.loc["PO4","P"]],index=[day+1])],axis=0,sort=False)
         self.Monomers_Sum = pd.concat([self.Monomers_Sum,pd.Series([sum(Monomers_grid["C"])],index=[day+1])],axis=0,sort=False)
         
-        
         # Interim Microbes
-        Microbes_interim_grid = ecosystem.Microbes_interim.groupby(level=0,sort=False).sum()
-        self.Microbes_Interim = pd.concat([self.MicrobesSeries,Microbes_interim_grid['C']],axis=1,sort=False)
+        #Microbes_interim_grid = ecosystem.Microbes_interim.groupby(level=0,sort=False).sum()
+        #self.Microbes_Interim = pd.concat([self.MicrobesSeries,Microbes_interim_grid['C']],axis=1,sort=False)
         # Count taxon for averaging taxon CUE
-        Taxon_index = (ecosystem.Microbes_interim)['C'] > 0
+        #Taxon_index = (ecosystem.Microbes_interim)['C'] > 0
+        #Taxon_index.name = day + 1
+        #taxon_count = Taxon_index.groupby(level=0,sort=False).sum()
+        #self.Taxon_count = pd.concat([self.Taxon_count,taxon_count],axis=1,sort=False)
+        
+        # Microbe
+        # Taxon abundance
+        Taxon_index = (ecosystem.Microbes)['C'] > 0
         Taxon_index.name = day + 1
         taxon_count = Taxon_index.groupby(level=0,sort=False).sum()
         self.Taxon_count = pd.concat([self.Taxon_count,taxon_count],axis=1,sort=False)
+        # Taxon biomass
+        Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()
+        Microbes_grid['C'].name = day + 1
+        self.MicrobesSeries = pd.concat([self.MicrobesSeries,Microbes_grid['C']],axis=1,sort=False)
+        self.Microbes_Sum = pd.concat([self.Microbes_Sum,pd.Series([Microbes_grid['C'].sum()],index=[day+1])],axis=0,sort=False)
         
         # Microbe-Transporters
-        # Derive the taxon-specific transpotors summed over the grid by taxon
-        Transporter_grid = ecosystem.Transporters.groupby(level=0,sort=False).sum()
-        #Transporter_grid = Transporter_grid/Microbes_w_grid['C']
+        Transporter_grid = ecosystem.Transporters.groupby(level=0,sort=False).sum() #taxon-specific transpotors summed over the grid by taxon
         Transporter_grid.name = day + 1
         self.TransporterSeries = pd.concat([self.TransporterSeries,Transporter_grid],axis=1,sort=False)
         
         # Microbe-Enzymes
-        # Derive the taxon-specific osmolytes summed over the grid by taxon
         # Constitutive
-        Enzyme_Con_grid = ecosystem.Enzyme_Con.groupby(level=0,sort=False).sum()
-        #Enzyme_Con_grid = Enzyme_Con_grid/Microbes_w_grid['C']
+        Enzyme_Con_grid = ecosystem.Enzyme_Con.groupby(level=0,sort=False).sum() # Taxon-specific osmolytes summed over the grid by taxon
         Enzyme_Con_grid.name = day + 1
         self.EnzymeConSeries = pd.concat([self.EnzymeConSeries,Enzyme_Con_grid],axis=1,sort=False)
         # Inducible
         Enzyme_Ind_grid = ecosystem.Enzyme_Ind.groupby(level=0,sort=False).sum()
-        #Enzyme_Ind_grid = Enzyme_Ind_grid/Microbes_w_grid['C']
         Enzyme_Ind_grid.name = day + 1
         self.EnzymeIndSeries = pd.concat([self.EnzymeIndSeries,Enzyme_Ind_grid],axis=1,sort=False)
         # Total
         self.Enzyme_TaxonSeries = pd.concat([self.Enzyme_TaxonSeries,Enzyme_Con_grid+Enzyme_Ind_grid],axis=1,sort=False)
         
         # Microbe-Osmolytes
-        # Derive the taxon-specific osmolytes summed over the grid by taxon
         # Constitutive
         Osmolyte_Con_grid = ecosystem.Osmolyte_Con.groupby(level=0,sort=False).sum()
-        #Osmolyte_Con_grid = Osmolyte_Con_grid/Microbes_w_grid['C']
         Osmolyte_Con_grid.name = day + 1
         self.OsmolyteConSeries = pd.concat([self.OsmolyteConSeries,Osmolyte_Con_grid],axis=1,sort=False)
         # Inducible
         Osmolyte_Ind_grid = ecosystem.Osmolyte_Ind.groupby(level=0,sort=False).sum()
-        #Osmolyte_Ind_grid = Osmolyte_Ind_grid/Microbes_w_grid['C']
         Osmolyte_Ind_grid.name = day + 1
         self.OsmolyteIndSeries = pd.concat([self.OsmolyteIndSeries,Osmolyte_Ind_grid],axis=1,sort=False)
         # Total
@@ -251,13 +246,6 @@ class Output():
         CUE_Taxon_grid.name = day + 1
         self.CUE_TaxonSeries = pd.concat([self.CUE_TaxonSeries,CUE_Taxon_grid],axis=1,sort=False)
         
-        # Microbe
-        Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()
-        # for outputs
-        Microbes_grid['C'].name = day + 1
-        self.MicrobesSeries = pd.concat([self.MicrobesSeries,Microbes_grid['C']],axis=1,sort=False)
-        self.Microbes_Sum = pd.concat([self.Microbes_Sum,pd.Series([Microbes_grid['C'].sum()],index=[day+1])],axis=0,sort=False)
-        
         # Enzymes over the grid
         # Derive the enzyme-specific enzyme production summed over the grid by enzyme
         Enzymes_grid = ecosystem.Enzymes.groupby(level=0,sort=False).sum()
@@ -266,11 +254,11 @@ class Output():
         self.Enzymes_Sum = pd.concat([self.Enzymes_Sum,pd.Series([Enzymes_grid.sum()],index=[day+1])],axis=0,sort=False)
         
         # Respiration
-        #self.RespSeries.append(pd.Series([ecosystem.Respiration],index=[day]))
         self.RespSeries = pd.concat([self.RespSeries,pd.Series([ecosystem.Respiration],index=[day+1])],axis=0,sort=False)
         # Carbon use efficiency
         self.CUE_System_Series = pd.concat([self.CUE_System_Series,pd.Series([ecosystem.CUE_System],index=[day+1])],axis=0,sort=False)
         
+        # Death toll of stochasticity origin 
         self.Kill = pd.concat([self.Kill,pd.Series([ecosystem.Kill],index=[day+1])],axis=0,sort=False)
     
     
@@ -292,9 +280,9 @@ class Output():
             day: the iteration index
         """
         # Track biomass of every taxon
-        Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()
-        Microbes_grid['C'].name = day + 1
-        self.MicrobesSeries_repop = pd.concat([self.MicrobesSeries_repop,Microbes_grid['C']],axis=1,sort=False)
+        #Microbes_grid = ecosystem.Microbes.groupby(level=0,sort=False).sum()
+        #Microbes_grid['C'].name = day + 1
+        #self.MicrobesSeries_repop = pd.concat([self.MicrobesSeries_repop,Microbes_grid['C']],axis=1,sort=False)
         
         # Track abundance of each taxon
         Taxon_index = (ecosystem.Microbes)['C'] > 0
