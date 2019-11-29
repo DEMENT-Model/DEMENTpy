@@ -135,8 +135,8 @@ class Output():
         self.Osmolyte_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
         
         # Growth yield
-        self.Growth_Yield =pd.Series(data=[0]*n_taxa,index=Mic_index)
-
+        #self.Growth_Yield =pd.Series(data=[0]*n_taxa,index=Mic_index)
+        
         # Taxon-specific CUE
         self.CUE_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
         
