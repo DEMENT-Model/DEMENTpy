@@ -114,12 +114,11 @@ class Grid():
         self.Osmolyte_Ind = float('nan')
         self.Enzyme_Con   = float('nan')
         self.Enzyme_Ind   = float('nan')
-        #self.Growth_Yield = float('nan')
         self.CUE_Taxon    = float('nan')
         self.Respiration  = float('nan')
         self.CUE_System   = float('nan')
-        self.Microbes_w   = float('nan')
         self.Kill         = float('nan')
+        #self.Growth_Yield = float('nan')
 
         # Constants
         self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
