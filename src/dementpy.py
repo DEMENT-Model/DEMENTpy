@@ -40,7 +40,7 @@ def main():
     os.chdir('../'+input_folder)
 
     #...grow a seed of random number generator
-    np.random.seed(int(outname[-:4]))
+    np.random.seed(int(outname[:-4]))
 
     #...a few system constants
     runtime = pd.read_csv('runtime.txt',header=None,index_col=0,sep='\t')
