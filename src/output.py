@@ -136,7 +136,7 @@ class Output():
         
         # Growth yield
         #self.Growth_Yield =pd.Series(data=[0]*n_taxa,index=Mic_index)
-        
+
         # Taxon-specific CUE
         self.CUE_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
         
@@ -236,9 +236,9 @@ class Output():
         self.Osmolyte_TaxonSeries = pd.concat([self.Osmolyte_TaxonSeries,Osmolyte_Con_grid+Osmolyte_Ind_grid],axis=1,sort=False)
         
         # Growth yield by Taxon
-        GY_grid = ecosystem.Growth_Yield.groupby(level=0,sort=False).sum()
-        GY_grid.name = day + 1
-        self.Growth_Yield = pd.concat([self.Growth_Yield,GY_grid],axis=1,sort=False)
+        #GY_grid = ecosystem.Growth_Yield.groupby(level=0,sort=False).sum()
+        #GY_grid.name = day + 1
+        #self.Growth_Yield = pd.concat([self.Growth_Yield,GY_grid],axis=1,sort=False)
         
         # Microbe-Taxon-specific CUE
         CUE_Taxon_grid = ecosystem.CUE_Taxon.groupby(level=0,sort=False).sum()
