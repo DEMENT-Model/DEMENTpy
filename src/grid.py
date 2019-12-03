@@ -139,9 +139,10 @@ class Grid():
         
         # Use local variables for convenience
         Substrates = self.Substrates
-        Enzymes    = self.Enzymes
+        #Enzymes    = self.Enzymes
+
         # indices
-        Sub_index    = Substrates.index  # derive the Substrates index by subtrate names
+        Sub_index    = Substrates.index         # derive the Substrates index by subtrate names
         is_lignin    = Sub_index == "Lignin"
         is_cellulose = Sub_index == "Cellulose"
         # constant
@@ -167,7 +168,7 @@ class Grid():
         
         # Multiply Vmax by enzyme concentration
         # Transform "(enz*gridsize) * sub" --> tev of "(sub*gridsize) * enz"
-        tev_transition = Vmax.mul(Enzymes['C'],axis=0)
+        tev_transition = Vmax.mul(self.Enzymes['C'],axis=0)
         tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index]
         tev = tev_transition.stack().unstack(1)
         tev.index = Sub_index
