@@ -49,7 +49,7 @@ class Grid():
         self.Substrates   = data_init['Substrates']    # Substrates
         self.SubInput     = data_init['SubInput']      # Substrate inputs
         self.Enzymes      = data_init['Enzymes']       # Enzymes
-        self.ReqEnz       = data_init['ReqEnz']        # Enzymes required by substrates
+        self.ReqEnz       = data_init['ReqEnz']        # Enzymes required by each substrate
         self.EnzAttrib    = data_init['EnzAttrib']     # Enzyme stoichiometry
         self.Ea           = data_init['Ea']            # Enzyme activatin energy
         self.Vmax0        = data_init['Vmax0']         # Max. reaction speed
@@ -104,7 +104,7 @@ class Grid():
         
         # Climate data
         self.temp = data_init['Temp']     # Temperature
-        self.psi  = data_init['Psi']      # Soil water potential
+        self.psi  = data_init['Psi']      # Water potential
         
         #variables used for output
         self.SubstrateRatios= float('nan') # Substrate stoichiometry
@@ -120,7 +120,7 @@ class Grid():
         self.Kill         = float('nan')
         #self.Growth_Yield = float('nan')
 
-        # Constants
+        # Global constants
         self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
         self.Tref  = 293.0      # reference temperature of 20 celcius
         self.k     = 0.008314   # Gas constant = 0.008314 kJ/(mol K)
@@ -134,28 +134,24 @@ class Grid():
             -> Compute Vmax & Km and make them follow the index of Substrates
             -> Follow MM to compute full degradation rate
             -> Impose the substrate-required enzymes upon the full degradation rate
-            -> Adjust cellulose rate wit LCI(lignocellulose index)
+            -> Adjust cellulose rate with LCI(lignocellulose index)
         """
         
-        # Use local variables for convenience
+        # Use a local variable for convenience
         Substrates = self.Substrates
-        #Enzymes    = self.Enzymes
-
         # indices
-        Sub_index    = Substrates.index         # derive the Substrates index by subtrate names
-        is_lignin    = Sub_index == "Lignin"
-        is_cellulose = Sub_index == "Cellulose"
+        Sub_index = Substrates.index # derive the Substrates index by subtrate names
         # constant
         LCI_slope = -0.8  # lignocellulose index--LCI
         
-        # Total mass of each substrate: C+N+P
-        rss = Substrates.sum(axis=1)
-        # Calculate the substrate stoichiometry; note: ensure NA = 0
+        # total mass of each substrate: C+N+P
+        rss = Substrates.sum(axis=1) 
+
+        # substrate stoichiometry; NOTE:ensure NA(b/c divided by 0 in df) = 0
         SubstrateRatios = Substrates.divide(rss,axis=0)
         SubstrateRatios = SubstrateRatios.fillna(0)
-        SubstrateRatios[np.isinf(SubstrateRatios)] = 0
         
-        # Moisture effects on enzymatic kinetics
+        # moisture effects on enzymatic kinetics
         if self.psi[day] >= self.wp_fc:
             f_psi = 1.0
         else:
@@ -164,12 +160,11 @@ class Grid():
         # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for Temperature sensitivity
         Vmax = self.Vmax0 * np.exp((-self.Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
         Km   = self.Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
-        Km.index = Sub_index # Reset the index to the Substrates
+        Km.index = Sub_index #NOTE: reset the index to the Substrates
         
-        # Multiply Vmax by enzyme concentration
-        # Transform "(enz*gridsize) * sub" --> tev of "(sub*gridsize) * enz"
+        # Multiply Vmax by enzyme concentration and then transform "(enz*gridsize) * sub"(tev_transition) --> "(sub*gridsize) * enz"(tev)
         tev_transition = Vmax.mul(self.Enzymes['C'],axis=0)
-        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index]
+        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a multipule index
         tev = tev_transition.stack().unstack(1)
         tev.index = Sub_index
         tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
@@ -177,26 +172,26 @@ class Grid():
         # Michaelis-Menten equation
         Decay = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
         
-        # Pull out each batch of required enzymes and sums across redundant enzymes
+        # Pull out each batch of required enzymes and sum across redundant enzymes
         batch1 = Decay * (self.ReqEnz.loc['set1'].values)
-        #batch2 = Decay * (Sub_Req_Enz.loc['set2'].values)
-        #DecaySums = pd.concat([batch1.sum(axis=1),batch2.sum(axis=1)],axis=1)
+        # batch2 = Decay * (self.ReqEnz.loc['set2'].values)
         
         # Assess the rate-limiting enzyme and set decay to that rate
-        #DecayRates0 = DecaySums.max(axis=1, skipna=True)
+        #DecaySums = pd.concat([batch1.sum(axis=1),batch2.sum(axis=1)],axis=1)
+        #DecayRates0 = DecaySums.min(axis=1, skipna=True)
         DecayRates0 = batch1.sum(axis=1)
         
         # Compare to substrate available and take the min, allowing for a tolerance of 1e-9
         # have a transion step to achieve this
-        DecayRates_transiton = pd.concat([DecayRates0,(rss - 1e-9*rss)],axis=1,sort=False)
-        DecayRates = DecayRates_transiton.min(axis=1,skipna=True)
+        #DecayRates_transiton = pd.concat([DecayRates0,(rss - 1e-9*rss)],axis=1,sort=False)
+        DecayRates = pd.concat([DecayRates0,(rss - 1e-9*rss)],axis=1,sort=False).min(axis=1,skipna=True)
         
         # Adjust cellulose rate by linking cellulose degradation to lignin concentration (LCI) 
-        ss7 = Substrates.loc[is_lignin].sum(axis=1)
-        transition2 = 1 + LCI_slope * (ss7/(ss7 + Substrates.loc[is_cellulose,'C'].tolist()))
-        DecayRates.loc[is_cellulose] = DecayRates.loc[is_cellulose] * transition2.tolist()
+        ss7 = Substrates.loc[Sub_index == "Lignin"].sum(axis=1)
+        transition2 = 1 + LCI_slope * (ss7/(ss7 + Substrates.loc[Sub_index=="Cellulose",'C'].tolist()))
+        DecayRates.loc[Sub_index == "Cellulose"] = DecayRates.loc[Sub_index=="Cellulose"] * transition2.tolist()
         
-        # Update Substrates Pool by removing decayed C,N, & P and adding inputs
+        # Update Substrates Pool by removing decayed C, N, & P and adding inputs
         Substrates = Substrates - SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
         
         # Pass these back to the global variables
@@ -219,38 +214,36 @@ class Grid():
         # Use local variables for convenience
         Monomers = self.Monomers
         Microbes = self.Microbes
-        MR_transition   = self.Monomer_ratios
+        Monomer_ratios   = self.Monomer_ratios
         
         # Indices
-        #Mon_index  = Monomers.index[0:self.n_monomers]
-        is_org     = (Monomers.index != "NH4") & (Monomers.index != "PO4")
-        is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
+        is_org     = (Monomers.index != "NH4") & (Monomers.index != "PO4") # organic monomers
+        #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
         
-        # Average monomers over the grid in each time step
-        monomers_grid = Monomers.groupby(level=0,sort=False).sum()
-        Monomers = expand(monomers_grid/self.gridsize,self.gridsize)  
+        # Each monomer averaged over the grid in each time step
+        #monomers_grid = Monomers.groupby(level=0,sort=False).sum()
+        Monomers = expand(Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
         
         # Update monomer ratios in each time step with organic monomers following the substrates
-        MR_transition[is_org] = self.SubstrateRatios.values
+        Monomer_ratios[is_org] = self.SubstrateRatios.copy().values
         
         # Keep track of mass balance for inputs
         #self.MonomerRatios_Cum = MR_transition
         
         # Determine monomer pool from decay and input
         # Organic monomers derived from substrate-decomposition
-        Decay_Org = MR_transition[is_org].mul(self.DecayRates.tolist(),axis=0)
+        Decay_Org = Monomer_ratios[is_org].mul(self.DecayRates.tolist(),axis=0)
         # inputs of organic and mineral monomers
         #Input_Org = MR_transition[is_org].mul(self.MonInput[is_org].tolist(),axis=0)
         #Input_Mineral = MR_transition[is_mineral].mul((self.MonInput[is_mineral]).tolist(),axis=0)
         Monomers.loc[is_org] = Monomers.loc[is_org] + Decay_Org #+ Input_Org
-        Monomers.loc[is_mineral] = Monomers.loc[is_mineral] #+ Input_Mineral
+        #Monomers.loc[is_mineral] = Monomers.loc[is_mineral] #+ Input_Mineral
         
         # Get the total mass of each monomer: C+N+P
         rsm = Monomers.sum(axis=1)
         # Recalculate monomer ratios after updating monomer pool and before uptake calculation
-        MR_transition.loc[is_org] = Monomers.loc[is_org].divide(rsm[is_org],axis=0)
-        MR_transition = MR_transition.fillna(0)
-        MR_transition[np.isinf(MR_transition)] = 0
+        Monomer_ratios.loc[is_org] = Monomers.loc[is_org].divide(rsm[is_org],axis=0)
+        Monomer_ratios = Monomer_ratios.fillna(0)
         
         
         # Start computing monomer Uptake
@@ -265,10 +258,10 @@ class Grid():
         Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
         
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
-        Potential_Uptake_Comp_1 = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)
-        Potential_Uptake = Potential_Uptake_Comp_1/Uptake_Km.add(rsm.tolist(),axis=0)
+        #Potential_Uptake_Comp_1 = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)
+        Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)/Uptake_Km.add(rsm.tolist(),axis=0)
         
-        # Derive "mass of each uptake enzyme" by taxon via multiplying "microbial biomass (in C)"
+        # Derive "mass of each uptake enzyme" by taxon via multiplying "total microbial biomass"
         #.....by each taxon's allocation to different uptake enzymes.
         #.....NOTE: transpose the df to Upt*(Taxa*grid)
         #MicCXGenes = (self.Uptake_Enz_Cost.mul(Microbes['C'],axis=0)).T
@@ -289,29 +282,26 @@ class Grid():
         
         # Total potential uptake of each monomer
         csmu = Max_Uptake.sum(axis=1)
-        
         # Take the min of the monomer available and the max potential uptake
-        transition = pd.concat([csmu,rsm],axis=1)
-        Min_Uptake = transition.min(axis=1, skipna=True)
+        # transition = pd.concat([csmu,rsm],axis=1)
+        Min_Uptake = pd.concat([csmu,rsm],axis=1).min(axis=1, skipna=True)
         # Scale the uptake to what's available: (Monomer*gridsize) * Taxon
         Uptake = Max_Uptake.mul(Min_Uptake/csmu,axis=0)
         Uptake.loc[csmu==0] = 0
         # Prevent total uptake from getting too close to zero
         Uptake = Uptake - 1e-9*Uptake
-        # ensure negative values to be 0
-        # Uptake[Uptake<0] = 0
         # End computing monomer uptake
         
         
         # By monomer: total uptake (monomer*gridsize) * 3(C-N-P)
-        Monomer_Uptake = MR_transition.mul(Uptake.sum(axis=1),axis=0)
+        Monomer_Uptake = Monomer_ratios.mul(Uptake.sum(axis=1),axis=0)
         # Update monomers
         Monomers = Monomers - Monomer_Uptake
         
         # By taxon: total uptake; (monomer*gridsize) * taxon
-        C_uptake_df = Uptake.mul(MR_transition["C"],axis=0)
-        N_uptake_df = Uptake.mul(MR_transition["N"],axis=0)
-        P_uptake_df = Uptake.mul(MR_transition["P"],axis=0)
+        C_uptake_df = Uptake.mul(Monomer_ratios["C"],axis=0)
+        N_uptake_df = Uptake.mul(Monomer_ratios["N"],axis=0)
+        P_uptake_df = Uptake.mul(Monomer_ratios["P"],axis=0)
         
         #generic index
         index_xx = [np.arange(self.gridsize).repeat(self.n_monomers),C_uptake_df.index]
@@ -319,29 +309,16 @@ class Grid():
         N_uptake_df.index = index_xx
         P_uptake_df.index = index_xx
         
-        #====> old method
-        # df: (taxon*gridsize) * monomer
-        #TUC_df = C_uptake_df.stack().unstack(1)
-        #TUN_df = N_uptake_df.stack().unstack(1)
-        #TUP_df = P_uptake_df.stack().unstack(1)
-        #Re-order the columns
-        #TUC_df = TUC_df[Mon_index]
-        #TUN_df = TUN_df[Mon_index]
-        #TUP_df = TUP_df[Mon_index]
-        
         #====> new method
         TUC_df = C_uptake_df.groupby(level=[0]).sum()
         TUN_df = N_uptake_df.groupby(level=[0]).sum()
         TUP_df = P_uptake_df.groupby(level=[0]).sum()
 
         #...Pass back to the global variables
-        #self.Taxon_Uptake_C = TUC_df.values.sum(axis=1) # spatial C uptake: array (sum across monomers)
-        #self.Taxon_Uptake_N = TUN_df.values.sum(axis=1) # spatial N uptake: ...
-        #self.Taxon_Uptake_P = TUP_df.values.sum(axis=1) # spatial P uptake: ...
         self.Taxon_Uptake_C = TUC_df.stack().values     # spatial C uptake: array (sum across monomers)
         self.Taxon_Uptake_N = TUN_df.stack().values     # spatial N uptake: ...
         self.Taxon_Uptake_P = TUP_df.stack().values     # spatial P uptake: ...
-        self.Monomer_ratios = MR_transition             # update Monomer_ratios    
+        self.Monomer_ratios = Monomer_ratios            # Monomer_ratios    
         self.Monomers = Monomers                        # update Monomers
                    
 
@@ -842,7 +819,7 @@ class Grid():
         
         """
         deal with reinitialization of microbial community and start with new subsrates
-        and monomers on the grid.
+        and monomers on the grid in each new pulse.
         -----------------------------------------------------------------------
         Parameters:
             output: an instance of the Output class, in which a variable
@@ -850,6 +827,7 @@ class Grid():
                     every iteration is used--MicrobesSeries_repop
             pulse: the pulse index
             day:   the day index
+            mic_reinit: 0/1; 1 means reinitialization
         Returns:
             update Substrates, Monomers, and Microbes
         """
