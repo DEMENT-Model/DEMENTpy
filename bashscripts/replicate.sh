@@ -6,7 +6,7 @@ do
   for scenario in bas mid sev
   do
     #input output folder
-    folder="mode$mode/input_$scenario mode$mode/output"
+    folder="mode$mode/input_$scenario output"
     sed -i -e "s%mode.*.output%$folder%" dementpy.sh
 
     for count in 1 2 3
@@ -31,7 +31,7 @@ done
 jobname="dm_"
 sed -i -e "s/dm_.*/$jobname/" dementpy.sh
 
-folder="mode/input_ mode/output"
+folder="mode/input_ output"
 sed -i -e "s%mode.*.output%$folder%" dementpy.sh
 
 outname="20191126"

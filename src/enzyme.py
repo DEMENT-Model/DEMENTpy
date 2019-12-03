@@ -79,7 +79,7 @@ class Enzyme():
     def enzyme_attributes(self):
         
         """
-        Enzyme stoicheometry and maintenence cost
+        Enzyme stoichiometry and maintenence cost
         ----------
         Parameters:
             Enz_C_cost
@@ -92,7 +92,7 @@ class Enzyme():
         
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
         index = ["Enz" + str(i) for i in range(1,self.n_enzymes + 1)]
-        EnzAttrib_df = pd.DataFrame(data = EnzAttrib_array,index = index, columns = ["C_cost","N_cost","P_cost","Maint_cost"])
+        EnzAttrib_df = pd.DataFrame(data=EnzAttrib_array,index=index, columns=["C_cost","N_cost","P_cost","Maint_cost"])
         
         return EnzAttrib_df
     

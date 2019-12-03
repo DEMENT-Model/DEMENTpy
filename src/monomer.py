@@ -49,16 +49,15 @@ class Monomer():
         #...caution: index starts at 3!!!!!
         index = ["NH4","PO4","DeadMic","DeadEnz"] + ["Mon" + str(i) for i in range(3,self.n_monomers-2 + 1)]
         columns = ["C","N","P"]
-        Monomers_df = pd.DataFrame(data = Monomers_array,
-                                   index = index,
-                                   columns = columns)
+        Monomers_df = pd.DataFrame(data = Monomers_array,index = index,columns = columns)
         
         return Monomers_df
     
     
     def monomer_ratios(self,Monomers):
         
-        """initialization of 'monomer_ratio
+        """
+        initialization of 'monomer_ratio
         
         Parameter:
             Monomers:
@@ -105,9 +104,7 @@ class Monomer():
 
         index   = ["Mon" + str(i) for i in range(1,self.n_monomers+1)]
         columns = ['Upt' + str(i) for i in range(1,self.n_uptake+1)]
-        Uptake_ReqEnz_df = pd.DataFrame(data = np.array(Uptake_ReqEnz_list).reshape(self.n_monomers,self.n_uptake),
-                                        index = index, 
-                                        columns = columns)
+        Uptake_ReqEnz_df = pd.DataFrame(data = np.array(Uptake_ReqEnz_list).reshape(self.n_monomers,self.n_uptake),index=index,columns = columns)
         # ensure every monomer has a transporter
         probability_list    = [0]* self.n_monomers
         probability_list[0] = 1
@@ -115,5 +112,4 @@ class Monomer():
             if sum(Uptake_ReqEnz_df.iloc[:,i]) == 0:
                 Uptake_ReqEnz_df.iloc[:,i] = np.random.choice(probability_list,self.n_monomers,replace=False)
                 
-        return Uptake_ReqEnz_df 
-    
+        return Uptake_ReqEnz_df

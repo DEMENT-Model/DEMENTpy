@@ -54,7 +54,9 @@ class Grid():
         self.Ea           = data_init['Ea']            # Enzyme activatin energy
         self.Vmax0        = data_init['Vmax0']         # Max. reaction speed
         self.Km0          = data_init['Km0']           # Half-saturation constant
-        
+        self.SubstrateRatios= float('nan')             # Substrate stoichiometry
+        self.DecayRates     = float('nan')             # Substrate decay rate
+
         #Uptake
         self.Init_Microbes  = data_init['Microbes_pp'] # microbial community before placement
         self.Microbes       = data_init['Microbes']    # microbial community after placement
@@ -67,9 +69,9 @@ class Grid():
         self.Monomer_ratios = data_init['Monomer_ratio']    # monomer stoichiometry
         self.Uptake_ReqEnz  = data_init['Uptake_ReqEnz']    # Enzymes required by monomers 
         self.Uptake_Enz_Cost= data_init['UptakeGenesCost']  # Cost of encoding each uptake gene
-        self.Taxon_Uptake_C = 0                             # taxon uptake of C 
-        self.Taxon_Uptake_N = 0                             # taxon uptake of N 
-        self.Taxon_Uptake_P = 0                             # taxon uptake of P
+        self.Taxon_Uptake_C = float('nan')                  # taxon uptake of C 
+        self.Taxon_Uptake_N = float('nan')                  # taxon uptake of N 
+        self.Taxon_Uptake_P = float('nan')                  # taxon uptake of P
         
         #Metabolism
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
@@ -80,7 +82,16 @@ class Grid():
         self.Enz_Attrib        = data_init['EnzAttrib']         # Enzyme attributes; dataframe
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature
-        
+        self.Transporters = float('nan')
+        self.Osmolyte_Con = float('nan')
+        self.Osmolyte_Ind = float('nan')
+        self.Enzyme_Con   = float('nan')
+        self.Enzyme_Ind   = float('nan')
+        self.CUE_Taxon    = float('nan')
+        self.Respiration  = float('nan')
+        self.CUE_System   = float('nan')
+        #self.Growth_Yield = float('nan')
+
         #Mortality
         self.MinRatios = data_init['MinRatios']     # ...
         self.C_min     = data_init['C_min']         # C threshold value of living cell
@@ -92,6 +103,8 @@ class Grid():
         self.wp_fc     = data_init['wp_fc']         # -1.0
         self.wp_th     = data_init['wp_th']         # -6.0
         self.alpha     = data_init['alpha']         # 1
+        self.Kill      = float('nan')               # number of cells stochastically killed
+        
 
         # Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
@@ -106,20 +119,6 @@ class Grid():
         self.temp = data_init['Temp']     # Temperature
         self.psi  = data_init['Psi']      # Water potential
         
-        #variables used for output
-        self.SubstrateRatios= float('nan') # Substrate stoichiometry
-        self.DecayRates   = float('nan')   # Substrate decay rate
-        self.Transporters = float('nan')
-        self.Osmolyte_Con = float('nan')
-        self.Osmolyte_Ind = float('nan')
-        self.Enzyme_Con   = float('nan')
-        self.Enzyme_Ind   = float('nan')
-        self.CUE_Taxon    = float('nan')
-        self.Respiration  = float('nan')
-        self.CUE_System   = float('nan')
-        self.Kill         = float('nan')
-        #self.Growth_Yield = float('nan')
-
         # Global constants
         self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
         self.Tref  = 293.0      # reference temperature of 20 celcius
