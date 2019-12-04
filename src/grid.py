@@ -212,15 +212,13 @@ class Grid():
         
         # Use local variables for convenience
         Monomers = self.Monomers
-        Microbes = self.Microbes
         Monomer_ratios   = self.Monomer_ratios
         
         # Indices
-        is_org     = (Monomers.index != "NH4") & (Monomers.index != "PO4") # organic monomers
+        is_org = (Monomers.index != "NH4") & (Monomers.index != "PO4") # organic monomers
         #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
         
         # Each monomer averaged over the grid in each time step
-        #monomers_grid = Monomers.groupby(level=0,sort=False).sum()
         Monomers = expand(Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
         
         # Update monomer ratios in each time step with organic monomers following the substrates
@@ -260,29 +258,23 @@ class Grid():
         #Potential_Uptake_Comp_1 = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)
         Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)/Uptake_Km.add(rsm.tolist(),axis=0)
         
-        # Derive "mass of each uptake enzyme" by taxon via multiplying "total microbial biomass"
-        #.....by each taxon's allocation to different uptake enzymes.
-        #.....NOTE: transpose the df to Upt*(Taxa*grid)
-        #MicCXGenes = (self.Uptake_Enz_Cost.mul(Microbes['C'],axis=0)).T
-        MicCXGenes = (self.Uptake_Enz_Cost.mul(Microbes.sum(axis=1),axis=0)).T
+        # Derive "mass of each transporter of each taxon' by multiplying "total microbial biomass" by each taxon's allocation to different transporters.
+        # NOTE: transpose the df to Upt*(Taxa*grid)
+        MicCXGenes = (self.Uptake_Enz_Cost.mul(self.Microbes.sum(axis=1),axis=0)).T
         
         # Define Max_Uptake: (Monomer*gridsize) * Taxon
         Max_Uptake_array = np.array([0]*self.gridsize*self.n_monomers*self.n_taxa).reshape(self.gridsize*self.n_monomers,self.n_taxa)
-        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index = Monomers.index,columns = Microbes.index[0:self.n_taxa])
+        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index = Monomers.index,columns = self.Microbes.index[0:self.n_taxa])
         # Matrix multiplication to get max possible uptake by monomer
         # ...Must extract each grid point separately for operation
         for i in range(self.gridsize):
             i_monomer = np.arange(i * self.n_monomers, (i+1) * self.n_monomers)
             i_taxa    = np.arange(i * self.n_taxa, (i+1) * self.n_taxa)
-            #Max_Uptake_tempo = MicCXGenes.iloc[i_taxa].values @ (Potential_Uptake.iloc[i_monomer].T).values
-            Max_Uptake_tempo = Potential_Uptake.iloc[i_monomer].values @ MicCXGenes.iloc[:,i_taxa].values
-            #Max_Uptake.iloc[i_monomer] = np.transpose(Max_Uptake_tempo)   # long format; mon*grid rows * Taxon
-            Max_Uptake.iloc[i_monomer] = Max_Uptake_tempo
+            Max_Uptake.iloc[i_monomer] = Potential_Uptake.iloc[i_monomer].values @ MicCXGenes.iloc[:,i_taxa].values
         
         # Total potential uptake of each monomer
         csmu = Max_Uptake.sum(axis=1)
         # Take the min of the monomer available and the max potential uptake
-        # transition = pd.concat([csmu,rsm],axis=1)
         Min_Uptake = pd.concat([csmu,rsm],axis=1).min(axis=1, skipna=True)
         # Scale the uptake to what's available: (Monomer*gridsize) * Taxon
         Uptake = Max_Uptake.mul(Min_Uptake/csmu,axis=0)
@@ -291,24 +283,20 @@ class Grid():
         Uptake = Uptake - 1e-9*Uptake
         # End computing monomer uptake
         
-        
-        # By monomer: total uptake (monomer*gridsize) * 3(C-N-P)
-        Monomer_Uptake = Monomer_ratios.mul(Uptake.sum(axis=1),axis=0)
         # Update monomers
-        Monomers = Monomers - Monomer_Uptake
+        # By monomer: total uptake (monomer*gridsize) * 3(C-N-P)
+        Monomers -= Monomer_ratios.mul(Uptake.sum(axis=1),axis=0)
         
         # By taxon: total uptake; (monomer*gridsize) * taxon
         C_uptake_df = Uptake.mul(Monomer_ratios["C"],axis=0)
         N_uptake_df = Uptake.mul(Monomer_ratios["N"],axis=0)
         P_uptake_df = Uptake.mul(Monomer_ratios["P"],axis=0)
         
-        #generic index
+        # generic multi-index
         index_xx = [np.arange(self.gridsize).repeat(self.n_monomers),C_uptake_df.index]
-        C_uptake_df.index = index_xx
-        N_uptake_df.index = index_xx
-        P_uptake_df.index = index_xx
+        C_uptake_df.index = N_uptake_df.index = P_uptake_df.index = index_xx
         
-        #====> new method
+        # new method
         TUC_df = C_uptake_df.groupby(level=[0]).sum()
         TUN_df = N_uptake_df.groupby(level=[0]).sum()
         TUP_df = P_uptake_df.groupby(level=[0]).sum()

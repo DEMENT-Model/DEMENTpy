@@ -294,7 +294,7 @@ class Microbe():
         
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns = ['Osmo' + str(i) for i in range(1,n_genes+1)]
-        OsmoGenes_df = pd.DataFrame(data = np.vstack(OsmoGenes_list).reshape(self.n_taxa,n_genes),index = index,columns = columns)
+        OsmoGenes_df = pd.DataFrame(data = np.vstack(OsmoGenes_list).reshape(self.n_taxa,n_genes),index=index,columns=columns)
         
         return OsmoGenes_df
         
@@ -359,7 +359,7 @@ class Microbe():
             Uptake_C_cost_min: 0.01	transporter mg-1 biomass C
             Uptake_C_cost_max: 0.1	transporter mg-1 biomass C
               
-        Outputs:
+        Returns:
             UptakeProd_series:
             UptakeGenes_Cost:
         """                         
