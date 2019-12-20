@@ -49,16 +49,15 @@ def main():
     interval = int(runtime.loc['interval',1])   # interval of time step to record outputs
     mic_reinit = runtime.loc['mic_reinit',1]    # indicate reinitialization of microbial community or not
     
-    
     #...Initialize data by calling the Function: Initialize_Data()
     data_initialization = initialize_data(runtime)
-    
+
     #...Prepare for output by creating an instance of the Output class
     Output_init = Output(runtime,data_initialization)
-    
+
     #...Create an instance of the Grid class
     Ecosystem = Grid(runtime,data_initialization)
-    
+
     #...Run the model
     for p in range(pulse):
         
@@ -95,8 +94,7 @@ def main():
             # re-initialize microbial community
             if i == (p+1)*cycle-1:
                 Ecosystem.repopulation(Output_init,i,mic_reinit)
-        
-        
+    
     #...export the Output_init object to the output_folder using the export() funtion in the utility module 
     os.chdir('../'+output_folder)
     export(Output_init,outname)

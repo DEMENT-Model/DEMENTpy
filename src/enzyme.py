@@ -38,10 +38,10 @@ class Enzyme():
         self.Enz_P_cost = parameters.loc['Enz_P_cost',1]         # Per enzyme P cost as a fraction of C cost:0
         self.Enz_Maint_cost = parameters.loc['Enz_Maint_cost',1] # Maintenence cost of enzyme production
         
-        self.Uptake_Ea_min = parameters.loc['Uptake_Ea_min',1]   # Minimum activation energy for uptake
-        self.Uptake_Ea_max = parameters.loc['Uptake_Ea_max',1]   # Maximum activation energy for uptake
-        self.Vmax0_min     = parameters.loc['Vmax0_min',1]       # Minimum Vmax for enzyme
-        self.Vmax0_max     = parameters.loc['Vmax0_max',1]       # Maximum Vmax for enzyme
+        self.Uptake_Ea_min = parameters.loc['Uptake_Ea_min',1]       # Minimum activation energy for uptake
+        self.Uptake_Ea_max = parameters.loc['Uptake_Ea_max',1]       # Maximum activation energy for uptake
+        self.Vmax0_min     = parameters.loc['Vmax0_min',1]           # Minimum Vmax for enzyme
+        self.Vmax0_max     = parameters.loc['Vmax0_max',1]           # Maximum Vmax for enzyme
         self.Uptake_Vmax0_min = parameters.loc['Uptake_Vmax0_min',1] # Minimum uptake Vmax
         self.Uptake_Vmax0_max = parameters.loc['Uptake_Vmax0_max',1] # Maximum uptake Vmax
         self.Specif_factor    = parameters.loc['Specif_factor',1]    # Efficiency-specificity
@@ -67,10 +67,9 @@ class Enzyme():
             Enzymes_df: df
         """
         
-        Enzymes_array  = np.random.uniform(self.Enz_min,self.Enz_max,self.n_enzymes)
-        Enzymes_array  = Enzymes_array.reshape(self.n_enzymes,1)
+        Enzymes_array = np.random.uniform(self.Enz_min,self.Enz_max,self.n_enzymes)
         index = ['Enz'+str(i) for i in range(1,self.n_enzymes+1)]
-        Enzymes_df = pd.DataFrame(data = Enzymes_array, index = index, columns = ['C'])
+        Enzymes_df = pd.Series(data = Enzymes_array, index = index, name='C')
 
         return Enzymes_df
     
@@ -87,7 +86,7 @@ class Enzyme():
             Enz_P_cost
             Enz_Maint_cost
         Return:
-            EnzAttrib_df
+            EnzAttrib_df:
         """
         
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))

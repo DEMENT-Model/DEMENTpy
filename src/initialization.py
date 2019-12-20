@@ -8,7 +8,6 @@ Bin Wang
 Last modified: 07/09/2019
 
 """
-
 import pandas as pd
 
 from substrate import Substrate
@@ -80,7 +79,7 @@ def initialize_data(runtime_parameters):
     #...an instance of Microbe class
     Microbes = Microbe(runtime_parameters,parameters)
     #...Microbial community initialization#...note microbial_community is a tuple
-    microbial_community = Microbes.microbial_community_initialization() 
+    microbial_community = Microbes.microbial_community_initialization()
     #...Microbial minimum ratios
     microbial_min_ratios = Microbes.minimum_cell_quota()
     #...Microbial enzyme genes
@@ -96,7 +95,7 @@ def initialize_data(runtime_parameters):
     #...Microbial osmolyte productoin rate
     microbial_osmolyte_prod_rate = Microbes.microbe_osmoproduction_rate(microbial_osmolyte_gene)
     #...Microbial drought tolerance
-    microbial_drought_tol = Microbes.microbe_drought_tol(microbial_osmolyte_prod_rate[3])
+    microbial_drought_tol = Microbes.microbe_drought_tol(microbial_osmolyte_prod_rate[2],microbial_osmolyte_prod_rate[3])
     #...Microbial mortality
     microbial_mortality = Microbes.microbe_mortality(microbial_community[2])
     

@@ -47,14 +47,13 @@ class Microbe():
         self.n_taxa      = int(runtime.loc['n_taxa',1])
         self.n_enzymes   = int(runtime.loc['n_enzymes',1])
         self.n_substrates= int(runtime.loc['n_substrates',1])
-        self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # why+2? b/c two inorganic monomers
+        self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # +2 b/c of two inorganic monomers
         self.n_uptake    = int(runtime.loc['n_uptake',1])        # Number of uptake transporters for each taxon
         self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])     # system-allowed number of osmotic compound
         self.taxa_per_box= runtime.loc['taxa_per_box',1]         # Probability of each taxon entering a grid cell
         fb = runtime.loc['fb',1]                                 # Probability of fungal taxa 
         self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[fb,(1-fb)]) #Index of fungal taxa
-        
-        # microbial traits
+        # microbial cell size
         self.Cfrac_b    = parameters.loc['Cfrac_b',1]     # Bacterial C fraction: 0.825 mg mg-1
         self.Nfrac_b    = parameters.loc['Nfrac_b',1]     # Bacterial N fraction: 0.16  mg mg-1
         self.Pfrac_b    = parameters.loc['Pfrac_b',1]     # Bacterial P fraction: 0.015 mg mg-1
@@ -66,12 +65,11 @@ class Microbe():
         self.Crange     = parameters.loc['Crange',1]      # Tolerance on C fraction: 0.09 mg mg-1
         self.Nrange     = parameters.loc['Nrange',1]      # Tolerance on N fraction: 0.04 mg mg-1
         self.Prange     = parameters.loc['Prange',1]      # Tolerance on P fraction: 0.005 mg mg-1
-        
-        # metabolism-related traits
+        # transporter
         self.Uptake_C_cost_min = parameters.loc['Uptake_C_cost_min',1]  # Minimum C cost of one transporter gene being encoded 
         self.Uptake_C_cost_max = parameters.loc['Uptake_C_cost_max',1]  # Maximum C cost of one transporter gene being encoded
         self.NormalizeUptake   = parameters.loc['NormalizeUptake',1]    # Normalize uptake investment for the number of uptake genes;default:0
-        
+        # enzyme
         self.Enz_per_taxon_min = int(parameters.loc['Enz_per_taxon_min',1]) # =0;Minimum number of enzyme genes a taxon can hold
         self.Enz_per_taxon_max = int(parameters.loc['Enz_per_taxon_max',1]) # =40;Maximum number of enzyme genes a taxon can hold
         self.Constit_Prod_min  = parameters.loc['Constit_Prod_min',1] # =0.00001;Minimum per enzyme production cost as a fraction of biomass
@@ -79,13 +77,14 @@ class Microbe():
         self.Enz_Prod_min      = parameters.loc['Enz_Prod_min',1]     # =0.00001;Minimum per enzyme production cost as a fraction of C uptake rate
         self.Enz_Prod_max      = parameters.loc['Enz_Prod_max',1]     # =0.0001; Maximum ...
         self.NormalizeProd     = parameters.loc['NormalizeProd',1]    # Normalize enzyme production for the number of enzyme genes;default:0
-        
+        # osmolyte
         self.Osmo_per_taxon_min = int(parameters.loc['Osmo_per_taxon_min',1]) # Minimum number of osmotic gene 
         self.Osmo_per_taxon_max = int(parameters.loc['Osmo_per_taxon_max',1]) # Max. of osmotic gene
         self.Osmo_Consti_Prod_min = parameters.loc['Osmo_Consti_Prod_min',1]  # constitutive cost min
         self.Osmo_Consti_Prod_max = parameters.loc['Osmo_Consti_Prod_max',1]  # constitutive cost max
         self.Osmo_Induci_Prod_min = parameters.loc['Osmo_Induci_Prod_min',1]  # inducible cost min
         self.Osmo_Induci_Prod_max = parameters.loc['Osmo_Induci_Prod_max',1]  # inducible cost max
+        # mortality
         self.death_rate_bac = parameters.loc['death_rate_bac',1]              # Bacterial basal mortality prob.
         self.death_rate_fun = parameters.loc['death_rate_fun',1]              # Fungal basal mortality probability
         self.beta_bac = parameters.loc['beta_bac',1]                          # mortality coefficient
@@ -111,7 +110,6 @@ class Microbe():
             Pfrac_f: Fungal P fraction:       0.01	mg mg-1
             max_size_b: C quota threshold for bacterial cell division
             max_size_f: C quota threshold for fungal cell division
-        
         Returns:
             -1. microbes_pp: microbial community preceding placement on the spatial grid
             -2. microbes_df: microbial community on the spatial grid
@@ -129,7 +127,7 @@ class Microbe():
         BacN = BacC * self.Nfrac_b/self.Cfrac_b
         BacP = BacC * self.Pfrac_b/self.Cfrac_b
         microbes_array = np.tile([BacC,BacN,BacP],(self.n_taxa*self.gridsize,1))
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa + 1)] * self.gridsize
+        index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)] * self.gridsize
         microbes_df = pd.DataFrame(data = microbes_array, index = index, columns = ["C","N","P"])
         
         # Obtain the Fungi index by expanding the fb to the spatial grid
@@ -151,7 +149,6 @@ class Microbe():
         #...Derive the number of fungi and bacteria taxa
         Bac_index = microbes_df['C'] == BacC
         Fun_index = microbes_df['C'] == FunC
-        
         Bac_taxa = int(sum(Bac_index)/self.gridsize)
         Fun_taxa = int(sum(Fun_index)/self.gridsize)
         print('Before placement--','Bac_taxa=',Bac_taxa,'Fun_taxa=',Fun_taxa)
@@ -170,15 +167,12 @@ class Microbe():
         #...Derive the number of fungi and bacteria taxa
         Bac_index = microbes_df['C'] == BacC
         Fun_index = microbes_df['C'] == FunC
-        
         Bac_taxa = microbes_df[Bac_index].groupby(level=0).sum().shape[0]
         Fun_taxa = microbes_df[Fun_index].groupby(level=0).sum().shape[0]
-        
         print('After placement--','Bac_taxa=',Bac_taxa,'Fun_taxa=',Fun_taxa)
-        
+
         Bac_density = sum(Bac_index)*BacC/self.gridsize
         Fun_density = sum(Fun_index)*FunC/self.gridsize
-        
         print('After placement--','Bac_density=',Bac_density,'Fun_density=',Fun_density)
         
         return microbes_pp,microbes_df,fb_grid,Bac_density,Fun_density
@@ -254,10 +248,9 @@ class Microbe():
             return taxon
         
         EnzGenes_list = [trial(i) for i in range(self.n_taxa)]
-        
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns = ['Enz' + str(i) for i in range(1,n_genes+1)]
-        EnzGenes_df = pd.DataFrame(data = np.vstack(EnzGenes_list).reshape(self.n_taxa,n_genes),index = index,columns = columns)
+        EnzGenes_df = pd.DataFrame(data = np.vstack(EnzGenes_list).reshape(self.n_taxa,n_genes),index=index,columns=columns)
         
         return EnzGenes_df
     
@@ -487,7 +480,7 @@ class Microbe():
     
     
     
-    def microbe_drought_tol(self,Tax_Induci_Osmo_C):
+    def microbe_drought_tol(self,Tax_Consti_Osmo_C,Tax_Induci_Osmo_C):
         
         """
         Drought tolerance is postively correlated with taxon-specific inducible
@@ -499,7 +492,7 @@ class Microbe():
         Return:
             Tax_tolerance:
         """
-        Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) #+ Tax_Consti_Osmo_C.sum(axis=1)
+        Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
         #Tax_tolerance = Tax_Osmo_Alloc.rank(axis=0,method='min')/self.n_taxa
         Tax_tolerance = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
         
@@ -543,7 +536,7 @@ def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
         wp_th: scalar;water potential threshold
         
     Returns:
-        f_osmo: scalar; modifier of inducible production of osmoylte
+        f_osmo:scalar; modifier of inducible production of osmoylte
         
     References:
         Based on Manzoni et al. 2012 Ecology, a synthesis study. 
@@ -551,8 +544,8 @@ def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
     
     if wp >= wp_fc:
         f_osmo = 0.0
-    elif wp <= wp_th:
-        f_osmo = 1.0
+    #elif wp <= wp_th:
+    #    f_osmo = 1.0
     else:
         x = np.log(wp/wp_fc)
         y = np.log(wp_th/wp_fc)
@@ -585,8 +578,8 @@ def microbe_mortality_prob(wp,wp_fc,death_rate,beta,tolerance):
     else:
         tolerance = tolerance.to_numpy()
         # option 1
-        #mortality_rate = death_rate * (1-(1-tolerance)*(wp-wp_fc)*beta)
+        mortality_rate = death_rate * (1 - (1-tolerance)*(wp-wp_fc)*beta)
         # option 2
-        mortality_rate = death_rate * (1/np.exp(tolerance)) * (1 - beta*(wp-wp_fc))
+        #mortality_rate = death_rate * (1/np.exp(tolerance)) * (1 - beta*(wp-wp_fc))
     
     return mortality_rate
