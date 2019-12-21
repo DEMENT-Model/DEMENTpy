@@ -45,19 +45,19 @@ class Grid():
         
         #Degradation
         self.Substrates_init = data_init['Substrates']        # Substrates initialized
-        self.Substrates   = data_init['Substrates'].copy()    # Substrates;df; w/ .copy() avoiding mutation
-        self.SubInput     = data_init['SubInput']             # Substrate inputs
-        self.Enzymes      = data_init['Enzymes'].copy()       # Enzymes
-        self.ReqEnz       = data_init['ReqEnz']               # Enzymes required by each substrate
-        self.EnzAttrib    = data_init['EnzAttrib']            # Enzyme stoichiometry
-        self.Ea           = data_init['Ea']                   # Enzyme activatin energy
-        self.Vmax0        = data_init['Vmax0']                # Max. reaction speed
-        self.Km0          = data_init['Km0']                  # Half-saturation constant
+        self.Substrates      = data_init['Substrates'].copy() # Substrates;df; w/ .copy() avoiding mutation
+        self.SubInput        = data_init['SubInput']          # Substrate inputs
+        self.Enzymes         = data_init['Enzymes'].copy()    # Enzymes
+        self.ReqEnz          = data_init['ReqEnz']            # Enzymes required by each substrate
+        self.EnzAttrib       = data_init['EnzAttrib']         # Enzyme stoichiometry
+        self.Ea              = data_init['Ea']                # Enzyme activatin energy
+        self.Vmax0           = data_init['Vmax0']             # Max. reaction speed
+        self.Km0             = data_init['Km0']               # Half-saturation constant
         self.SubstrateRatios = float('nan')                   # Substrate stoichiometry
-        self.DecayRates = float('nan')                        # Substrate decay rate
+        self.DecayRates      = float('nan')                   # Substrate decay rate
 
         #Uptake
-        self.Init_Microbes  = data_init['Microbes_pp']          # microbial community before placement
+        self.Microbes_init  = data_init['Microbes_pp']          # microbial community before placement
         self.Microbes       = data_init['Microbes'].copy()      # microbial community after placement
         self.Monomers_init  = data_init['Monomers']             # Monomers initialized
         self.Monomers       = data_init['Monomers'].copy()      # Monomers
@@ -81,6 +81,8 @@ class Grid():
         self.Enz_Attrib        = data_init['EnzAttrib']         # Enzyme attributes; dataframe
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5;scalar
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature;scalar
+        self.Respiration       = float('nan')                   # Respiration
+        self.CUE_System        = float('nan')                   # emergent CUE
         #self.Transporters = float('nan')
         #self.Osmolyte_Con = float('nan')
         #self.Osmolyte_Ind = float('nan')
@@ -88,9 +90,7 @@ class Grid():
         #self.Enzyme_Ind   = float('nan')
         #self.CUE_Taxon    = float('nan')
         #self.Growth_Yield = float('nan')
-        self.Respiration  = float('nan')
-        self.CUE_System   = float('nan')
-        
+
         #Mortality
         self.MinRatios = data_init['MinRatios']     # minimal cell quotas
         self.C_min     = data_init['C_min']         # C threshold value of living cell
@@ -119,8 +119,7 @@ class Grid():
         
         # Global constants
         self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
-        self.Tref  = 293.0      # reference temperature of 20 celcius
-        self.k     = 0.008314   # Gas constant = 0.008314 kJ/(mol K)
+        self.Tref  = 293        # reference temperature of 20 celcius
     
 
     def degradation(self,pulse,day):
@@ -154,12 +153,13 @@ class Grid():
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc))
         
         # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for temperature sensitivity
-        Vmax = self.Vmax0 * np.exp((-self.Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
-        Km = self.Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
+        Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
+        Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
+        
         # Multiply Vmax by enzyme concentration
         tev_transition = Vmax.mul(self.Enzymes,axis=0) # (enz*gridsize) * sub
-        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a multiple index
-        tev = tev_transition.stack().unstack(1) # (sub*gridsize) * enz
+        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a MultiIndex
+        tev = tev_transition.stack().unstack(1).reset_index(level=0,drop=True) # (sub*gridsize) * enz
         tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
         # Michaelis-Menten equation
         Decay = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
@@ -238,8 +238,8 @@ class Grid():
             f_psi = np.exp(0.5*(self.psi[day] - self.wp_fc))
         
         # Caculate enzyme kinetic parameters; monomer * Upt
-        Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
-        Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
+        Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
+        Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
         
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
         Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)/Uptake_Km.add(rsm.tolist(),axis=0)
@@ -267,7 +267,7 @@ class Grid():
         Uptake.loc[csmu==0] = 0
 
         # Prevent total uptake from getting too close to zero
-        Uptake = Uptake - 1e-9*Uptake
+        # Uptake = Uptake - 1e-9*Uptake
         # End computing monomer uptake
         
         # Update monomers
@@ -647,92 +647,77 @@ class Grid():
         """
         
         # Use local variables for convenience         
-        Microbes = self.Microbes
-        fb = self.fb
-        
+        Microbes = self.Microbes 
         # Microbes' index
         Mic_index = Microbes.index
-        
         # Set up the colonization dataframe: [taxon * 3(C,N,&P)]
         Colonization = Microbes.copy()
         Colonization = Colonization.reset_index(drop=True)
         Colonization[:] = 0
         
         
-        #...STEP 1: count the fungal taxa before cell division 
-        # Set the vector of fungal locations to a blank vector
-        Fungi_df = pd.DataFrame(data = np.array([0]*self.n_taxa*self.gridsize).reshape(self.n_taxa*self.gridsize,1),index= Mic_index,columns = ['Count'])
+        #STEP 1: count the fungal taxa before cell division 
+        # Set the Series of fungal locations to 0
+        Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize,index=Mic_index,name='Count')
         # Add one or two fungi to the count vector based on size
-        Fungi_df.loc[(fb==1)&(Microbes["C"]>0)] = 1
-        Fungi_df.loc[(fb==1)&(Microbes['C']>self.max_size_f)] = 2
-        Fungi_count = Fungi_df.groupby(level=0,sort=False).sum()
+        Fungi_df.loc[(self.fb==1)&(Microbes['C']>0)] = 1
+        Fungi_df.loc[(self.fb==1)&(Microbes['C']>self.max_size_f)] = 2
         # Fungal translocation: calculate average biomass within fungal taxa
+        Fungi_count = Fungi_df.groupby(level=0,sort=False).sum()
         Microbes_grid = Microbes.groupby(level=0,sort=False).sum()
-        Mean_fungi = Microbes_grid.divide(Fungi_count['Count'],axis=0)
-        Mean_fungi = Mean_fungi.fillna(0)
+        Mean_fungi = Microbes_grid.divide(Fungi_count,axis=0)
         Mean_fungi[np.isinf(Mean_fungi)] = 0
+        Mean_fungi = Mean_fungi.fillna(0)
         # Expand the fungal average across the grid
         eMF = expand(Mean_fungi,self.gridsize) 
         
         
-        #...STEP 2: Cell division & translocate nutrients
+        #STEP 2: Cell division & translocate nutrients
         MicrobesBeforeDivision = Microbes.copy()
         #bacteria
-        bac_index = (fb==0)&(Microbes['C']>self.max_size_b)
+        bac_index = (self.fb==0)&(Microbes['C']>self.max_size_b)
         Microbes.loc[bac_index] = Microbes.loc[bac_index]/2
         #fungi
-        fun_index = (fb==1)&(Microbes['C']>self.max_size_f)
+        fun_index = (self.fb==1)&(Microbes['C']>self.max_size_f)
         Microbes.loc[fun_index] = Microbes.loc[fun_index]/2
         # Add daughter cells to a dataframe of reproduction
         Reprod = MicrobesBeforeDivision - Microbes 
-
         # Translocate nutrients within fungal taxa
-        i = (fb==1) & (Microbes['C']>0)
-        Microbes.loc[i] = eMF.loc[i]
+        Microbes.loc[(self.fb==1) & (Microbes['C']>0)] = eMF.loc[(self.fb==1) & (Microbes['C']>0)]
         # Index the daughter cells that are fungi versus bacteria
-        daughters_b = (Reprod["C"]>0) & (fb==0)
-        daughters_f = (Reprod["C"]>0) & (fb==1)
+        daughters_b = (Reprod["C"]>0) & (self.fb==0)
+        daughters_f = (Reprod["C"]>0) & (self.fb==1)
         # set all fungi equal to their grid averages for translocation before colonization
         Reprod[daughters_f] = eMF[daughters_f]
         
 
-        #...STEP 3: dispersal calculation          
-        num_b =  len(daughters_b)       
-        num_f =  len(daughters_f)          
-        shift_x = pd.DataFrame(data = np.array([0] * self.gridsize*self.n_taxa).reshape(self.gridsize*self.n_taxa,1))
-        shift_y = pd.DataFrame(data = np.array([0] * self.gridsize*self.n_taxa).reshape(self.gridsize*self.n_taxa,1))
-        shift_x.index = Mic_index
-        shift_y.index = Mic_index
-        # Bacterial dispersal movements in X & Y direction: note replace = True!!!!!           
-        shift_x.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True)[0]
-        shift_y.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True)[0]
+        #STEP 3: dispersal calculation
+        num_b = sum(daughters_b)
+        num_f = sum(daughters_f)
+        shift_x = pd.Series(data=[0] * self.gridsize*self.n_taxa, index = Mic_index)
+        shift_y = pd.Series(data=[0] * self.gridsize*self.n_taxa, index = Mic_index)
+        # Bacterial dispersal movements in X & Y direction  
+        shift_x.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True)
+        shift_y.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True)
         # Fungi always move positively in x direction           
         shift_x.loc[daughters_f] = 1
-        # vector of dispersal movements in y direction; constrained to one box away determined by probability "direct"      
-        fungi_y = np.random.choice([-1,0,1], num_f, replace=True,p = [0.5*(1-self.direct),self.direct,0.5*(1-self.direct)])
-        shift_y.loc[daughters_f] = fungi_y[0]
-
-        # calculate x coordinates of dispersal destinations & Substitute coordinates when there is no shift
-        #.....% remainder of x/x
-        new_x = (shift_x.add(list(np.repeat(range(1,self.x+1),self.n_taxa))*self.y, axis=0) + self.x) % self.x
-        new_x[new_x==0] = self.x
+        # Series of dispersal movements in y direction; constrained to one box away determined by probability "direct"      
+        shift_y.loc[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)])
+        # calculate x coordinates of dispersal destinations (% remainder of x/x)
+        new_x = (list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + shift_x + self.x) % self.x
+        new_x[new_x==0] = self.x  # Substitute coordinates when there is no shift
         # calculate y coordinates of dispersal destinations           
-        new_y = (shift_y.add(list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)),axis=0) + self.y) % self.y  
-        new_y[new_y==0] = self.y   
-        # convert x,y coordinates to a dataframe of destination locations
-        z = list(range(1,self.n_taxa+1)) * self.gridsize
-        index_col = (self.n_taxa * ((new_y-1)*self.x + (new_x-1)) ).add(z,axis=0) - 1
+        new_y = (list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)) + shift_y + self.y) % self.y
+        new_y[new_y==0] = self.y  # Substitute coordinates when there is no shift
+        # convert x,y coordinates to a series of destination locations
+        index_series = (self.n_taxa * ((new_y-1)*self.x + (new_x-1))) + list(range(1,self.n_taxa+1)) * self.gridsize - 1
         
-        
-        #...Step 4: colonization of dispersed microbes
+        #Step 4: colonization of dispersed microbes
         #.....Transfer cells to new locations and sum when two or more of the same taxa go to same location
-        bac_ind = index_col[daughters_b][0].tolist()
-        fun_ind = index_col[daughters_f][0].tolist()
-        Colonization.iloc[bac_ind,] = Reprod[daughters_b].values 
-        Colonization.iloc[fun_ind,] = Reprod[daughters_f].values
+        Colonization.iloc[index_series[daughters_b],] = Reprod[daughters_b].values
+        Colonization.iloc[index_series[daughters_f],] = Reprod[daughters_f].values
         # Colonization of dispersing microbes
-        Microbes = Microbes + Colonization.values
-        
+        Microbes += Colonization.values
         
         #...Pass back to the global variable
         self.Microbes = Microbes
@@ -755,13 +740,13 @@ class Grid():
             update Substrates, Monomers, and Microbes
         """
         # reinitialize substrates and monomers
-        self.Substrates = self.Substrates_init
-        self.Monomers   = self.Monomers_init
+        self.Substrates = self.Substrates_init.copy()
+        self.Monomers   = self.Monomers_init.copy()
         
         # reinitialize microbial community
-        if mic_reinit == 1.00:
+        if mic_reinit == True:
             
-            New_microbes = self.Init_Microbes.copy() #NOTE copy()!! bloody lesson
+            self.Microbes = self.Microbes_init.copy() #NOTE copy()!! bloody lesson
             #fb = self.fb[0:self.n_taxa]
             #max_size_b = self.max_size_b
             #max_size_f = self.max_size_f
@@ -790,7 +775,7 @@ class Grid():
                 choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
                         
             # Note order='F'
-            New_microbes.loc[np.ravel(choose_taxa,order='F')==0] = 0
+            self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = 0
             
             # reinitialize the microbial community
-            self.Microbes = New_microbes
+            #self.Microbes = New_microbes

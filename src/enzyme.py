@@ -163,7 +163,7 @@ class Enzyme():
         
         #index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Vmax0_df = pd.DataFrame(data  = Vmax0_array,index=self.substrate_index,columns = columns)
+        Vmax0_df = pd.DataFrame(data=Vmax0_array, index=self.substrate_index, columns=columns)
         
         # Account for efficiency-specificity tradeoff by dividing Vmax_0 by the number of substrates (or monomers)
         # targeted and multiplied by a specificity factor

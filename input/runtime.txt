@@ -1,8 +1,8 @@
-pulse	1
-end_time	2
-x	100
-y	100
-gridsize	10000
+pulse	2
+end_time	10
+x	10
+y	10
+gridsize	100
 n_taxa	100
 fb	0.5
 taxa_per_box	0.01
@@ -13,4 +13,3 @@ n_osmolytes	20
 direct	0.95
 dist	1
 interval	1
-mic_reinit	1
