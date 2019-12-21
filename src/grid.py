@@ -53,8 +53,8 @@ class Grid():
         self.Ea           = data_init['Ea']                   # Enzyme activatin energy
         self.Vmax0        = data_init['Vmax0']                # Max. reaction speed
         self.Km0          = data_init['Km0']                  # Half-saturation constant
-        self.SubstrateRatios= float('nan')                    # Substrate stoichiometry
-        self.DecayRates     = float('nan')                    # Substrate decay rate
+        self.SubstrateRatios = float('nan')                   # Substrate stoichiometry
+        self.DecayRates = float('nan')                        # Substrate decay rate
 
         #Uptake
         self.Init_Microbes  = data_init['Microbes_pp']          # microbial community before placement
@@ -158,10 +158,9 @@ class Grid():
         Km = self.Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
         # Multiply Vmax by enzyme concentration
         tev_transition = Vmax.mul(self.Enzymes,axis=0) # (enz*gridsize) * sub
-        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a multipule index
+        tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a multiple index
         tev = tev_transition.stack().unstack(1) # (sub*gridsize) * enz
         tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
-
         # Michaelis-Menten equation
         Decay = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
         
@@ -203,7 +202,6 @@ class Grid():
         # Use local variables for convenience
         Monomers = self.Monomers
         Monomer_ratios = self.Monomer_ratios
-        
         # Indices
         is_org = (Monomers.index != "NH4") & (Monomers.index != "PO4") # organic monomers
         #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
@@ -212,7 +210,7 @@ class Grid():
         Monomers = expand(Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
         
         # Update monomer ratios in each time step with organic monomers following the substrates
-        Monomer_ratios[is_org] = self.SubstrateRatios.copy().values
+        Monomer_ratios[is_org] = self.SubstrateRatios.values
         
         # Keep track of mass balance for inputs
         #self.MonomerRatios_Cum = MR_transition
@@ -223,7 +221,7 @@ class Grid():
         # inputs of organic and mineral monomers
         #Input_Org = MR_transition[is_org].mul(self.MonInput[is_org].tolist(),axis=0)
         #Input_Mineral = MR_transition[is_mineral].mul((self.MonInput[is_mineral]).tolist(),axis=0)
-        Monomers.loc[is_org] = Monomers.loc[is_org] + Decay_Org #+ Input_Org
+        Monomers.loc[is_org] += Decay_Org #+ Input_Org
         #Monomers.loc[is_mineral] = Monomers.loc[is_mineral] #+ Input_Mineral
         
         # Get the total mass of each monomer: C+N+P
@@ -232,8 +230,7 @@ class Grid():
         Monomer_ratios.loc[is_org] = Monomers.loc[is_org].divide(rsm[is_org],axis=0)
         Monomer_ratios = Monomer_ratios.fillna(0)
         
-        
-        # Start computing monomer Uptake
+        # Start calculating monomer uptake
         # Moisture impacts on uptake, mimicking the diffusivity implications
         if self.psi[day] >= self.wp_fc:
             f_psi = 1.0
@@ -245,7 +242,6 @@ class Grid():
         Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
         
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
-        #Potential_Uptake_Comp_1 = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)
         Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)/Uptake_Km.add(rsm.tolist(),axis=0)
         
         # Derive "mass of each transporter of each taxon' by multiplying "total microbial biomass" by each taxon's allocation to different transporters.
@@ -282,8 +278,7 @@ class Grid():
         N_uptake_df = Uptake.mul(Monomer_ratios["N"],axis=0)
         P_uptake_df = Uptake.mul(Monomer_ratios["P"],axis=0)
         # generic multi-index
-        index_xx = [np.arange(self.gridsize).repeat(self.n_monomers),C_uptake_df.index]
-        C_uptake_df.index = N_uptake_df.index = P_uptake_df.index = index_xx
+        C_uptake_df.index = N_uptake_df.index = P_uptake_df.index = [np.arange(self.gridsize).repeat(self.n_monomers),C_uptake_df.index]
         # new method
         TUC_df = C_uptake_df.groupby(level=[0]).sum()
         TUN_df = N_uptake_df.groupby(level=[0]).sum()
@@ -447,16 +442,12 @@ class Grid():
 
         # Update Enzyme pools by substracting the 'dead' enzymes
         # Enzymes = (Enzymes - Enzyme_Loss).add(Enzyme_Production,axis=0)
-        Enzymes = Enzymes - Enzyme_Loss + Enzyme_Production
+        Enzymes -= Enzyme_Loss + Enzyme_Production
 
         # Update Substrates pools with dead enzymes
         DeadEnz_df = pd.concat([Enzyme_Loss,Enzyme_Loss.mul(self.Enz_Attrib["N_cost"].tolist()*self.gridsize,axis=0),Enzyme_Loss.mul(self.Enz_Attrib["P_cost"].tolist()*self.gridsize,axis=0)],axis=1)
         # Calculate the dead mass across taxa in each grid cell
-        # alternative 1:
-        #DeadEnz_df = DeadEnz_df.reset_index(drop=True)
-        #DeadEnz_gridcell = DeadEnz_df.groupby(DeadEnz_df.index//self.n_enzymes).sum(axis=0)
-        # alternative 2: w/ multi-index
-        DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes),DeadEnz_df.index]
+        DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes),DeadEnz_df.index] # create a multi-index
         DeadEnz_gridcell = DeadEnz_df.groupby(level=0).sum()
         # update dead microbes
         Substrates.loc[is_deadEnz] += DeadEnz_gridcell.values
