@@ -5,8 +5,6 @@ from microbe import microbe_osmo_psi
 from microbe import microbe_mortality_prob as MMP
 from utility import expand
 
-import sys
-
 class Grid():
     
     """
@@ -93,7 +91,6 @@ class Grid():
         self.Respiration  = float('nan')
         self.CUE_System   = float('nan')
         
-
         #Mortality
         self.MinRatios = data_init['MinRatios']     # minimal cell quotas
         self.C_min     = data_init['C_min']         # C threshold value of living cell
@@ -107,7 +104,6 @@ class Grid():
         self.alpha     = data_init['alpha']         # 1
         self.Kill      = float('nan')               # number of cells stochastically killed
         
-
         # Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
         self.max_size_b =  data_init['max_size_b']         # threshold of cell division
@@ -147,8 +143,7 @@ class Grid():
         
         # total mass of each substrate: C+N+P
         rss = Substrates.sum(axis=1) 
-
-        # substrate stoichiometry; NOTE:ensure NA(b/c divided by 0 in df) = 0
+        # substrate stoichiometry; NOTE:ensure NA(b/c of 0/0 in df) = 0
         SubstrateRatios = Substrates.divide(rss,axis=0)
         SubstrateRatios = SubstrateRatios.fillna(0)
         
@@ -158,42 +153,36 @@ class Grid():
         else:
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc))
         
-        # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for Temperature sensitivity
+        # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for temperature sensitivity
         Vmax = self.Vmax0 * np.exp((-self.Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
-        Km   = self.Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
-        Km.index = Sub_index #NOTE: reset the index to the Substrates
-        
-        # Multiply Vmax by enzyme concentration and then transform "(enz*gridsize) * sub"(tev_transition) --> "(sub*gridsize) * enz"(tev)
-        tev_transition = Vmax.mul(self.Enzymes,axis=0)
+        Km = self.Km0 * np.exp((-self.Km_Ea/self.k)*(1/(self.temp[day]+273) - 1/self.Tref))
+        # Multiply Vmax by enzyme concentration
+        tev_transition = Vmax.mul(self.Enzymes,axis=0) # (enz*gridsize) * sub
         tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a multipule index
-        tev = tev_transition.stack().unstack(1)
-        tev.index = Sub_index
+        tev = tev_transition.stack().unstack(1) # (sub*gridsize) * enz
         tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
-        
+
         # Michaelis-Menten equation
         Decay = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
         
         # Pull out each batch of required enzymes and sum across redundant enzymes
-        batch1 = Decay * (self.ReqEnz.loc['set1'].values)
-        # batch2 = Decay * (self.ReqEnz.loc['set2'].values)
+        batch1 = (self.ReqEnz.loc['set1'].values * Decay).sum(axis=1)
+        #batch2 = (self.ReqEnz.loc['set2'].values * Decay).sum(axis=1)
         
         # Assess the rate-limiting enzyme and set decay to that rate
-        #DecaySums = pd.concat([batch1.sum(axis=1),batch2.sum(axis=1)],axis=1)
+        #DecaySums = pd.concat([batch1, batch2],axis=1)
         #DecayRates0 = DecaySums.min(axis=1, skipna=True)
-        DecayRates0 = batch1.sum(axis=1)
         
         # Compare to substrate available and take the min, allowing for a tolerance of 1e-9
-        # have a transion step to achieve this
-        #DecayRates_transiton = pd.concat([DecayRates0,(rss - 1e-9*rss)],axis=1,sort=False)
-        DecayRates = pd.concat([DecayRates0,(rss - 1e-9*rss)],axis=1,sort=False).min(axis=1,skipna=True)
+        DecayRates = pd.concat([batch1,rss],axis=1,sort=False).min(axis=1,skipna=True)
         
         # Adjust cellulose rate by linking cellulose degradation to lignin concentration (LCI) 
-        ss7 = Substrates.loc[Sub_index == "Lignin"].sum(axis=1)
+        ss7 = Substrates.loc[Sub_index=="Lignin"].sum(axis=1)
         transition2 = 1 + LCI_slope * (ss7/(ss7 + Substrates.loc[Sub_index=="Cellulose",'C'].tolist()))
-        DecayRates.loc[Sub_index == "Cellulose"] = DecayRates.loc[Sub_index=="Cellulose"] * transition2.tolist()
+        DecayRates.loc[Sub_index=="Cellulose"] = DecayRates.loc[Sub_index=="Cellulose"] * transition2.tolist()
         
         # Update Substrates Pool by removing decayed C, N, & P and adding inputs
-        Substrates = Substrates - SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
+        Substrates -= SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
         
         # Pass these back to the global variables
         self.Substrates = Substrates
@@ -569,10 +558,9 @@ class Grid():
             Mic_subset = Microbes[rat_index]
             StartMicrobes = Mic_subset.copy()
 
-            # Derive new ratios
+            # Derive new ratios and Calculate difference between actual and min ratios  
             MicrobeRatios = Mic_subset.divide(Mic_subset.sum(axis=1),axis=0)
-            MinRat = MinRatios[rat_index]
-            # Calculate difference between actual and min ratios    
+            MinRat = MinRatios[rat_index]  
             Ratio_dif = MicrobeRatios - MinRat
             # Create a df recording the ratio differences < 0
             Ratio_dif_0 = Ratio_dif.copy()

@@ -57,7 +57,7 @@ def initialize_data(runtime_parameters):
     
     
     #...an instance of Enzyme class
-    Enzymes = Enzyme(runtime_parameters,parameters)
+    Enzymes = Enzyme(runtime_parameters,parameters,substrates_initial_pool.index)
     #...enzyme initial pool size:0
     enzymes_initial_pool = Enzymes.enzyme_pool_initialization()
     #...enzyme attributes

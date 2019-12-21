@@ -17,7 +17,7 @@ class Enzyme():
     """
     
     
-    def __init__(self,runtime,parameters):
+    def __init__(self,runtime,parameters,substrate_index):
         
         """
         Parameters:
@@ -53,7 +53,7 @@ class Enzyme():
         self.Uptake_Vmax_Km_int = parameters.loc['Uptake_Vmax_Km_int',1]    # intercept for Uptake Km-Vmax relationship:0
         self.Uptake_Km_min      = parameters.loc['Uptake_Km_min',1]         # Minimum uptake Km: 0.001
         self.Km_error           = parameters.loc['Km_error',1]              # Error term: default = 0
-        
+        self.substrate_index    = substrate_index
       
     def enzyme_pool_initialization(self):
         
@@ -104,18 +104,16 @@ class Enzyme():
         Input:
             user-supplied activation energy range for each substrate (for now min.= max.)
         Return:
-            Rows:enzymes; cols: substrates
+            Ea_df.T: Rows:enzymes; cols: substrates
         """
         
         # load in data of activation energies for different substrates
         Ea_input = pd.read_csv("enzyme_ea.csv",header=0,index_col=0)
-        
         #Ea_series: shape: (n_enzymes,)
         Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1)
-        
-        index   = ['Sub' + str(i) for i in range(1,self.n_substrates + 1)]
+        #index   = ['Sub' + str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz' + str(i) for i in range(1,self.n_enzymes + 1)]
-        Ea_df = pd.DataFrame(data = Ea_series.tolist(), index = index, columns = columns) # note: .tolist() !!!!!!!!
+        Ea_df = pd.DataFrame(data=Ea_series.tolist(), index=self.substrate_index,columns = columns) # note: .tolist() !!!!!!!!
         
         return Ea_df.T
     
@@ -155,16 +153,16 @@ class Enzyme():
               
         Return:
           Vmax0_df:   Rows are substrates; cols are enzymes (1st used as input for the function below)
-          Vmax0_df.T: this for expand()
+          Vmax0_df.T: enzyme*substrate; feeded to expand()
         """
         
         #Vmax0_array = np.random.uniform(self.Vmax0_min, self.Vmax0_max, self.n_substrates*self.n_enzymes)
         Vmax0_array = LHS(self.n_substrates*self.n_enzymes,self.Vmax0_min, self.Vmax0_max-self.Vmax0_min, 'uniform')
         Vmax0_array = Vmax0_array.reshape(self.n_substrates,self.n_enzymes)
         
-        index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
+        #index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Vmax0_df = pd.DataFrame(data  = Vmax0_array,index = index,columns = columns)
+        Vmax0_df = pd.DataFrame(data  = Vmax0_array,index=self.substrate_index,columns = columns)
         
         # Account for efficiency-specificity tradeoff by dividing Vmax_0 by the number of substrates (or monomers)
         # targeted and multiplied by a specificity factor
@@ -239,7 +237,7 @@ class Enzyme():
           Km_error:    error term (0);error term normally distributed with magnitude Km_error.)
           Km_min:      to which the minimum Km is constrained; 0.01
         Return:
-          Km_df:
+          Km_df: substrate * enzyme
         """
         
         mean = Vmax0.mean().mean()*self.Km_error
@@ -247,10 +245,9 @@ class Enzyme():
         
         #Km_array = abs(np.random.normal(Vmax0*self.Vmax_Km, Vmax0.mean().mean()*self.Km_error,Vmax0) + self.Vmax_Km_int)
         Km_array[Km_array < self.Km_min] = self.Km_min
-        
-        index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
+        #index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Km_df = pd.DataFrame(data = Km_array, index = index, columns = columns)
+        Km_df = pd.DataFrame(data = Km_array, index=self.substrate_index, columns = columns)
         
         return Km_df
     

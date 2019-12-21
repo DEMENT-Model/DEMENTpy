@@ -32,7 +32,7 @@ class Substrate():
         self.Avg_extra_req_enz = int(parameters.loc['Avg_extra_req_enz',1]) #Average # of additional enzymes required for substrate degradation
         
         # initial "substrate concentrations"; directly loaded in as:
-        self.Substrates_start = 1*( pd.read_csv('initial_substrates.csv',header=0,index_col=0))  
+        self.Substrates_start = pd.read_csv('initial_substrates.csv',header=0,index_col=0)
   
     
     
