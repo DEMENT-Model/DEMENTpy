@@ -739,11 +739,11 @@ class Grid():
         Returns:
             update Substrates, Monomers, and Microbes
         """
-        # reinitialize substrates and monomers
+        # reinitialize substrates and monomers in a new pulse
         self.Substrates = self.Substrates_init.copy()
         self.Monomers   = self.Monomers_init.copy()
         
-        # reinitialize microbial community
+        # reinitialize microbial community in a new pulse if True
         if mic_reinit == True:
             
             self.Microbes = self.Microbes_init.copy() #NOTE copy()!! bloody lesson
