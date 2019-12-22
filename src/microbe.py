@@ -50,9 +50,8 @@ class Microbe():
         self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # +2 b/c of two inorganic monomers
         self.n_uptake    = int(runtime.loc['n_uptake',1])        # Number of uptake transporters for each taxon
         self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])     # system-allowed number of osmotic compound
+        self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[runtime.loc['fb',1],(1-runtime.loc['fb',1])]) #index of fungal taxa (1);1-d array
         self.taxa_per_box= runtime.loc['taxa_per_box',1]         # Probability of each taxon entering a grid cell
-        fb = runtime.loc['fb',1]                                 # Probability of fungal taxa 
-        self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[fb,(1-fb)]) #Index of fungal taxa
         # microbial cell size
         self.Cfrac_b    = parameters.loc['Cfrac_b',1]     # Bacterial C fraction: 0.825 mg mg-1
         self.Nfrac_b    = parameters.loc['Nfrac_b',1]     # Bacterial N fraction: 0.16  mg mg-1
@@ -128,41 +127,38 @@ class Microbe():
         BacP = BacC * self.Pfrac_b/self.Cfrac_b
         microbes_array = np.tile([BacC,BacN,BacP],(self.n_taxa*self.gridsize,1))
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)] * self.gridsize
-        microbes_df = pd.DataFrame(data = microbes_array, index = index, columns = ["C","N","P"])
+        microbes_pp = pd.DataFrame(data = microbes_array, index = index, columns = ["C","N","P"])
         
-        # Obtain the Fungi index by expanding the fb to the spatial grid
+        # derive the Fungi index by expanding the fb to the spatial grid
         fb_grid = np.tile(self.fb,self.gridsize)
         
         # Fungal pool sizes for all elements
         FunC = 0.5 * self.max_size_f
         FunN = FunC * self.Nfrac_f/self.Cfrac_f
         FunP = FunC * self.Pfrac_f/self.Cfrac_f
-        
         #...Substitute with fungal pools of elements: fb_grid == 1
-        microbes_df.loc[fb_grid == 1, "C"] = FunC
-        microbes_df.loc[fb_grid == 1, "N"] = FunN
-        microbes_df.loc[fb_grid == 1, "P"] = FunP
-        
-        # Export the microbial mass before placement on the grid
-        microbes_pp = microbes_df.copy()
+        microbes_pp.loc[fb_grid == 1, "C"] = FunC
+        microbes_pp.loc[fb_grid == 1, "N"] = FunN
+        microbes_pp.loc[fb_grid == 1, "P"] = FunP
         
         #...Derive the number of fungi and bacteria taxa
-        Bac_index = microbes_df['C'] == BacC
-        Fun_index = microbes_df['C'] == FunC
+        Bac_index = microbes_pp['C'] == BacC
+        Fun_index = microbes_pp['C'] == FunC
         Bac_taxa = int(sum(Bac_index)/self.gridsize)
         Fun_taxa = int(sum(Fun_index)/self.gridsize)
         print('Before placement--','Bac_taxa=',Bac_taxa,'Fun_taxa=',Fun_taxa)
         
-        
+        # Export the microbial community preceding placement on the grid
+        microbes_df = microbes_pp.copy()
+
         # Randomly place the microbial community created above on the spatial grid to
-        #...initialize an spatially explicit microbial community by
+        #...initialize a spatially explicit microbial community by
         #...creating an array choose_taxa [1:yes;0:no]
         pb = self.taxa_per_box
         choose_taxa = np.random.choice([1,0], self.n_taxa*self.gridsize,replace=True, p=[pb,(1-pb)])
         pf = pb * self.max_size_b/self.max_size_f
         choose_taxa[fb_grid==1] = np.random.choice([1,0], sum(fb_grid),replace=True, p=[pf,(1-pf)])
         microbes_df.loc[choose_taxa==0] = 0
-        
         
         #...Derive the number of fungi and bacteria taxa
         Bac_index = microbes_df['C'] == BacC
@@ -200,20 +196,15 @@ class Microbe():
             MinRatios: dataframe
             
         """
-        
         # First derive the optimal stoichiometry of bacterial taxa
-        OptimalRatios_list = [self.Cfrac_b,self.Nfrac_b,self.Pfrac_b] * self.n_taxa
-        OptimalRatios_array = np.array(OptimalRatios_list).reshape(self.n_taxa,3)
+        OptimalRatios_array = np.tile([self.Cfrac_b,self.Nfrac_b,self.Pfrac_b],(self.n_taxa,1))
         index = ["Tax" + str(i) for i in range(1,self.n_taxa + 1)]
         OptimalRatios_df = pd.DataFrame(data = OptimalRatios_array,index = index,columns = ["C","N","P"])
         # Then substitute with fungal stoichiometry
         OptimalRatios_df[self.fb==1] = np.tile([self.Cfrac_f,self.Nfrac_f,self.Pfrac_f],(sum(self.fb),1)) 
-        
         # Calcualte ratio range
-        RangeRatios_list  = [self.Crange,self.Nrange,self.Prange] * self.n_taxa
-        RangeRatios_array = np.array(RangeRatios_list).reshape(self.n_taxa,3)
+        RangeRatios_array = np.tile([self.Crange,self.Nrange,self.Prange],(self.n_taxa,1))
         RangeRatios_df    = pd.DataFrame(data = RangeRatios_array,index = index,columns = ["C","N","P"])
-  
         # Calculate minimum cell quotas regarding C, N, & P
         MinRatios = OptimalRatios_df - RangeRatios_df
         
