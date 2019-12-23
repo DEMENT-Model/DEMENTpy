@@ -91,35 +91,33 @@ class Substrate():
         set 2 subn ------------------
         ........................................................
         """
-        
-        probability_vector = [0] * self.n_enzymes
-        probability_vector[0:self.Enzymes_per_sub] = [1]*self.Enzymes_per_sub
-        ReqEnz1_list  = [np.random.choice(probability_vector,self.n_enzymes,replace=False) for i in range(self.n_substrates)]
-        ReqEnz1_array = np.array(ReqEnz1_list).reshape(self.n_substrates,self.n_enzymes)
-        
+        # Every enzyme has a substrate
+        probability_list_enz = [0] * self.n_enzymes
+        probability_list_enz[0:self.Enzymes_per_sub] = [1]*self.Enzymes_per_sub
+        ReqEnz1_list  = [np.random.choice(probability_list_enz,self.n_enzymes,replace=False) for i in range(self.n_substrates)]
+        ReqEnz1_array = np.vstack(ReqEnz1_list)
         # Ensure every substrate has an enzyme
-        probability_vector    = [0] * self.n_substrates
-        probability_vector[0] = 1
+        probability_list_sub = [0] * self.n_substrates
+        probability_list_sub[0] = 1
         for i in range(self.n_enzymes):
             if sum(ReqEnz1_array[:,i])==0:
-                ReqEnz1_array[:,i] = np.random.choice(probability_vector,self.n_substrates,replace=False)
-        
+                ReqEnz1_array[:,i] = np.random.choice(probability_list_sub,self.n_substrates,replace=False)
         
         # Choose some substrates that require multiple enzymes        
         probability_list = [0] * self.n_enzymes
         probability_list[0:self.Avg_extra_req_enz] = [1]*self.Avg_extra_req_enz
-            
         ReqEnz2_array = np.random.choice(probability_list,self.n_substrates * self.n_enzymes,replace=True)        
         ReqEnz2_array = ReqEnz2_array.reshape(self.n_substrates,self.n_enzymes)
         ReqEnz2_array[ReqEnz1_array==1] = 0
-        for j in range(self.n_substrates):
-            if sum(ReqEnz2_array[j,]) == 0:
-                   ReqEnz2_array[j,] = 0
+        for i in range(self.n_substrates):
+            if sum(ReqEnz2_array[i,]) == 0:
+                ReqEnz2_array[i,] = 0  # no extra enzymes assigned
         
         # achieved via MultiIndex
-        ReqEnz_array = np.concatenate((np.tile(ReqEnz1_array,(self.gridsize,1)),np.tile(ReqEnz2_array,(self.gridsize,1))),axis =0)
+        ReqEnz_array = np.concatenate((np.tile(ReqEnz1_array,(self.gridsize,1)),np.tile(ReqEnz2_array,(self.gridsize,1))),axis=0)
         index = [np.array(['set1']*self.n_substrates*self.gridsize + ['set2']*self.n_substrates*self.gridsize),
                  np.array(["Sub" + str(i) for i in range(1,self.n_substrates + 1)]*self.gridsize*2)]
         columns = ['Enz' + str(i) for i in range(1,self.n_enzymes + 1)]
         ReqEnz_df = pd.DataFrame(data = ReqEnz_array,index = index,columns = columns)
+
         return ReqEnz_df

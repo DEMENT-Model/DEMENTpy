@@ -41,12 +41,7 @@ class Monomer():
         """
         
         # Monomer pool sizes for all elements
-        Monomers_array = np.concatenate((np.array([0,self.Init_NH4,0]+[0,0,self.Init_PO4]).reshape(2,3),
-                                         substrates_init.values*self.Monomer_Substrate_Ratio),axis = 0)
-        
-        #...redundant to have this step; no 'NA' values exist
-        #Monomers_array[np.isnan(Monomers_array)] = 0
-        
+        Monomers_array = np.concatenate((np.stack([[0,self.Init_NH4,0],[0,0,self.Init_PO4]]),substrates_init.values*self.Monomer_Substrate_Ratio),axis=0)    
         #...NOTE: index starts at 3!!!!!
         index = ["NH4","PO4","DeadMic","DeadEnz"] + ["Mon" + str(i) for i in range(3,self.n_monomers-2 + 1)]
         Monomers_df = pd.DataFrame(data=Monomers_array, index=index, columns=["C","N","P"])

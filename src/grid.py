@@ -133,17 +133,15 @@ class Grid():
             -> Adjust cellulose rate with LCI(lignocellulose index)
         """
         
-        # Use a local variable for convenience
-        Substrates = self.Substrates
         # indices
-        Sub_index = Substrates.index # derive the Substrates index by subtrate names
+        Sub_index = self.Substrates.index # derive the Substrates index by subtrate names
         # constant
         LCI_slope = -0.8  # lignocellulose index--LCI
         
         # total mass of each substrate: C+N+P
-        rss = Substrates.sum(axis=1) 
+        rss = self.Substrates.sum(axis=1) 
         # substrate stoichiometry; NOTE:ensure NA(b/c of 0/0 in df) = 0
-        SubstrateRatios = Substrates.divide(rss,axis=0)
+        SubstrateRatios = self.Substrates.divide(rss,axis=0)
         SubstrateRatios = SubstrateRatios.fillna(0)
         
         # moisture effects on enzymatic kinetics
@@ -153,8 +151,8 @@ class Grid():
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc))
         
         # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for temperature sensitivity
-        Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
-        Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
+        Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi #Vmax: (enz*gridsize) * sub
+        Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) #Km: (sub*gridsize) * enz
         
         # Multiply Vmax by enzyme concentration
         tev_transition = Vmax.mul(self.Enzymes,axis=0) # (enz*gridsize) * sub
@@ -176,15 +174,14 @@ class Grid():
         DecayRates = pd.concat([batch1,rss],axis=1,sort=False).min(axis=1,skipna=True)
         
         # Adjust cellulose rate by linking cellulose degradation to lignin concentration (LCI) 
-        ss7 = Substrates.loc[Sub_index=="Lignin"].sum(axis=1)
-        transition2 = 1 + LCI_slope * (ss7/(ss7 + Substrates.loc[Sub_index=="Cellulose",'C'].tolist()))
-        DecayRates.loc[Sub_index=="Cellulose"] = DecayRates.loc[Sub_index=="Cellulose"] * transition2.tolist()
+        ss7 = self.Substrates.loc[Sub_index=="Lignin"].sum(axis=1).values
+        DecayRates.loc[Sub_index=="Cellulose"] *= 1 + (ss7/(ss7 + self.Substrates.loc[Sub_index=="Cellulose",'C'])) * LCI_slope
         
-        # Update Substrates Pool by removing decayed C, N, & P and adding inputs
-        Substrates -= SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
+        # Update Substrates Pool by removing decayed C, N, & P
+        # depending on specific needs, adding inputs of substrates can be done here
+        self.Substrates -= SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
         
-        # Pass these back to the global variables
-        self.Substrates = Substrates
+        # Pass these two back to the global variables to be used in the next method
         self.SubstrateRatios = SubstrateRatios
         self.DecayRates = DecayRates
 
@@ -199,36 +196,32 @@ class Grid():
             -> Uptake by Taxon:
         """
         
-        # Use local variables for convenience
-        Monomers = self.Monomers
-        Monomer_ratios = self.Monomer_ratios
-        # Indices
-        is_org = (Monomers.index != "NH4") & (Monomers.index != "PO4") # organic monomers
-        #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
-        
         # Each monomer averaged over the grid in each time step
-        Monomers = expand(Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
+        self.Monomers = expand(self.Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
         
+        # Indices
+        is_org = (self.Monomers.index != "NH4") & (self.Monomers.index != "PO4") # organic monomers
+        #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
+
         # Update monomer ratios in each time step with organic monomers following the substrates
-        Monomer_ratios[is_org] = self.SubstrateRatios.values
-        
+        self.Monomer_ratios[is_org] = self.SubstrateRatios.values
         # Keep track of mass balance for inputs
         #self.MonomerRatios_Cum = MR_transition
         
         # Determine monomer pool from decay and input
         # Organic monomers derived from substrate-decomposition
-        Decay_Org = Monomer_ratios[is_org].mul(self.DecayRates.tolist(),axis=0)
+        Decay_Org = self.Monomer_ratios[is_org].mul(self.DecayRates.values,axis=0)
         # inputs of organic and mineral monomers
         #Input_Org = MR_transition[is_org].mul(self.MonInput[is_org].tolist(),axis=0)
         #Input_Mineral = MR_transition[is_mineral].mul((self.MonInput[is_mineral]).tolist(),axis=0)
-        Monomers.loc[is_org] += Decay_Org #+ Input_Org
-        #Monomers.loc[is_mineral] = Monomers.loc[is_mineral] #+ Input_Mineral
+        self.Monomers.loc[is_org] += Decay_Org #+ Input_Org
+        #self.Monomers.loc[is_mineral] += Input_Mineral
         
         # Get the total mass of each monomer: C+N+P
-        rsm = Monomers.sum(axis=1)
+        rsm = self.Monomers.sum(axis=1)
         # Recalculate monomer ratios after updating monomer pool and before uptake calculation
-        Monomer_ratios.loc[is_org] = Monomers.loc[is_org].divide(rsm[is_org],axis=0)
-        Monomer_ratios = Monomer_ratios.fillna(0)
+        self.Monomer_ratios.loc[is_org] = self.Monomers.loc[is_org].divide(rsm[is_org],axis=0)
+        self.Monomer_ratios = self.Monomer_ratios.fillna(0)
         
         # Start calculating monomer uptake
         # Moisture impacts on uptake, mimicking the diffusivity implications
@@ -242,7 +235,7 @@ class Grid():
         Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
         
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
-        Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.tolist(),axis=0)/Uptake_Km.add(rsm.tolist(),axis=0)
+        Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.values,axis=0)/Uptake_Km.add(rsm.values,axis=0)
         
         # Derive "mass of each transporter of each taxon' by multiplying "total microbial biomass" by each taxon's allocation to different transporters.
         # NOTE: transpose the df to Upt*(Taxa*grid)
@@ -250,7 +243,7 @@ class Grid():
         
         # Define Max_Uptake: (Monomer*gridsize) * Taxon
         Max_Uptake_array = np.array([0]*self.gridsize*self.n_monomers*self.n_taxa).reshape(self.gridsize*self.n_monomers,self.n_taxa)
-        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index = Monomers.index,columns = self.Microbes.index[0:self.n_taxa])
+        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index = self.Monomers.index,columns = self.Microbes.index[0:self.n_taxa])
         # Matrix multiplication to get max possible uptake by monomer
         # ...Must extract each grid point separately for operation
         for i in range(self.gridsize):
@@ -261,9 +254,8 @@ class Grid():
         # Total potential uptake of each monomer
         csmu = Max_Uptake.sum(axis=1)
         # Take the min of the monomer available and the max potential uptake
-        Min_Uptake = pd.concat([csmu,rsm],axis=1).min(axis=1, skipna=True)
         # Scale the uptake to what's available: (Monomer*gridsize) * Taxon
-        Uptake = Max_Uptake.mul(Min_Uptake/csmu,axis=0)
+        Uptake = Max_Uptake.mul(pd.concat([csmu,rsm],axis=1).min(axis=1,skipna=True)/csmu,axis=0)
         Uptake.loc[csmu==0] = 0
 
         # Prevent total uptake from getting too close to zero
@@ -272,25 +264,21 @@ class Grid():
         
         # Update monomers
         # By monomer: total uptake (monomer*gridsize) * 3(C-N-P)
-        Monomers -= Monomer_ratios.mul(Uptake.sum(axis=1),axis=0)
+        self.Monomers -= self.Monomer_ratios.mul(Uptake.sum(axis=1),axis=0)
         # By taxon: total uptake; (monomer*gridsize) * taxon
-        C_uptake_df = Uptake.mul(Monomer_ratios["C"],axis=0)
-        N_uptake_df = Uptake.mul(Monomer_ratios["N"],axis=0)
-        P_uptake_df = Uptake.mul(Monomer_ratios["P"],axis=0)
+        C_uptake_df = Uptake.mul(self.Monomer_ratios["C"],axis=0)
+        N_uptake_df = Uptake.mul(self.Monomer_ratios["N"],axis=0)
+        P_uptake_df = Uptake.mul(self.Monomer_ratios["P"],axis=0)
         # generic multi-index
         C_uptake_df.index = N_uptake_df.index = P_uptake_df.index = [np.arange(self.gridsize).repeat(self.n_monomers),C_uptake_df.index]
-        # new method
         TUC_df = C_uptake_df.groupby(level=[0]).sum()
         TUN_df = N_uptake_df.groupby(level=[0]).sum()
         TUP_df = P_uptake_df.groupby(level=[0]).sum()
 
-        #...Pass back to the global variables
+        #...Pass these 3 to global variables
         self.Taxon_Uptake_C = TUC_df.stack().values     # spatial C uptake: array (sum across monomers)
         self.Taxon_Uptake_N = TUN_df.stack().values     # spatial N uptake: ...
         self.Taxon_Uptake_P = TUP_df.stack().values     # spatial P uptake: ...
-        self.Monomer_ratios = Monomer_ratios            # Monomer_ratios    
-        self.Monomers = Monomers                        # update Monomers
-                   
 
         
     def metabolism(self,day):

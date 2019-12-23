@@ -61,7 +61,7 @@ class Enzyme():
             Enz_min = 0
             Enz_max = 0
         Return:
-            Enzymes_df: df
+            Enzymes_df: series;
         """
         
         Enzymes_array = np.random.uniform(self.Enz_min,self.Enz_max,self.n_enzymes)
@@ -87,7 +87,7 @@ class Enzyme():
         """
         
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
-        index = ["Enz" + str(i) for i in range(1,self.n_enzymes + 1)]
+        index = ["Enz" + str(i) for i in range(1,self.n_enzymes+1)]
         EnzAttrib_df = pd.DataFrame(data=EnzAttrib_array,index=index, columns=["C_cost","N_cost","P_cost","Maint_cost"])
         
         return EnzAttrib_df
