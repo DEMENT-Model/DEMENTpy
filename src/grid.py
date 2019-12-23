@@ -243,7 +243,7 @@ class Grid():
         
         # Define Max_Uptake: (Monomer*gridsize) * Taxon
         Max_Uptake_array = np.array([0]*self.gridsize*self.n_monomers*self.n_taxa).reshape(self.gridsize*self.n_monomers,self.n_taxa)
-        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index = self.Monomers.index,columns = self.Microbes.index[0:self.n_taxa])
+        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index=self.Monomers.index,columns = self.Microbes.index[0:self.n_taxa])
         # Matrix multiplication to get max possible uptake by monomer
         # ...Must extract each grid point separately for operation
         for i in range(self.gridsize):
@@ -292,13 +292,8 @@ class Grid():
         -> 4. update Enzyme with cell production and Substrate by adding dead enzymes
         """
         
-        # Use local variables for convenience
-        Microbes   = self.Microbes
-        Substrates = self.Substrates
-        Enzymes    = self.Enzymes
-        
         # Some indices
-        is_deadEnz = Substrates.index == "DeadEnz"
+        is_deadEnz = self.Substrates.index == "DeadEnz"
         
         # Constants
         Osmo_N_cost     = 0.3
@@ -315,7 +310,7 @@ class Grid():
         # 1)"Transporters' maintenence" 
         #...Taxon-specific uptake cost determined by total biomass C: 0.1 - 0.01
         #Taxon_Transporter_Total = (self.Uptake_Cost.mul(Microbes.sum(axis=1),axis=0)).sum(axis=1)
-        Taxon_Transporter_Cost = (self.Uptake_Enz_Cost.mul(Microbes['C'],axis=0)).sum(axis=1)
+        Taxon_Transporter_Cost = (self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0)).sum(axis=1)
         #...Taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
         Taxon_Transporter_Maint = Taxon_Transporter_Cost * self.Uptake_Maint_Cost
         
@@ -326,14 +321,14 @@ class Grid():
         # MNAOEC: Min_N_Avail_Osmo_Enzyme_Consti
         #...............................................
         # 2) Osmolyte before adjustment
-        Taxon_Osmo_Consti = self.Consti_Osmo_C.mul(Microbes['C'],axis=0) * f_psi
+        Taxon_Osmo_Consti = self.Consti_Osmo_C.mul(self.Microbes['C'],axis=0) * f_psi
         Taxon_Osmo_Consti_Cost_N = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
         # 3) Enzyme before adjustment
-        Taxon_Enzyme_Consti = self.Consti_Enzyme_C.mul(Microbes['C'],axis=0)
+        Taxon_Enzyme_Consti = self.Consti_Enzyme_C.mul(self.Microbes['C'],axis=0)
         Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1)
         # Adjust osmolyte & enzyme production based on available N in microbial biomass
         OECCN = Taxon_Osmo_Consti_Cost_N + Taxon_Enzyme_Consti_Cost_N # Total N cost
-        MNAOEC = (pd.concat([OECCN[OECCN>0],Microbes["N"][OECCN>0]],axis=1)).min(axis=1,skipna=True) # Get the minimum value
+        MNAOEC = (pd.concat([OECCN[OECCN>0],self.Microbes["N"][OECCN>0]],axis=1)).min(axis=1,skipna=True) # Get the minimum value
         ARROEC = (MNAOEC/OECCN[OECCN>0]).fillna(0)  # Derive ratio of availabe N to required N
         # 3) Osmolyte adjusted
         Taxon_Osmo_Consti.loc[OECCN>0] = Taxon_Osmo_Consti.loc[OECCN>0].mul(ARROEC,axis=0)  # adjusted osmolyte
@@ -371,7 +366,7 @@ class Grid():
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
         # total N required
         OEICN = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N    # N cost of osmolyte and enzymes
-        OEIAN = pd.Series(data=self.Taxon_Uptake_N,index=Microbes.index) # N available
+        OEIAN = pd.Series(data=self.Taxon_Uptake_N,index=self.Microbes.index) # N available
         # Get the minimum value by comparing N cost to N available
         Min_N_Avail_Osmo_Enzyme_Induci = (pd.concat([OEICN[OEICN>0],OEIAN[OEICN>0]],axis=1)).min(axis=1,skipna=True)
         # Ratio of Available to Required
@@ -396,10 +391,10 @@ class Grid():
         #...............................Integration...........................#
         #---------------------------------------------------------------------#
         # Update Microbial pools with GAINS (from uptake) and LOSSES (from constitutive production)
-        Microbes.loc[:,'C'] += Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
-        Microbes.loc[:,'N'] += Microbe_N_Gain - Taxon_Enzyme_Consti_Cost_N - Taxon_Osmo_Consti_Cost_N 
-        Microbes.loc[:,'P'] += Microbe_P_Gain - Taxon_Enzyme_Consti_Cost_P
-        Microbes[Microbes<0] = 0 #Avoid negative values
+        self.Microbes.loc[:,'C'] += Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
+        self.Microbes.loc[:,'N'] += Microbe_N_Gain - Taxon_Enzyme_Consti_Cost_N - Taxon_Osmo_Consti_Cost_N 
+        self.Microbes.loc[:,'P'] += Microbe_P_Gain - Taxon_Enzyme_Consti_Cost_P
+        self.Microbes[self.Microbes<0] = 0 #Avoid negative values
         # Growth_yield = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
 
         # Taxon-specific emergent CUE
@@ -411,12 +406,12 @@ class Grid():
         # System-level emergent CUE
         Taxon_Uptake_C_grid = self.Taxon_Uptake_C.sum()  # Total C Uptake
         if Taxon_Uptake_C_grid == 0:
-            CUE_system = 0
+            self.CUE_system = 0
         else:
-            CUE_system = Microbe_C_Gain.sum()/Taxon_Uptake_C_grid
+            self.CUE_system = Microbe_C_Gain.sum()/Taxon_Uptake_C_grid
         
         # Respiration from Constitutive + Inducible(NOTE: missing sum(MicLoss[,"C"]) in the Mortality below)
-        Respiration = (Taxon_Transporter_Maint + Taxon_Growth_Respiration + Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint + Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint).sum(axis=0)
+        self.Respiration = (Taxon_Transporter_Maint + Taxon_Growth_Respiration + Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint + Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint).sum(axis=0)
         
         # Sum each enzyme across taxon in each grid cell
         Taxon_Enzyme_Production = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci # gene-specific prod of enzyme of each taxon: "(taxon*gridsize) * enzyme"
@@ -426,11 +421,11 @@ class Grid():
         Enzyme_Production = EP_df.stack().values # 1-D array
 
         # Enzyme turnover
-        Enzyme_Loss = Enzymes * Enzyme_Loss_Rate # enzyme turnover rate(=0.04; Allison 2006)
+        Enzyme_Loss = self.Enzymes * Enzyme_Loss_Rate # enzyme turnover rate(=0.04; Allison 2006)
 
         # Update Enzyme pools by substracting the 'dead' enzymes
         # Enzymes = (Enzymes - Enzyme_Loss).add(Enzyme_Production,axis=0)
-        Enzymes -= Enzyme_Loss + Enzyme_Production
+        self.Enzymes -= Enzyme_Loss + Enzyme_Production
 
         # Update Substrates pools with dead enzymes
         DeadEnz_df = pd.concat([Enzyme_Loss,Enzyme_Loss.mul(self.Enz_Attrib["N_cost"].tolist()*self.gridsize,axis=0),Enzyme_Loss.mul(self.Enz_Attrib["P_cost"].tolist()*self.gridsize,axis=0)],axis=1)
@@ -438,14 +433,11 @@ class Grid():
         DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes),DeadEnz_df.index] # create a multi-index
         DeadEnz_gridcell = DeadEnz_df.groupby(level=0).sum()
         # update dead microbes
-        Substrates.loc[is_deadEnz] += DeadEnz_gridcell.values
+        self.Substrates.loc[is_deadEnz] += DeadEnz_gridcell.values
 
         #...Pass variables back to the global ones 
-        self.Microbes    = Microbes                        # Spatially taxon_specific biomass
-        self.Substrates  = Substrates                      # Spatially substrate-specific mass
-        self.Enzymes     = Enzymes                         # Spatially enzyme-specific enzyme
-        self.CUE_System  = CUE_system                      # System-level CUE
-        self.Respiration = Respiration                     # System-level respiration
+        #self.CUE_System  = CUE_system                      # System-level CUE
+        #self.Respiration = Respiration                     # System-level respiration
         #self.Microbes_interim = Microbes_interim           # Spatially ...
         #self.Growth_Yield= Growth_yield                    # Spatially taxon-specific growth yield
         #self.Transporters= Taxon_Transporter_Cost          # Spaitally taxon-specific transporters 
@@ -472,8 +464,8 @@ class Grid():
         Microbes   = self.Microbes
         Substrates = self.Substrates
         Monomers   = self.Monomers
-        Respiration= self.Respiration
         MinRatios  = self.MinRatios
+        #Respiration= self.Respiration
         
         # Constants
         Leaching = 0.1         # Abiotic monomer loss rate
@@ -590,7 +582,7 @@ class Grid():
             # Sum up the element losses from biomass across whole grid and calculate average loss
             MicLoss = StartMicrobes - Microbes[rat_index]
             # Update total respiration by adding ...
-            Respiration += sum(MicLoss['C'])
+            self.Respiration += sum(MicLoss['C'])
             # Update monomer pools 
             Monomers.loc[is_NH4,"N"] += sum(MicLoss["N"])/self.gridsize
             Monomers.loc[is_PO4,"P"] += sum(MicLoss["P"])/self.gridsize
