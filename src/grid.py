@@ -461,53 +461,50 @@ class Grid():
         """
         
         # Use local variales for convenience
-        Microbes   = self.Microbes
-        Substrates = self.Substrates
-        Monomers   = self.Monomers
-        MinRatios  = self.MinRatios
-        #Respiration= self.Respiration
-        
+        #Microbes   = self.Microbes
+        #Monomers   = self.Monomers
+
         # Constants
         Leaching = 0.1         # Abiotic monomer loss rate
         Psi_slope_leach = 0.5  # Mositure sensivity of abiotic monomer loss rate
         
         # Indices
-        Mic_index  = Microbes.index
-        is_DeadMic = Substrates.index == "DeadMic"
-        is_NH4 = Monomers.index == "NH4"
-        is_PO4 = Monomers.index == "PO4"
+        Mic_index  = self.Microbes.index
+        is_DeadMic = self.Substrates.index == "DeadMic"
+        is_NH4 = self.Monomers.index == "NH4"
+        is_PO4 = self.Monomers.index == "PO4"
         
         # Reset the index to arabic numerals from taxa series 
-        Microbes  = Microbes.reset_index(drop=True)
-        MinRatios = MinRatios.reset_index(drop=True)
+        self.Microbes  = self.Microbes.reset_index(drop=True)
+        MinRatios = self.MinRatios.reset_index(drop=True)
         
         # Create a blank dataframe, Death, having the same structure as Microbes
-        Death = Microbes.copy()
+        Death = self.Microbes.copy()
         Death[:] = 0
         # Create a series, kill, holding boolean value of False
         kill = pd.Series([False]*self.n_taxa*self.gridsize)
         
         # Start of calcualtion of mortality first with THRESHOLD
         # Index the dead taxa based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
-        starve_index = (Microbes["C"]>0) & ((Microbes["C"]<self.C_min)|(Microbes["N"]<self.N_min)|(Microbes["P"]<self.P_min))
+        starve_index = (self.Microbes["C"]>0) & ((self.Microbes["C"]<self.C_min)|(self.Microbes["N"]<self.N_min)|(self.Microbes["P"]<self.P_min))
         # Index the dead and put them in Death
-        Death.loc[starve_index] = Microbes[starve_index]
+        Death.loc[starve_index] = self.Microbes[starve_index]
         # Update Microbes by setting grid cells with dead microbes to 0
-        Microbes.loc[starve_index] = 0
+        self.Microbes.loc[starve_index] = 0
         # Index the locations where microbial cells remain alive
-        mic_index = Microbes["C"] > 0
+        mic_index = self.Microbes["C"] > 0
         
         # Mortality prob. b/c drought with the function: MMP:microbe_mortality_psi() 
         r_death = MMP(self.psi[day],self.wp_fc,self.death_rate,self.beta,self.tolerance)
         # Kill microbes randomly
         #kill.loc[mic_index] = r_death[mic_index] > np.repeat(np.random.uniform(0,1),sum(mic_index))
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index))
-        Death.loc[kill] = Microbes[kill]
+        Death.loc[kill] = self.Microbes[kill]
         # Update Microbes Again
-        Microbes.loc[kill] = 0
+        self.Microbes.loc[kill] = 0
 
         # Index locations where microbes remain alive
-        mic_index = Microbes['C']>0 
+        mic_index = self.Microbes['C']>0 
         # Calculate the total dead mass (threshold & drought) across taxa in each grid cell
         Death_gridcell = Death.groupby(Death.index//self.n_taxa).sum(axis=0)
         
@@ -516,17 +513,17 @@ class Grid():
         if sum(mic_index) == 0:
             
             #...Update Substrates pool by adding dead microbial biomass
-            Substrates.loc[is_DeadMic] += Death_gridcell.values
+            self.Substrates.loc[is_DeadMic] += Death_gridcell.values
         
         # Partly die and adjust stoichiometry of those remaining alive
         else:
             
             # Index only those taxa in Microbes that have below-minimum quotas: Mic_subset
-            MicrobeRatios = Microbes[mic_index].divide(Microbes[mic_index].sum(axis=1),axis=0)
+            MicrobeRatios = self.Microbes[mic_index].divide(self.Microbes[mic_index].sum(axis=1),axis=0)
             mic_index_sub = (MicrobeRatios["C"]<MinRatios[mic_index]["C"])|(MicrobeRatios["N"]<MinRatios[mic_index]["N"])|(MicrobeRatios["P"]<MinRatios[mic_index]["P"])
-            rat_index = Microbes.index.map(mic_index_sub).fillna(False)
+            rat_index = self.Microbes.index.map(mic_index_sub).fillna(False)
             # Derive the Microbes wanted
-            Mic_subset = Microbes[rat_index]
+            Mic_subset = self.Microbes[rat_index]
             StartMicrobes = Mic_subset.copy()
 
             # Derive new ratios and Calculate difference between actual and min ratios  
@@ -577,36 +574,32 @@ class Grid():
             P = [new_P.loc[i,Limiting[i]] for i in Limiting.index] #list
             
             # Update Microbes
-            Microbes.loc[rat_index] = np.vstack((C,N,P)).transpose()
+            self.Microbes.loc[rat_index] = np.vstack((C,N,P)).transpose()
 
             # Sum up the element losses from biomass across whole grid and calculate average loss
-            MicLoss = StartMicrobes - Microbes[rat_index]
+            MicLoss = StartMicrobes - self.Microbes[rat_index]
             # Update total respiration by adding ...
             self.Respiration += sum(MicLoss['C'])
             # Update monomer pools 
-            Monomers.loc[is_NH4,"N"] += sum(MicLoss["N"])/self.gridsize
-            Monomers.loc[is_PO4,"P"] += sum(MicLoss["P"])/self.gridsize
+            self.Monomers.loc[is_NH4,"N"] += sum(MicLoss["N"])/self.gridsize
+            self.Monomers.loc[is_PO4,"P"] += sum(MicLoss["P"])/self.gridsize
             
             # Update Substrates pool by adding dead microbial biomass            
-            Substrates.loc[is_DeadMic] += Death_gridcell.values
+            self.Substrates.loc[is_DeadMic] += Death_gridcell.values
         # End of if else clause
         
         # Leaching of monomers
-        Leaching_N = Monomers.loc[is_NH4,"N"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
-        Leaching_P = Monomers.loc[is_PO4,"P"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
+        Leaching_N = self.Monomers.loc[is_NH4,"N"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
+        Leaching_P = self.Monomers.loc[is_PO4,"P"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
         # Update Monomers
-        Monomers.loc[is_NH4,"N"] -= Leaching_N
-        Monomers.loc[is_PO4,"P"] -= Leaching_P
+        self.Monomers.loc[is_NH4,"N"] -= Leaching_N
+        self.Monomers.loc[is_PO4,"P"] -= Leaching_P
         
         # Restore the index to taxa series
-        Microbes.index = Mic_index
+        self.Microbes.index = Mic_index
         
         # Pass back to the global variables
-        self.Microbes   = Microbes
-        self.Monomers   = Monomers
-        self.Substrates = Substrates
-        self.Respiration= Respiration
-        self.Kill       = kill.sum()
+        self.Kill = kill.sum()
 
 
     def reproduction(self,day):
