@@ -28,16 +28,23 @@ def initialize_data(runtime_parameters):
         Data_Dictionary: a dictionary of all variables that feeds the grid.py module
     """
     
-    #...Load input parameters
-    parameters = pd.read_csv('parameters.csv',header=None,index_col=0)
-    
-    
+    # Load all input files
+    parameters      = pd.read_csv('parameters.csv',header=None,index_col=0)            # parameters
+    substrates_init = pd.read_csv('initial_substrates.csv',header=0,index_col=0)       # initial substrates
+    sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',header=0, index_col=0)          # load the inputs of sub and monomers
+    Ea_input        = pd.read_csv("enzyme_ea.csv",header=0,index_col=0)                # enzyme
+    #...Load climate data
+    climate = pd.read_csv('climate.csv')
+    daily_temp = climate['Temp']
+    daily_psi = climate['Psi']
+
+
     #...an instance of Substrate class 
-    Substrates = Substrate(runtime_parameters,parameters)
+    Substrates = Substrate(runtime_parameters,parameters,substrates_init)
     #...substrate initial pool size
     substrates_initial_pool = Substrates.Substrates_start
     #...substrate input rate
-    substrates_input_rate = Substrates.substrate_input()
+    substrates_input_rate = Substrates.substrate_input(sub_mon_input)
     #...substrates-produced monomers
     substrates_produced_monomers = Substrates.substrate_produced_monomer()
     #...substrates degradation required enzymes
@@ -51,7 +58,7 @@ def initialize_data(runtime_parameters):
     #...initial monomer ratios
     monomer_ratio_inital = Monomers.monomer_ratios(monomers_initial_pool)
     #...monomers input rate
-    monomers_input_rate = Monomers.monomer_input_rate()
+    monomers_input_rate = Monomers.monomer_input_rate(sub_mon_input)
     #...monomers uptake required enzymes
     monomers_uptake_reqenzyme = Monomers.monomer_uptake_reqenzyme()
     
@@ -63,7 +70,7 @@ def initialize_data(runtime_parameters):
     #...enzyme attributes
     enzymes_attributes = Enzymes.enzyme_attributes()
     #...enzymes of substrate degradation Ea    
-    enzymes_Ea = Enzymes.enzyme_Ea()
+    enzymes_Ea = Enzymes.enzyme_Ea(Ea_input)
     #...monomers uptake enzyme Ea
     enzymes_uptake_Ea = Enzymes.enzyme_uptake_Ea()
     #...enzymes of substrate degradation Vmax
@@ -98,12 +105,6 @@ def initialize_data(runtime_parameters):
     microbial_drought_tol = Microbes.microbe_drought_tol(microbial_osmolyte_prod_rate[2],microbial_osmolyte_prod_rate[3])
     #...Microbial mortality
     microbial_mortality = Microbes.microbe_mortality(microbial_community[2])
-    
-    #...Load climate data
-    climate = pd.read_csv('climate.csv')
-    daily_temp = climate['Temp']
-    daily_psi = climate['Psi']
-    
     
     #...Dump all data into a dictionary; note some varibles with expand() to put them on the spatial grid
     gridsize = int(runtime_parameters.loc['gridsize',1])

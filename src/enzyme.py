@@ -29,17 +29,14 @@ class Enzyme():
         self.n_substrates = int(runtime.loc['n_substrates',1])
         self.n_monomers   = self.n_substrates + 2
         self.n_uptake     = int(runtime.loc['n_uptake',1])
-
-        self.substrate_index = substrate_index
+        self.substrate_index = substrate_index                   # index of substrates
 
         self.Enz_min    = parameters.loc['Enz_min',1]            # Initial min. enzyme present in terms of carbon
         self.Enz_max    = parameters.loc['Enz_max',1]            # Initial max. enzyme present in terms of carbon
-        
         self.Enz_C_cost = parameters.loc['Enz_C_cost',1]         # Per enzyme C cost as a fraction of uptake:1
         self.Enz_N_cost = parameters.loc['Enz_N_cost',1]         # Per enzyme N cost as a fraction of C cost:0.3
         self.Enz_P_cost = parameters.loc['Enz_P_cost',1]         # Per enzyme P cost as a fraction of C cost:0
         self.Enz_Maint_cost = parameters.loc['Enz_Maint_cost',1] # Maintenence cost of enzyme production
-        
         self.Uptake_Ea_min = parameters.loc['Uptake_Ea_min',1]       # Minimum activation energy for uptake
         self.Uptake_Ea_max = parameters.loc['Uptake_Ea_max',1]       # Maximum activation energy for uptake
         self.Vmax0_min     = parameters.loc['Vmax0_min',1]           # Minimum Vmax for enzyme
@@ -47,7 +44,6 @@ class Enzyme():
         self.Uptake_Vmax0_min = parameters.loc['Uptake_Vmax0_min',1] # Minimum uptake Vmax
         self.Uptake_Vmax0_max = parameters.loc['Uptake_Vmax0_max',1] # Maximum uptake Vmax
         self.Specif_factor    = parameters.loc['Specif_factor',1]    # Efficiency-specificity
-        
         self.Vmax_Km            = parameters.loc['Vmax_Km',1]               # slope for Km-Vmax relationship:1
         self.Vmax_Km_int        = parameters.loc['Vmax_Km_int',1]           # intercept for Km-Vmax relationship:0
         self.Km_min             = parameters.loc['Km_min',1]                # Minimum Km: default = 0.01
@@ -97,7 +93,7 @@ class Enzyme():
         return EnzAttrib_df
     
     
-    def enzyme_Ea(self):
+    def enzyme_Ea(self,Ea_input):
         
         """ 
         Enzyme specificity matrix of activation energies
@@ -108,11 +104,7 @@ class Enzyme():
             Ea_df.T: Rows:enzymes; cols: substrates
         """
         
-        # load in data of activation energies for different substrates
-        Ea_input = pd.read_csv("enzyme_ea.csv",header=0,index_col=0)
-        #Ea_series: shape: (n_enzymes,)
         Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1)
-        #index   = ['Sub' + str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz' + str(i) for i in range(1,self.n_enzymes + 1)]
         Ea_df = pd.DataFrame(data=Ea_series.tolist(), index=self.substrate_index,columns = columns) # note: .tolist() !!!!!!!!
         

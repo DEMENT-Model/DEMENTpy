@@ -17,6 +17,7 @@ class Monomer():
         
         self.n_monomers  = int(runtime.loc['n_substrates',1]) + 2                  # Number of monomers within the system
         self.n_uptake    = int(runtime.loc['n_uptake',1])                          # Number of uptake transporters for each taxon
+        
         self.Monomer_Substrate_Ratio = parameters.loc['Monomer_Substrate_Ratio',1] # default:0; amount of initial monomer relative to substrate per grid box
         self.Uptake_per_monomer      = int(parameters.loc['Uptake_per_monomer',1]) # default:1; number of transporters per monomer 
         self.Init_NH4  = parameters.loc['Init_NH4',1]                              # Initial NH4
@@ -46,10 +47,9 @@ class Monomer():
         #...redundant to have this step; no 'NA' values exist
         #Monomers_array[np.isnan(Monomers_array)] = 0
         
-        #...caution: index starts at 3!!!!!
+        #...NOTE: index starts at 3!!!!!
         index = ["NH4","PO4","DeadMic","DeadEnz"] + ["Mon" + str(i) for i in range(3,self.n_monomers-2 + 1)]
-        columns = ["C","N","P"]
-        Monomers_df = pd.DataFrame(data = Monomers_array,index = index,columns = columns)
+        Monomers_df = pd.DataFrame(data=Monomers_array, index=index, columns=["C","N","P"])
         
         return Monomers_df
     
@@ -67,7 +67,6 @@ class Monomer():
         
         is_NH4 = Monomers.index == "NH4"
         is_PO4 = Monomers.index == "PO4"
-        
         Monomer_ratios = Monomers.copy()
         Monomer_ratios[:] = 0
         Monomer_ratios.loc[is_NH4,'N'] = 1
@@ -76,14 +75,14 @@ class Monomer():
         return Monomer_ratios
         
         
-    def monomer_input_rate(self):
+    def monomer_input_rate(self,sub_mon_input):
         
         """
         Derive the MonInput: monomer input rates; series
         """
         
-        # load in the inputs without NH4 and PO4
-        monomer_input = pd.read_csv('sub_mon_inputs.csv',header=0, index_col=0)['Mon']
+        # load the inputs without NH4 and PO4
+        monomer_input = sub_mon_input['Mon']
         # supplement with NH4 and PO4 from the parameters
         MonInput = pd.concat([pd.Series([self.Input_NH4,self.Input_PO4],index=['Input_NH4','Input_PO4']),monomer_input],sort=False)
         
