@@ -710,7 +710,7 @@ class Grid():
         # reinitialize microbial community in a new pulse if True
         if mic_reinit == True:
             
-            self.Microbes = self.Microbes_init.copy() #NOTE copy()!! bloody lesson
+            self.Microbes = self.Microbes_init.copy() #NOTE copy()
             #fb = self.fb[0:self.n_taxa]
             #max_size_b = self.max_size_b
             #max_size_f = self.max_size_f
