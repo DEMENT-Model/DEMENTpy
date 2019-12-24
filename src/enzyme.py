@@ -274,3 +274,19 @@ class Enzyme():
         Uptake_Km_df = pd.DataFrame(data = Uptake_Km_array,index = index,columns = columns)
         
         return Uptake_Km_df
+
+
+def Boltzman_Arrhenius(Ea,temperature):
+    """
+    
+    Parameters:
+       Ea:          activation energy;dataframe;
+       temperature: daily temperature;scalar;
+    Return:
+       BA:
+
+    """
+    Tref = 293
+    BA = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref))
+
+    return BA
