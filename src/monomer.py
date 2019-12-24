@@ -1,3 +1,8 @@
+"""
+This module, monomer.py, handles monomer-related properties in a class, Monomer().
+"""
+
+
 import pandas as pd
 import numpy as np
 
