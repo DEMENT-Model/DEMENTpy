@@ -459,15 +459,9 @@ class Grid():
         -> Monomers leaching is dealt with here
         
         """
-        
-        # Use local variales for convenience
-        #Microbes   = self.Microbes
-        #Monomers   = self.Monomers
-
         # Constants
         Leaching = 0.1         # Abiotic monomer loss rate
         Psi_slope_leach = 0.5  # Mositure sensivity of abiotic monomer loss rate
-        
         # Indices
         Mic_index  = self.Microbes.index
         is_DeadMic = self.Substrates.index == "DeadMic"
@@ -622,9 +616,9 @@ class Grid():
         # Use local variables for convenience         
         Microbes = self.Microbes 
         # Microbes' index
-        Mic_index = Microbes.index
+        Mic_index = self.Microbes.index
         # Set up the colonization dataframe: [taxon * 3(C,N,&P)]
-        Colonization = Microbes.copy()
+        Colonization = self.Microbes.copy()
         Colonization = Colonization.reset_index(drop=True)
         Colonization[:] = 0
         
@@ -633,11 +627,11 @@ class Grid():
         # Set the Series of fungal locations to 0
         Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize,index=Mic_index,name='Count')
         # Add one or two fungi to the count vector based on size
-        Fungi_df.loc[(self.fb==1)&(Microbes['C']>0)] = 1
-        Fungi_df.loc[(self.fb==1)&(Microbes['C']>self.max_size_f)] = 2
+        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)] = 1
+        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = 2
         # Fungal translocation: calculate average biomass within fungal taxa
         Fungi_count = Fungi_df.groupby(level=0,sort=False).sum()
-        Microbes_grid = Microbes.groupby(level=0,sort=False).sum()
+        Microbes_grid = self.Microbes.groupby(level=0,sort=False).sum()
         Mean_fungi = Microbes_grid.divide(Fungi_count,axis=0)
         Mean_fungi[np.isinf(Mean_fungi)] = 0
         Mean_fungi = Mean_fungi.fillna(0)
@@ -646,17 +640,17 @@ class Grid():
         
         
         #STEP 2: Cell division & translocate nutrients
-        MicrobesBeforeDivision = Microbes.copy()
+        MicrobesBeforeDivision = self.Microbes.copy()
         #bacteria
-        bac_index = (self.fb==0)&(Microbes['C']>self.max_size_b)
-        Microbes.loc[bac_index] = Microbes.loc[bac_index]/2
+        bac_index = (self.fb==0)&(self.Microbes['C']>self.max_size_b)
+        self.Microbes.loc[bac_index] = self.Microbes.loc[bac_index]/2
         #fungi
-        fun_index = (self.fb==1)&(Microbes['C']>self.max_size_f)
-        Microbes.loc[fun_index] = Microbes.loc[fun_index]/2
+        fun_index = (self.fb==1)&(self.Microbes['C']>self.max_size_f)
+        self.Microbes.loc[fun_index] = self.Microbes.loc[fun_index]/2
         # Add daughter cells to a dataframe of reproduction
-        Reprod = MicrobesBeforeDivision - Microbes 
+        Reprod = MicrobesBeforeDivision - self.Microbes 
         # Translocate nutrients within fungal taxa
-        Microbes.loc[(self.fb==1) & (Microbes['C']>0)] = eMF.loc[(self.fb==1) & (Microbes['C']>0)]
+        self.Microbes.loc[(self.fb==1)&(self.Microbes['C']>0)] = eMF.loc[(self.fb==1)&(self.Microbes['C']>0)]
         # Index the daughter cells that are fungi versus bacteria
         daughters_b = (Reprod["C"]>0) & (self.fb==0)
         daughters_f = (Reprod["C"]>0) & (self.fb==1)
@@ -690,10 +684,7 @@ class Grid():
         Colonization.iloc[index_series[daughters_b],] = Reprod[daughters_b].values
         Colonization.iloc[index_series[daughters_f],] = Reprod[daughters_f].values
         # Colonization of dispersing microbes
-        Microbes += Colonization.values
-        
-        #...Pass back to the global variable
-        self.Microbes = Microbes
+        self.Microbes += Colonization.values
         
 
     def repopulation(self,output,day,mic_reinit):
