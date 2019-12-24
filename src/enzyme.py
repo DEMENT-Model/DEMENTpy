@@ -1,3 +1,8 @@
+
+"""
+this module, enzyme.py, deals with exclusively only enzyme-related parameters.
+"""
+
 import pandas as pd
 import numpy as np
 from utility import LHS
