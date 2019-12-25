@@ -71,7 +71,7 @@ class Enzyme():
         
         Enzymes_array = np.random.uniform(self.Enz_min,self.Enz_max,self.n_enzymes)
         index = ['Enz'+str(i) for i in range(1,self.n_enzymes+1)]
-        Enzymes_df = pd.Series(data = Enzymes_array, index = index, name='C')
+        Enzymes_df = pd.Series(data=Enzymes_array, index=index, name='C', dtype='float32')
 
         return Enzymes_df
     
@@ -93,7 +93,7 @@ class Enzyme():
         
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
         index = ["Enz" + str(i) for i in range(1,self.n_enzymes+1)]
-        EnzAttrib_df = pd.DataFrame(data=EnzAttrib_array,index=index, columns=["C_cost","N_cost","P_cost","Maint_cost"])
+        EnzAttrib_df = pd.DataFrame(data=EnzAttrib_array,index=index, columns=["C_cost","N_cost","P_cost","Maint_cost"], dtype='float32')
         
         return EnzAttrib_df
     
@@ -103,15 +103,15 @@ class Enzyme():
         """ 
         Enzyme specificity matrix of activation energies
         -----------
-        Input:
-            user-supplied activation energy range for each substrate (for now min.= max.)
+        Parameter:
+            Ea_input: user-supplied activation energy range for each substrate (for now min.= max.)
         Return:
             Ea_df.T: Rows:enzymes; cols: substrates
         """
         
-        Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1)
+        Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1) # series of 1D array
         columns = ['Enz' + str(i) for i in range(1,self.n_enzymes + 1)]
-        Ea_df = pd.DataFrame(data=Ea_series.tolist(), index=self.substrate_index,columns = columns) # note: .tolist() !!!!!!!!
+        Ea_df = pd.DataFrame(data=Ea_series.tolist(), index=self.substrate_index, columns=columns, dtype='float32') # NOTE: .tolist()
         
         return Ea_df.T
     
@@ -133,7 +133,7 @@ class Enzyme():
         
         index = ['Mon'+str(i) for i in range(1,self.n_monomers+1)]
         columns = ['Upt'+str(i) for i in range(1,self.n_uptake+1)]
-        Uptake_Ea_df = pd.DataFrame(data = Uptake_Ea_array,index = index,columns = columns)
+        Uptake_Ea_df = pd.DataFrame(data=Uptake_Ea_array,index=index,columns=columns, dtype='float32')
         
         return Uptake_Ea_df
         
@@ -160,7 +160,7 @@ class Enzyme():
         
         #index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Vmax0_df = pd.DataFrame(data=Vmax0_array, index=self.substrate_index, columns=columns)
+        Vmax0_df = pd.DataFrame(data=Vmax0_array, index=self.substrate_index, columns=columns, dtype='float32')
         
         # Account for efficiency-specificity tradeoff by dividing Vmax_0 by the number of substrates (or monomers)
         # targeted and multiplied by a specificity factor
@@ -176,8 +176,10 @@ class Enzyme():
             total_substrates[total_substrates>1] = total_substrates[total_substrates>1]*self.Specif_factor
         
         Vmax0_df = Vmax0_df.divide(total_substrates,axis=1)
-        Vmax0_df = Vmax0_df.fillna(0)
-        Vmax0_df[np.isinf(Vmax0_df)] = 0
+        #Vmax0_df = Vmax0_df.fillna(0)
+        #Vmax0_df[np.isinf(Vmax0_df)] = 0
+        Vmax0_df[total_substrates==0] = 0 # get rid of NAs
+        Vmax0_df = Vmax0_df.astype('float32')
         
         
         return Vmax0_df, Vmax0_df.T
@@ -191,10 +193,10 @@ class Enzyme():
         -----------------
         
         Input:
-            Uptake_ReqEnz: uptake required enzymes; monomers * enzymes; from the monomer module
+            Uptake_ReqEnz:    uptake required enzymes; monomers * enzymes; from the monomer module
             Uptake_Vmax0_min: 1	(mg substrate mg-1 substrate day-1)	Minimum uptake Vmax
             Uptake_Vmax0_max: 10 (mg substrate mg-1 substrate day-1)	Maximum uptake Vmax
-            Specif_factor: Efficiency-specificity (1)
+            Specif_factor:    Efficiency-specificity (1)
         Return:
             Uptake_Vmax0_df: Rows are monomers; cols are uptake enzymes
         """
@@ -203,9 +205,9 @@ class Enzyme():
         Uptake_Vmax0_array = LHS(self.n_uptake*self.n_monomers,self.Uptake_Vmax0_min,self.Uptake_Vmax0_max-self.Uptake_Vmax0_min,'uniform')
         Uptake_Vmax0_array = Uptake_Vmax0_array.reshape(self.n_monomers,self.n_uptake)
         
-        index = ['Mon'+str(i) for i in range(1,self.n_monomers+1)]
+        index   = ['Mon'+str(i) for i in range(1,self.n_monomers+1)]
         columns = ['Upt'+str(i) for i in range(1,self.n_uptake+1)]
-        Uptake_Vmax0_df = pd.DataFrame(data = Uptake_Vmax0_array,index = index,columns = columns)
+        Uptake_Vmax0_df = pd.DataFrame(data=Uptake_Vmax0_array,index=index,columns=columns, dtype='float32')
         
         # implement the tradeoff with specificity
         total_monomers = Uptake_ReqEnz.sum(axis=0)
@@ -215,9 +217,11 @@ class Enzyme():
             total_monomers[total_monomers>1] = total_monomers[total_monomers>1] * self.Specif_factor
             
         Uptake_Vmax0_df = Uptake_Vmax0_df.divide(total_monomers,axis=1)
-        Uptake_Vmax0_df = Uptake_Vmax0_df.fillna(0)
-        Uptake_Vmax0_df[np.isinf(Uptake_Vmax0_df)] = 0
-        
+        #Uptake_Vmax0_df = Uptake_Vmax0_df.fillna(0)
+        #Uptake_Vmax0_df[np.isinf(Uptake_Vmax0_df)] = 0
+        Uptake_Vmax0_df[total_monomers==0] = 0.0
+        Uptake_Vmax0_df.astype('float32')
+
         return Uptake_Vmax0_df
     
     
@@ -243,9 +247,8 @@ class Enzyme():
         
         #Km_array = abs(np.random.normal(Vmax0*self.Vmax_Km, Vmax0.mean().mean()*self.Km_error,Vmax0) + self.Vmax_Km_int)
         Km_array[Km_array < self.Km_min] = self.Km_min
-        #index = ['Sub'+str(i) for i in range(1,self.n_substrates + 1)]
         columns = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Km_df = pd.DataFrame(data = Km_array, index=self.substrate_index, columns = columns)
+        Km_df = pd.DataFrame(data=Km_array, index=self.substrate_index, columns=columns, dtype='float32')
         
         return Km_df
     
@@ -267,11 +270,11 @@ class Enzyme():
         """
         
         mean = Uptake_Vmax0.mean().mean()*self.Km_error
-        Uptake_Km_array = abs(Uptake_Vmax0.apply(lambda df:np.random.normal(df*self.Uptake_Vmax_Km,mean))+self.Uptake_Vmax_Km_int)
+        Uptake_Km_array = abs(Uptake_Vmax0.apply(lambda df: np.random.normal(df*self.Uptake_Vmax_Km,mean))+self.Uptake_Vmax_Km_int)
         Uptake_Km_array[Uptake_Km_array < self.Uptake_Km_min] = self.Uptake_Km_min
         index = ['Mon'+str(i) for i in range(1,self.n_monomers + 1)]
         columns = ['Upt'+str(i) for i in range(1,self.n_uptake + 1)]
-        Uptake_Km_df = pd.DataFrame(data = Uptake_Km_array,index = index,columns = columns)
+        Uptake_Km_df = pd.DataFrame(data=Uptake_Km_array,index=index,columns=columns, dtype='float32')
         
         return Uptake_Km_df
 
