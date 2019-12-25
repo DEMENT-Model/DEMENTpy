@@ -1,15 +1,22 @@
+# ------------------
+# this module, grid.py, deal with calculations of all microbe-related activites on a spatial grid with a class, Grid().
+#---------------------------------
+# Last modified by Bin Wang on December 25th, 2019 
+# ------------------
+
 import numpy  as np
 import pandas as pd
 
 from microbe import microbe_osmo_psi
 from microbe import microbe_mortality_prob as MMP
+from enzyme  import Boltzman_Arrhenius as f_temp
 from utility import expand
 
 class Grid():
     
     """
     This class holds all variables related to microbe, substrate, monomer, and enzyme
-    over the spatial grid, which are derived from the module 'initialization.py' and
+    over the spatial grid, which are passed from the module 'initialization.py' and
     includes methods as follows:
         1) degrdation():   explicit substrate degradation
         2) uptake():       explicit monomers uptake
@@ -24,8 +31,6 @@ class Grid():
         state variables and passing them back to the global ones. All computation stays in between.   
     Reminder:
         Keep a CLOSE EYE on the indexing throughout the matrix/dataframe operations
-    ---------------------------------
-    Last modified by Bin Wang on November 21st, 2019 
     """
     
     
@@ -44,33 +49,33 @@ class Grid():
         self.n_monomers     = self.n_substrates + 2
         
         #Degradation
-        self.Substrates_init = data_init['Substrates']        # Substrates initialized
-        self.Substrates      = data_init['Substrates'].copy() # Substrates;df; w/ .copy() avoiding mutation
-        self.SubInput        = data_init['SubInput']          # Substrate inputs
-        self.Enzymes         = data_init['Enzymes'].copy()    # Enzymes
-        self.ReqEnz          = data_init['ReqEnz']            # Enzymes required by each substrate
-        self.EnzAttrib       = data_init['EnzAttrib']         # Enzyme stoichiometry
-        self.Ea              = data_init['Ea']                # Enzyme activatin energy
-        self.Vmax0           = data_init['Vmax0']             # Max. reaction speed
-        self.Km0             = data_init['Km0']               # Half-saturation constant
-        self.SubstrateRatios = float('nan')                   # Substrate stoichiometry
-        self.DecayRates      = float('nan')                   # Substrate decay rate
+        self.Substrates_init = data_init['Substrates']                 # Substrates initialized
+        self.Substrates      = data_init['Substrates'].copy(deep=True) # Substrates;df; w/ .copy() avoiding mutation
+        self.SubInput        = data_init['SubInput']                   # Substrate inputs
+        self.Enzymes         = data_init['Enzymes'].copy(deep=True)    # Enzymes
+        self.ReqEnz          = data_init['ReqEnz']                     # Enzymes required by each substrate
+        self.EnzAttrib       = data_init['EnzAttrib']                  # Enzyme stoichiometry
+        self.Ea              = data_init['Ea']                         # Enzyme activatin energy
+        self.Vmax0           = data_init['Vmax0']                      # Max. reaction speed
+        self.Km0             = data_init['Km0']                        # Half-saturation constant
+        self.SubstrateRatios = float('nan')                            # Substrate stoichiometry
+        self.DecayRates      = float('nan')                            # Substrate decay rate
 
         #Uptake
-        self.Microbes_init  = data_init['Microbes_pp']          # microbial community before placement
-        self.Microbes       = data_init['Microbes'].copy()      # microbial community after placement
-        self.Monomers_init  = data_init['Monomers']             # Monomers initialized
-        self.Monomers       = data_init['Monomers'].copy()      # Monomers
-        self.MonInput       = data_init['MonInput']             # Inputs of monomers
-        self.Uptake_Ea      = data_init['Uptake_Ea']            # transporter enzyme Ea
-        self.Uptake_Vmax0   = data_init['Uptake_Vmax0']         # transporter Vmax
-        self.Uptake_Km0     = data_init['Uptake_Km0']           # transporter Km
-        self.Monomer_ratios = data_init['Monomer_ratio'].copy() # monomer stoichiometry
-        self.Uptake_ReqEnz  = data_init['Uptake_ReqEnz']        # Enzymes required by monomers 
-        self.Uptake_Enz_Cost= data_init['UptakeGenesCost']      # Cost of encoding each uptake gene
-        self.Taxon_Uptake_C = float('nan')                      # taxon uptake of C 
-        self.Taxon_Uptake_N = float('nan')                      # taxon uptake of N 
-        self.Taxon_Uptake_P = float('nan')                      # taxon uptake of P
+        self.Microbes_init  = data_init['Microbes_pp']                   # microbial community before placement
+        self.Microbes       = data_init['Microbes'].copy(deep=True)      # microbial community after placement
+        self.Monomers_init  = data_init['Monomers']                      # Monomers initialized
+        self.Monomers       = data_init['Monomers'].copy(deep=True)      # Monomers
+        self.MonInput       = data_init['MonInput']                      # Inputs of monomers
+        self.Uptake_Ea      = data_init['Uptake_Ea']                     # transporter enzyme Ea
+        self.Uptake_Vmax0   = data_init['Uptake_Vmax0']                  # transporter Vmax
+        self.Uptake_Km0     = data_init['Uptake_Km0']                    # transporter Km
+        self.Monomer_ratios = data_init['Monomer_ratio'].copy(deep=True) # monomer stoichiometry
+        self.Uptake_ReqEnz  = data_init['Uptake_ReqEnz']                 # Enzymes required by monomers 
+        self.Uptake_Enz_Cost= data_init['UptakeGenesCost']               # Cost of encoding each uptake gene
+        self.Taxon_Uptake_C = float('nan')                               # taxon uptake of C 
+        self.Taxon_Uptake_N = float('nan')                               # taxon uptake of N 
+        self.Taxon_Uptake_P = float('nan')                               # taxon uptake of P
         
         #Metabolism
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
@@ -92,7 +97,7 @@ class Grid():
         #self.Growth_Yield = float('nan')
 
         #Mortality
-        self.MinRatios = data_init['MinRatios']     # minimal cell quotas
+        self.MinRatios = data_init['MinRatios']     # Minimal cell quotas
         self.C_min     = data_init['C_min']         # C threshold value of living cell
         self.N_min     = data_init['N_min']         # N threshold value of living cell
         self.P_min     = data_init['P_min']         # P threshold value of living cell
@@ -101,7 +106,7 @@ class Grid():
         self.tolerance = data_init['TaxDroughtTol'] # taxon drought tolerance
         self.wp_fc     = data_init['wp_fc']         # -1.0
         self.wp_th     = data_init['wp_th']         # -6.0
-        self.alpha     = data_init['alpha']         # 1
+        self.alpha     = data_init['alpha']         # integer;1
         self.Kill      = float('nan')               # number of cells stochastically killed
         
         # Reproduction
@@ -118,8 +123,8 @@ class Grid():
         self.psi  = data_init['Psi']      # Water potential
         
         # Global constants
-        self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
-        self.Tref  = 293        # reference temperature of 20 celcius
+        self.Km_Ea = 20.0         # kj mol-1;activation energy for both enzyme and transporter
+        self.Tref  = 293.0        # reference temperature of 20 celcius
     
 
     def degradation(self,pulse,day):
@@ -151,9 +156,11 @@ class Grid():
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc))
         
         # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for temperature sensitivity
-        Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi #Vmax: (enz*gridsize) * sub
-        Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) #Km: (sub*gridsize) * enz
-        
+        #Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi #Vmax: (enz*gridsize) * sub
+        #Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) #Km: (sub*gridsize) * enz
+        Vmax = self.Vmax0 * f_temp(self.Ea,self.temp[day])    * f_psi  # Vmax: (enz*gridsize) * sub
+        Km   = self.Km0   * f_temp(self.Km_Ea,self.temp[day])          # Km:   (sub*gridsize) * enz
+
         # Multiply Vmax by enzyme concentration
         tev_transition = Vmax.mul(self.Enzymes,axis=0) # (enz*gridsize) * sub
         tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a MultiIndex
@@ -177,8 +184,7 @@ class Grid():
         ss7 = self.Substrates.loc[Sub_index=="Lignin"].sum(axis=1).values
         DecayRates.loc[Sub_index=="Cellulose"] *= 1 + (ss7/(ss7 + self.Substrates.loc[Sub_index=="Cellulose",'C'])) * LCI_slope
         
-        # Update Substrates Pool by removing decayed C, N, & P
-        # depending on specific needs, adding inputs of substrates can be done here
+        # Update Substrates Pool by removing decayed C, N, & P. Depending on specific needs, adding inputs of substrates can be done here
         self.Substrates -= SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
         
         # Pass these two back to the global variables to be used in the next method
@@ -190,33 +196,35 @@ class Grid():
         
         """
         Explicit uptake of different monomers by transporters following the Michaelis-Menten equation:
-            -> Determine monomers: average over the grid, add degradation and input, update stoichimoetry
+            -> Average monomers across the grid:
+            -> Determine pool of monomers: add degradation and input, update stoichimoetry
             -> Maximum uptake:
             -> Uptake by Monomer:
             -> Uptake by Taxon:
         """
         
-        # Each monomer averaged over the grid in each time step
+        # Every monomer averaged over the grid in each time step
         self.Monomers = expand(self.Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
         
+
         # Indices
         is_org = (self.Monomers.index != "NH4") & (self.Monomers.index != "PO4") # organic monomers
         #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
-
         # Update monomer ratios in each time step with organic monomers following the substrates
         self.Monomer_ratios[is_org] = self.SubstrateRatios.values
         # Keep track of mass balance for inputs
         #self.MonomerRatios_Cum = MR_transition
-        
         # Determine monomer pool from decay and input
         # Organic monomers derived from substrate-decomposition
         Decay_Org = self.Monomer_ratios[is_org].mul(self.DecayRates.values,axis=0)
         # inputs of organic and mineral monomers
         #Input_Org = MR_transition[is_org].mul(self.MonInput[is_org].tolist(),axis=0)
         #Input_Mineral = MR_transition[is_mineral].mul((self.MonInput[is_mineral]).tolist(),axis=0)
+        # Monomer pool determined
         self.Monomers.loc[is_org] += Decay_Org #+ Input_Org
         #self.Monomers.loc[is_mineral] += Input_Mineral
         
+
         # Get the total mass of each monomer: C+N+P
         rsm = self.Monomers.sum(axis=1)
         # Recalculate monomer ratios after updating monomer pool and before uptake calculation
@@ -230,10 +238,12 @@ class Grid():
         else:
             f_psi = np.exp(0.5*(self.psi[day] - self.wp_fc))
         
-        # Caculate enzyme kinetic parameters; monomer * Upt
-        Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
-        Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
-        
+        # Caculate uptake enzyme kinetic parameters; monomer * Upt
+        #Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
+        #Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
+        Uptake_Vmax = self.Uptake_Vmax0 * f_temp(self.Uptake_Ea,self.temp[day]) * f_psi
+        Uptake_Km   = self.Uptake_Km0   * f_temp(self.Km_Ea,self.temp[day])
+
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
         Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.values,axis=0)/Uptake_Km.add(rsm.values,axis=0)
         
@@ -243,7 +253,7 @@ class Grid():
         
         # Define Max_Uptake: (Monomer*gridsize) * Taxon
         Max_Uptake_array = np.array([0]*self.gridsize*self.n_monomers*self.n_taxa).reshape(self.gridsize*self.n_monomers,self.n_taxa)
-        Max_Uptake = pd.DataFrame(data = Max_Uptake_array,index=self.Monomers.index,columns = self.Microbes.index[0:self.n_taxa])
+        Max_Uptake = pd.DataFrame(data=Max_Uptake_array, index=self.Monomers.index, columns=self.Microbes.index[0:self.n_taxa])
         # Matrix multiplication to get max possible uptake by monomer
         # ...Must extract each grid point separately for operation
         for i in range(self.gridsize):
@@ -257,7 +267,6 @@ class Grid():
         # Scale the uptake to what's available: (Monomer*gridsize) * Taxon
         Uptake = Max_Uptake.mul(pd.concat([csmu,rsm],axis=1).min(axis=1,skipna=True)/csmu,axis=0)
         Uptake.loc[csmu==0] = 0
-
         # Prevent total uptake from getting too close to zero
         # Uptake = Uptake - 1e-9*Uptake
         # End computing monomer uptake
@@ -276,9 +285,9 @@ class Grid():
         TUP_df = P_uptake_df.groupby(level=[0]).sum()
 
         #...Pass these 3 to global variables
-        self.Taxon_Uptake_C = TUC_df.stack().values     # spatial C uptake: array (sum across monomers)
-        self.Taxon_Uptake_N = TUN_df.stack().values     # spatial N uptake: ...
-        self.Taxon_Uptake_P = TUP_df.stack().values     # spatial P uptake: ...
+        self.Taxon_Uptake_C = TUC_df.stack().values     # spatial C uptake: array
+        self.Taxon_Uptake_N = TUN_df.stack().values     # spatial N uptake: array
+        self.Taxon_Uptake_P = TUP_df.stack().values     # spatial P uptake: array
 
         
     def metabolism(self,day):
@@ -613,8 +622,6 @@ class Grid():
             
         """
         
-        # Use local variables for convenience         
-        Microbes = self.Microbes 
         # Microbes' index
         Mic_index = self.Microbes.index
         # Set up the colonization dataframe: [taxon * 3(C,N,&P)]
