@@ -138,10 +138,11 @@ class Grid():
             -> Adjust cellulose rate with LCI(lignocellulose index)
         """
         
-        # indices
-        Sub_index = self.Substrates.index # derive the Substrates index by subtrate names
-        # constant
-        LCI_slope = -0.8  # lignocellulose index--LCI
+        # constant of lignocellulose index--LCI
+        LCI_slope = -0.8  
+        # Substrates index by subtrate names
+        Sub_index = self.Substrates.index
+        
         
         # total mass of each substrate: C+N+P
         rss = self.Substrates.sum(axis=1) 
@@ -155,17 +156,18 @@ class Grid():
         else:
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc))
         
-        # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for temperature sensitivity
+        # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for Psi sensitivity
         #Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi #Vmax: (enz*gridsize) * sub
         #Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) #Km: (sub*gridsize) * enz
-        Vmax = self.Vmax0 * f_temp(self.Ea,self.temp[day])    * f_psi  # Vmax: (enz*gridsize) * sub
+        Vmax = self.Vmax0 * f_temp(self.Ea,   self.temp[day]) * f_psi  # Vmax: (enz*gridsize) * sub
         Km   = self.Km0   * f_temp(self.Km_Ea,self.temp[day])          # Km:   (sub*gridsize) * enz
 
         # Multiply Vmax by enzyme concentration
-        tev_transition = Vmax.mul(self.Enzymes,axis=0) # (enz*gridsize) * sub
+        tev_transition       = Vmax.mul(self.Enzymes,axis=0)                                          # (enz*gridsize) * sub
         tev_transition.index = [np.arange(self.gridsize).repeat(self.n_enzymes),tev_transition.index] # create a MultiIndex
-        tev = tev_transition.stack().unstack(1).reset_index(level=0,drop=True) # (sub*gridsize) * enz
-        tev = tev[Km.columns] # ensure to re-order the columns b/c of python's default alphabetical ordering
+        tev = tev_transition.stack().unstack(1).reset_index(level=0,drop=True)                        # (sub*gridsize) * enz
+        tev = tev[Km.columns]                                                                         # ensure to re-order the columns b/c of python's default alphabetical ordering
+
         # Michaelis-Menten equation
         Decay = tev.mul(rss,axis=0)/Km.add(rss,axis=0)
         
@@ -482,7 +484,7 @@ class Grid():
         MinRatios = self.MinRatios.reset_index(drop=True)
         
         # Create a blank dataframe, Death, having the same structure as Microbes
-        Death = self.Microbes.copy()
+        Death = self.Microbes.copy(deep=True)
         Death[:] = 0
         # Create a series, kill, holding boolean value of False
         kill = pd.Series([False]*self.n_taxa*self.gridsize)
@@ -527,17 +529,17 @@ class Grid():
             rat_index = self.Microbes.index.map(mic_index_sub).fillna(False)
             # Derive the Microbes wanted
             Mic_subset = self.Microbes[rat_index]
-            StartMicrobes = Mic_subset.copy()
+            StartMicrobes = Mic_subset.copy(deep=True)
 
             # Derive new ratios and Calculate difference between actual and min ratios  
             MicrobeRatios = Mic_subset.divide(Mic_subset.sum(axis=1),axis=0)
             MinRat = MinRatios[rat_index]  
             Ratio_dif = MicrobeRatios - MinRat
             # Create a df recording the ratio differences < 0
-            Ratio_dif_0 = Ratio_dif.copy()
+            Ratio_dif_0 = Ratio_dif.copy(deep=True)
             Ratio_dif_0[Ratio_dif>0] = 0
             # Create a df recording the ratio differences > 0
-            Excess = Ratio_dif.copy()
+            Excess = Ratio_dif.copy(deep=True)
             Excess[Ratio_dif<0] = 0 
 
             # Determine the limiting nutrient that will be conserved
@@ -625,7 +627,7 @@ class Grid():
         # Microbes' index
         Mic_index = self.Microbes.index
         # Set up the colonization dataframe: [taxon * 3(C,N,&P)]
-        Colonization = self.Microbes.copy()
+        Colonization = self.Microbes.copy(deep=True)
         Colonization = Colonization.reset_index(drop=True)
         Colonization[:] = 0
         
@@ -647,7 +649,7 @@ class Grid():
         
         
         #STEP 2: Cell division & translocate nutrients
-        MicrobesBeforeDivision = self.Microbes.copy()
+        MicrobesBeforeDivision = self.Microbes.copy(deep=True)
         #bacteria
         bac_index = (self.fb==0)&(self.Microbes['C']>self.max_size_b)
         self.Microbes.loc[bac_index] = self.Microbes.loc[bac_index]/2
@@ -711,13 +713,13 @@ class Grid():
             update Substrates, Monomers, and Microbes
         """
         # reinitialize substrates and monomers in a new pulse
-        self.Substrates = self.Substrates_init.copy()
-        self.Monomers   = self.Monomers_init.copy()
+        self.Substrates = self.Substrates_init.copy(deep=True)
+        self.Monomers   = self.Monomers_init.copy(deep=True)
         
         # reinitialize microbial community in a new pulse if True
         if mic_reinit == True:
             
-            self.Microbes = self.Microbes_init.copy() #NOTE copy()
+            self.Microbes = self.Microbes_init.copy(deep=True) #NOTE copy()
             #fb = self.fb[0:self.n_taxa]
             #max_size_b = self.max_size_b
             #max_size_f = self.max_size_f
