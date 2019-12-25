@@ -54,7 +54,6 @@ class Grid():
         self.SubInput        = data_init['SubInput']                   # Substrate inputs
         self.Enzymes         = data_init['Enzymes'].copy(deep=True)    # Enzymes
         self.ReqEnz          = data_init['ReqEnz']                     # Enzymes required by each substrate
-        self.EnzAttrib       = data_init['EnzAttrib']                  # Enzyme stoichiometry
         self.Ea              = data_init['Ea']                         # Enzyme activatin energy
         self.Vmax0           = data_init['Vmax0']                      # Max. reaction speed
         self.Km0             = data_init['Km0']                        # Half-saturation constant
