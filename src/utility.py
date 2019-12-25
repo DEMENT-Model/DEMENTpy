@@ -40,7 +40,13 @@ def LHS(n,loc,scale,dist):
 
 def expand(df,gridsize):
     """
-    Put data (df) on a spatial grid
+    Put data (df/series) on a spatial grid
+    ----------------------------------------------------
+    Parameters:
+         df:       dataframe/series
+         gridsize: integer
+    Return:
+         df_expanded: dataframe/series;
     """
     df_expanded = pd.concat([df]*gridsize)
     
