@@ -1,3 +1,7 @@
+# substrate.py module holding a class, Substrate()
+# by Bin Wang on Dec. 26th, 2019ls
+
+
 import pandas as pd
 import numpy as np
 
@@ -12,7 +16,7 @@ class Substrate():
         2) substrate_produced_monomer():  substrate-produced monomers
         3) substrate_degradation_enzyme(): substrate-required enzymes
     
-    ------------------------------------
+    ------------------------------------  
     Last modified by Bin Wang on August 17th, 2019
     """
     
@@ -27,17 +31,20 @@ class Substrate():
         self.n_substrates      = int(runtime.loc['n_substrates',1])
         self.n_enzymes         = int(runtime.loc['n_enzymes',1])
         self.gridsize          = int(runtime.loc['gridsize',1])
-        self.Enzymes_per_sub   = int(parameters.loc['Enzymes_per_sub',1])   #Minimum # of enzymes degrading each substrate
-        self.Avg_extra_req_enz = int(parameters.loc['Avg_extra_req_enz',1]) #Average # of additional enzymes required for substrate degradation
-        # initial "substrate concentrations"; directly loaded in as:
-        #self.Substrates_start = pd.read_csv('initial_substrates.csv',header=0,index_col=0)
-        self.Substrates_start = substrates_init
+        self.Enzymes_per_sub   = int(parameters.loc['Enzymes_per_sub',1])   # minimum # of enzymes degrading each substrate
+        self.Avg_extra_req_enz = int(parameters.loc['Avg_extra_req_enz',1]) # average # of additional enzymes required for substrate degradation
+        self.Substrates_start  = substrates_init.astype('float32')          # initial substrate concentrations
     
     
     def substrate_input(self,sub_mon_input):
         
         """
         Substrate inputs during simulation
+        --------------------------------------------
+        Parameter:
+          sub_mon_input: dataframe; user-provided substrates and monomers input data
+        Return:
+          SubInput_df:   dataframe;
         """
         
         # Substrate input rates
@@ -48,7 +55,7 @@ class Substrate():
         SubInputC.name = 'C' 
         SubInputN.name = 'N'
         SubInputP.name = 'P'
-        SubInput_df = pd.concat([SubInputC,SubInputN,SubInputP],axis=1,sort=False)
+        SubInput_df = pd.concat([SubInputC,SubInputN,SubInputP],axis=1,sort=False, dtype='float32')
         SubInput_df['DeadMic'] = SubInput_df['DeadEnz'] = 0  # Change NAs to 0
         
         return SubInput_df
@@ -61,11 +68,10 @@ class Substrate():
         Rows are substrates; cols are monomers; all rows should sum to 1
         """
         
-        MonomersProduced_array = np.concatenate((np.array([0]*self.n_substrates*2).reshape((self.n_substrates,2),order='F'),
-                                                 np.diagflat([1]*self.n_substrates)),axis =1)
+        MonomersProduced_array = np.concatenate((np.array([0]*self.n_substrates*2).reshape((self.n_substrates,2),order='F'),np.diagflat([1]*self.n_substrates)),axis=1)
         index   = ['Sub'+str(i) for i in range(1,self.n_substrates+1)]
         columns = ['Mon'+str(i) for i in range(-1,self.n_substrates+1)]
-        MonomersProduced_df = pd.DataFrame(data = MonomersProduced_array,index = index,columns = columns)
+        MonomersProduced_df = pd.DataFrame(data=MonomersProduced_array,index=index,columns=columns,dtypes='int8')
         MonomersProduced_df.rename(columns = {'Mon-1':"NH4",'Mon0':"PO4",'Mon1':"DeadMic",'Mon2':"DeadEnz"},inplace=True)
 
         return MonomersProduced_df
@@ -74,7 +80,7 @@ class Substrate():
     def substrate_degradation_enzyme(self):
         
         """
-        ........................................................
+        .............................................................
         ...Derive the required enzymes of each substrate....
         ...which is a 3-D DataFrame: sets (2) * substrates * enzymes
         .............................................................
@@ -118,6 +124,6 @@ class Substrate():
         index = [np.array(['set1']*self.n_substrates*self.gridsize + ['set2']*self.n_substrates*self.gridsize),
                  np.array(["Sub" + str(i) for i in range(1,self.n_substrates + 1)]*self.gridsize*2)]
         columns = ['Enz' + str(i) for i in range(1,self.n_enzymes + 1)]
-        ReqEnz_df = pd.DataFrame(data = ReqEnz_array,index = index,columns = columns)
+        ReqEnz_df = pd.DataFrame(data=ReqEnz_array,index=index,columns=columns,dtype='int8')
 
         return ReqEnz_df
