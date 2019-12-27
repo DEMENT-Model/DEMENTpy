@@ -1,7 +1,4 @@
-"""
-This module, monomer.py, handles monomer-related properties in a class, Monomer().
-"""
-
+#This module, monomer.py, handles monomer-related properties in a class, Monomer().
 
 import pandas as pd
 import numpy as np
@@ -56,12 +53,12 @@ class Monomer():
     def monomer_ratios(self,Monomers_df):
         
         """
-        initialization of 'monomer_ratio
+        initialization of monomer_ratio
         -----------------------------------------------------
         Parameter:
             Monomers_df:
         Return:
-            Monomer_ratios
+            Monomer_ratios:
         '"""
         
         is_NH4 = Monomers_df.index == "NH4"
