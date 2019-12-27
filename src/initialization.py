@@ -105,7 +105,7 @@ def initialize_data(runtime_parameters):
     #...Microbial mortality
     microbial_mortality = Microbes.microbe_mortality(microbial_community[2])
     
-    #...Dump all data into a dictionary; note some varibles with expand() to put them on the spatial grid
+    #...Dump all initialized data into a dictionary; NOTE: variables with expand() put on the spatial grid
     gridsize = int(runtime_parameters.loc['gridsize',1])
     
     Data_Dictionary = {"Substrates": expand(substrates_initial_pool,gridsize),
@@ -138,27 +138,27 @@ def initialize_data(runtime_parameters):
                        "OsmoProdInduci_trait":expand(microbial_osmolyte_prod_rate[1],gridsize),
                        "EnzProdConsti_trait": expand(microbial_enzyme_prod_rate[0],gridsize),
                        "EnzProdInduci_trait": expand(microbial_enzyme_prod_rate[1],gridsize),
-                       "UptakeGenesCost":     expand(microbial_uptake_cost[1],gridsize), # distribution of gene cost across taxa
+                       "UptakeGenesCost":     expand(microbial_uptake_cost[1],gridsize),        # distribution of gene cost across taxa
                        "OsmoProdConsti":      expand(microbial_osmolyte_prod_rate[2],gridsize),
                        "OsmoProdInduci":      expand(microbial_osmolyte_prod_rate[3],gridsize),
                        "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),
                        "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),
-                       "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),  # distribution of taxon-specific drought tol.
-                       'beta':         microbial_mortality[0],                  # basal death probability
-                       'death_rate':   microbial_mortality[1],                  # sensitivity death to mositure
-                       "AE_ref":            parameters.loc["CUE_ref",1],        # Reference assimilation efficiency: 0.5
-                       "AE_temp":           parameters.loc["CUE_temp",1],       # AE temperature sensitivity; default: -0.016
+                       "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),            # distribution of taxon-specific drought tol.
+                       'basal_death_rate':  microbial_mortality[0],                # basal death probability
+                       'death_rate':        microbial_mortality[1],                # sensitivity of death to mositure
+                       "AE_ref":            parameters.loc["CUE_ref",1],           # Reference assimilation efficiency: 0.5
+                       "AE_temp":           parameters.loc["CUE_temp",1],          # AE temperature sensitivity; default: -0.016
                        'Uptake_Maint_cost': parameters.loc['Uptake_Maint_cost',1], # constant of transporter maintenence cost
                        'C_min':             parameters.loc['C_min',1],             # C threshold of cell lysis
                        'N_min':             parameters.loc['N_min',1],             # N threshold of cell lysis
                        'P_min':             parameters.loc['P_min',1],             # P threshold of cell lysis
-                       'max_size_b':        parameters.loc['max_size_b',1],     # C quota threshold for bacterial cell division
-                       'max_size_f':        parameters.loc['max_size_f',1],     # C quota threshold for fungal cell division
-                       'wp_fc':             parameters.loc['wp_fc',1],          # threshold below which microbes start to respond to drought
-                       'wp_th':             parameters.loc['wp_th',1],          # threshold below which microbes in full swing to respond to drought
-                       'alpha':             parameters.loc['alpha',1],          # factor delineating curve concavity of microbial response to drought
-                       'Temp': daily_temp,                                      # temperature
-                       'Psi':  daily_psi                                        # water potential
+                       'max_size_b':        parameters.loc['max_size_b',1],        # C quota threshold for bacterial cell division
+                       'max_size_f':        parameters.loc['max_size_f',1],        # C quota threshold for fungal cell division
+                       'wp_fc':             parameters.loc['wp_fc',1],             # threshold below which microbes start to respond to drought
+                       'wp_th':             parameters.loc['wp_th',1],             # threshold below which microbes in full swing to respond to drought
+                       'alpha':             parameters.loc['alpha',1],             # factor delineating curve concavity of microbial response to drought
+                       'Temp': daily_temp,                                         # temperature
+                       'Psi':  daily_psi                                           # water potential
                       }
 
     return Data_Dictionary
