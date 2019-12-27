@@ -1,7 +1,6 @@
 # ------------------
 # this module, grid.py, deal with calculations of all microbe-related activites on a spatial grid with a class, Grid().
-#---------------------------------
-# Last modified by Bin Wang on December 25th, 2019 
+# by Bin Wang on December 27th, 2019 
 # ------------------
 
 import numpy  as np
@@ -96,17 +95,17 @@ class Grid():
         #self.Growth_Yield = float('nan')
 
         #Mortality
-        self.MinRatios = data_init['MinRatios']     # Minimal cell quotas
-        self.C_min     = data_init['C_min']         # C threshold value of living cell
-        self.N_min     = data_init['N_min']         # N threshold value of living cell
-        self.P_min     = data_init['P_min']         # P threshold value of living cell
-        self.death_rate= data_init['death_rate']    # Basal death rate of microbes
-        self.beta      = data_init['beta']          # Change rate of death mortality with water potential
-        self.tolerance = data_init['TaxDroughtTol'] # taxon drought tolerance
-        self.wp_fc     = data_init['wp_fc']         # -1.0
-        self.wp_th     = data_init['wp_th']         # -6.0
-        self.alpha     = data_init['alpha']         # integer;1
-        self.Kill      = float('nan')               # number of cells stochastically killed
+        self.MinRatios        = data_init['MinRatios']           # Minimal cell quotas
+        self.C_min            = data_init['C_min']               # C threshold value of living cell
+        self.N_min            = data_init['N_min']               # N threshold value of living cell
+        self.P_min            = data_init['P_min']               # P threshold value of living cell
+        self.basal_death_prob = data_init['basal_death_prob']    # Basal death probability of microbes
+        self.death_rate       = data_init['death_rate']          # Change rate of mortality with water potential
+        self.tolerance        = data_init['TaxDroughtTol']       # taxon drought tolerance
+        self.wp_fc            = data_init['wp_fc']               # -1.0
+        self.wp_th            = data_init['wp_th']               # -6.0
+        self.alpha            = data_init['alpha']               # integer;1
+        self.Kill             = float('nan')                     # number of cells stochastically killed
         
         # Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
@@ -499,7 +498,7 @@ class Grid():
         mic_index = self.Microbes["C"] > 0
         
         # Mortality prob. b/c drought with the function: MMP:microbe_mortality_psi() 
-        r_death = MMP(self.psi[day],self.wp_fc,self.death_rate,self.beta,self.tolerance)
+        r_death = MMP(self.psi[day],self.wp_fc,self.basal_death_prob,self.death_rate,self.tolerance)
         # Kill microbes randomly
         #kill.loc[mic_index] = r_death[mic_index] > np.repeat(np.random.uniform(0,1),sum(mic_index))
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index))
