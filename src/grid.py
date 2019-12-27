@@ -122,8 +122,8 @@ class Grid():
         self.psi  = data_init['Psi']      # Water potential
         
         # Global constants
-        self.Km_Ea = 20.0         # kj mol-1;activation energy for both enzyme and transporter
-        self.Tref  = 293.0        # reference temperature of 20 celcius
+        self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
+        self.Tref  = 293        # reference temperature of 20 celcius
     
 
     def degradation(self,pulse,day):
