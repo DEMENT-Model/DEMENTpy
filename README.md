@@ -1,6 +1,6 @@
  <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
  
-# DEMENTpy[**under development !!!!**]
+# DEMENTpy[**under development !!!!** if interested, feel free to reach out to me via any media]
 ## A trait- and individual-based spatially explicit soil microbial systems modelling framework
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/bioatmosphere/DEMENTpy)
