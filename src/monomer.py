@@ -47,30 +47,29 @@ class Monomer():
         
         # Monomer pool sizes for all elements
         Monomers_array = np.concatenate((np.stack([[0,self.Init_NH4,0],[0,0,self.Init_PO4]]),substrates_init.values*self.Monomer_Substrate_Ratio),axis=0)    
-        #...NOTE: index starts at 3!!!!!
-        index = ["NH4","PO4","DeadMic","DeadEnz"] + ["Mon" + str(i) for i in range(3,self.n_monomers-2 + 1)]
-        Monomers_df = pd.DataFrame(data=Monomers_array, index=index, columns=["C","N","P"])
+        index = ["NH4","PO4","DeadMic","DeadEnz"] + ["Mon" + str(i) for i in range(3,self.n_monomers-2 + 1)]  #NOTE: index starts from 3
+        Monomers_df = pd.DataFrame(data=Monomers_array, index=index, columns=["C","N","P"],dtype='float32')
         
         return Monomers_df
     
     
-    def monomer_ratios(self,Monomers):
+    def monomer_ratios(self,Monomers_df):
         
         """
         initialization of 'monomer_ratio
-        
+        -----------------------------------------------------
         Parameter:
-            Monomers:
+            Monomers_df:
         Return:
             Monomer_ratios
         '"""
         
-        is_NH4 = Monomers.index == "NH4"
-        is_PO4 = Monomers.index == "PO4"
-        Monomer_ratios = Monomers.copy()
-        Monomer_ratios[:] = 0
-        Monomer_ratios.loc[is_NH4,'N'] = 1
-        Monomer_ratios.loc[is_PO4,'P'] = 1
+        is_NH4 = Monomers_df.index == "NH4"
+        is_PO4 = Monomers_df.index == "PO4"
+        Monomer_ratios = Monomers_df.copy(deep=True)
+        Monomer_ratios[:] = 0.0
+        Monomer_ratios.loc[is_NH4,'N'] = 1.0
+        Monomer_ratios.loc[is_PO4,'P'] = 1.0
         
         return Monomer_ratios
         
@@ -79,13 +78,19 @@ class Monomer():
         
         """
         Derive the MonInput: monomer input rates; series
+        -----------------------------------------------------
+        Parameters:
+          sub_mon_input:
+        Return:
+          MonInput:
         """
         
         # load the inputs without NH4 and PO4
         monomer_input = sub_mon_input['Mon']
         # supplement with NH4 and PO4 from the parameters
         MonInput = pd.concat([pd.Series([self.Input_NH4,self.Input_PO4],index=['Input_NH4','Input_PO4']),monomer_input],sort=False)
-        
+        MonInput = MonInput.astype('float32')
+
         return MonInput
        
          
@@ -103,12 +108,12 @@ class Monomer():
 
         index   = ["Mon" + str(i) for i in range(1,self.n_monomers+1)]
         columns = ['Upt' + str(i) for i in range(1,self.n_uptake+1)]
-        Uptake_ReqEnz_df = pd.DataFrame(data = np.array(Uptake_ReqEnz_list).reshape(self.n_monomers,self.n_uptake),index=index,columns = columns)
+        Uptake_ReqEnz_df = pd.DataFrame(data=np.array(Uptake_ReqEnz_list).reshape(self.n_monomers,self.n_uptake),index=index,columns=columns,dtype='int8')
         # ensure every monomer has a transporter
         probability_list    = [0]* self.n_monomers
         probability_list[0] = 1
         for i in range(self.n_uptake):
             if sum(Uptake_ReqEnz_df.iloc[:,i]) == 0:
-                Uptake_ReqEnz_df.iloc[:,i] = np.random.choice(probability_list,self.n_monomers,replace=False)
+                Uptake_ReqEnz_df.iloc[:,i] = np.random.choice(probability_list,self.n_monomers,replace=False).astype('int8')
                 
         return Uptake_ReqEnz_df
