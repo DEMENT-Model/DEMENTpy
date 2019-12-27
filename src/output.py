@@ -1,16 +1,17 @@
+# output.py module dealing with outputs of DEMENTpy.
+# by Bin Wang on Dec. 27th, 2019
+
 import numpy as np
 import pandas as pd
 
 class Output():
 
     """
-    This module sets up the output properties by accepting data derived from
+    This class sets up the output properties by accepting data derived from
     the initialization.py and grid.py modules and uses two methods to record
     data generated from each iteration:
         output():
         microbes_df():
-    ---------------------------------------------------------------------------
-    Last modified by Bin Wang on 10/22/2019
     """
     
     def __init__(self,runtime,data_init):
