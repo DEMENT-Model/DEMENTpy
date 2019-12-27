@@ -34,8 +34,8 @@ def initialize_data(runtime_parameters):
     sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',header=0, index_col=0)          # load the inputs of sub and monomers
     Ea_input        = pd.read_csv("enzyme_ea.csv",header=0,index_col=0)                # enzyme activation energy
     climate         = pd.read_csv('climate.csv',index_col=0)                           # climate forcing
-    daily_temp = climate['Temp']  # temperaure series
-    daily_psi  = climate['Psi']   # water potential series
+    daily_temp = climate['Temp'].astype('float32')  # temperaure series
+    daily_psi  = climate['Psi'].astype('float32')   # water potential series
 
 
     #...an instance of Substrate class 
