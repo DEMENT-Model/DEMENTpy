@@ -29,11 +29,11 @@ def initialize_data(runtime_parameters):
     """
     
     # Load all input files
-    parameters      = pd.read_csv('parameters.csv',header=None,index_col=0)            # parameters
-    substrates_init = pd.read_csv('initial_substrates.csv',header=0,index_col=0)       # initial substrates
-    sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',header=0, index_col=0)          # load the inputs of sub and monomers
-    Ea_input        = pd.read_csv("enzyme_ea.csv",header=0,index_col=0)                # enzyme activation energy
-    climate         = pd.read_csv('climate.csv',index_col=0)                           # climate forcing
+    parameters      = pd.read_csv('parameters.csv',         header=None, index_col=0)  # parameters
+    substrates_init = pd.read_csv('initial_substrates.csv', header=0, index_col=0)     # initial substrates
+    sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',     header=0, index_col=0)     # load the inputs of sub and monomers
+    Ea_input        = pd.read_csv("enzyme_ea.csv",          header=0, index_col=0)     # enzyme activation energy
+    climate         = pd.read_csv('climate.csv',            header=0, index_col=0)     # climate forcing
     daily_temp = climate['Temp'].astype('float32')  # temperaure series
     daily_psi  = climate['Psi'].astype('float32')   # water potential series
 
@@ -110,7 +110,7 @@ def initialize_data(runtime_parameters):
     
     Data_Dictionary = {"Substrates": expand(substrates_initial_pool,gridsize),
                        "SubInput":   expand(substrates_input_rate,gridsize),
-                       'ReqEnz':           substrates_req_enzyme,
+                       "ReqEnz":           substrates_req_enzyme,
                        "MonomersProduced": substrates_produced_monomers,
                        "Monomers":     expand(monomers_initial_pool,gridsize),
                        "Monomer_ratio":expand(monomer_ratio_inital,gridsize),
@@ -125,14 +125,14 @@ def initialize_data(runtime_parameters):
                        "Vmax0":        expand(enzymes_Vmax_T,gridsize),        # enzyme reaction rate
                        "EnzAttrib":    enzymes_attributes,                     # enzyme stoichiometry and energy cost
                        "Microbes_pp": microbial_community[0],                  # tuple[0]: microbes preceding placement
-                       "Microbes":    microbial_community[1],                  # tuple[1]: initialized microbes
+                       "Microbes":    microbial_community[1],                  # tuple[1]: initialized spatial microbes
                        "fb":          microbial_community[2],                  # tuple[2]: fungi index
                        "Bac_density": microbial_community[3],                  # tuple[3]: bacterial density
                        "Fun_density": microbial_community[4],                  # tuple[4]: fungi density
-                       "MinRatios":   expand(microbial_min_ratios,gridsize),
+                       "MinRatios":   expand(microbial_min_ratios,gridsize),   # 
                        "UptakeGenes": expand(microbial_uptake_gene,gridsize),  # Gene distribution across taxa
-                       "OsmoGenes":   expand(microbial_osmolyte_gene,gridsize),
-                       "EnzGenes":    expand(microbial_enzyme_gene,gridsize),
+                       "OsmoGenes":   expand(microbial_osmolyte_gene,gridsize),#
+                       "EnzGenes":    expand(microbial_enzyme_gene,gridsize),  #
                        "UptakeGenes_trait":   expand(microbial_uptake_cost[0],gridsize), # cost of every single gene
                        "OsmoProdConsti_trait":expand(microbial_osmolyte_prod_rate[0],gridsize),
                        "OsmoProdInduci_trait":expand(microbial_osmolyte_prod_rate[1],gridsize),
