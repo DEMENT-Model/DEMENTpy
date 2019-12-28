@@ -5,21 +5,26 @@ import numpy as np
 
 
 class Monomer():
-    
     """
-    This class deals with all calculations closely related to monomers. Methods include:
-    1.monomer_initialization():
-    2.monomer_input_rate():   
-    3.monomer_uptake_reqenzyme():calculate the required enzymes for taking up monomers in the current system.
-    """
+    This class deals with all calculations closely related to monomers.
     
+    Methods include:
+      1.monomer_initialization():   determine the initalized monomoers in the system.
+      2.monomer_input_rate():       specify input rates of monomers during simulation.
+      3.monomer_uptake_reqenzyme(): derive the monomer-required uptake enzymes/transporters.
+    """
     
     def __init__(self,runtime,parameters):
-        
-        
+        """
+        The constructor for Monomoer class.
+
+        Parameters:
+             runtime:    dataframe; user-provided model setup parameters
+             parameters: dataframe; model parameters
+        """
+
         self.n_monomers  = int(runtime.loc['n_substrates',1]) + 2                  # Number of monomers within the system
         self.n_uptake    = int(runtime.loc['n_uptake',1])                          # Number of uptake transporters for each taxon
-        
         self.Monomer_Substrate_Ratio = parameters.loc['Monomer_Substrate_Ratio',1] # default:0; amount of initial monomer relative to substrate per grid box
         self.Uptake_per_monomer      = int(parameters.loc['Uptake_per_monomer',1]) # default:1; number of transporters per monomer 
         self.Init_NH4  = parameters.loc['Init_NH4',1]                              # Initial NH4
@@ -29,17 +34,13 @@ class Monomer():
         
         
     def monomer_initialization(self,substrates_init):
-        
         """
-        #...derive the initial Monomers: dataframe; used for later calculations w/ two purposes:
-        #...1) get sums over the grid, which is further used to derive the average monomer distri. over the grid
-        #...2) provide the data structure for MonomerRatios that stores monomer stoichiometry info.
-        ------------------------------------------
+        Derive the initial pool of Monomers.
+        
         Parameters:
             substrates_init: dataframe; initial substrates pool; from the substrate module
         Return:
-            Monomers_df: dataframe (shape:14*3).
-
+            Monomers_df: dataframe (shape:14*3)
         """
         
         # Monomer pool sizes for all elements
@@ -51,14 +52,13 @@ class Monomer():
     
     
     def monomer_ratios(self,Monomers_df):
-        
         """
-        initialization of monomer_ratio
-        -----------------------------------------------------
+        Initialization of monomer_ratio.
+        
         Parameter:
-            Monomers_df:
+            Monomers_df:   initialized pool of monomers; derived from the above method
         Return:
-            Monomer_ratios:
+            Monomer_ratios: dataframe; row: monomers; column: C,N,P
         '"""
         
         is_NH4 = Monomers_df.index == "NH4"
@@ -72,18 +72,17 @@ class Monomer():
         
         
     def monomer_input_rate(self,sub_mon_input):
-        
         """
-        Derive the MonInput: monomer input rates; series
-        -----------------------------------------------------
+        Derive the monomer input rates.
+        
         Parameters:
-          sub_mon_input:
+          sub_mon_input: dataframe; loaded as an input file
         Return:
-          MonInput:
+          MonInput: series; index: monomers
         """
-        
+
         # load the inputs without NH4 and PO4
-        monomer_input = sub_mon_input['Mon']
+        monomer_input = sub_mon_input['Mon'] 
         # supplement with NH4 and PO4 from the parameters
         MonInput = pd.concat([pd.Series([self.Input_NH4,self.Input_PO4],index=['Input_NH4','Input_PO4']),monomer_input],sort=False)
         MonInput = MonInput.astype('float32')
@@ -92,11 +91,14 @@ class Monomer():
        
          
     def monomer_uptake_reqenzyme(self):
-        
         """
-        derive the Uptake_ReqEnz: dataframe; Rows-monomers;cols-uptake enzymes
-        Same number within a row implies redundancy
+        Derive the monomer-required enzymes.
+        
         Make sure each monomer is taken up by at least one transporter and every transporter takes up at least one monomer
+        Same number within a row implies redundancy
+        ------------------------------------
+        Return:
+          Uptake_ReqEnz_df: dataframe; Rows-monomers;cols-uptake enzymes
         """
         
         probability_list = [0] * self.n_uptake
