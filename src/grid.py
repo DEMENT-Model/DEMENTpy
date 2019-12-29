@@ -12,11 +12,10 @@ from enzyme  import Boltzman_Arrhenius as f_temp
 from utility import expand
 
 class Grid():
-    
     """
-    This class holds all variables related to microbe, substrate, monomer, and enzyme
-    over the spatial grid, which are passed from the module 'initialization.py' and
-    includes methods as follows:
+    This class holds all variables related to microbe, substrate, monomer, and enzyme over the spatial grid.
+    
+    Accepts returns from the module 'initialization.py' and includes methods as follows:
         1) degrdation():   explicit substrate degradation
         2) uptake():       explicit monomers uptake
         3) metabolism():   cellular processes and emergent CUE and respiration
@@ -32,14 +31,15 @@ class Grid():
         Keep a CLOSE EYE on the indexing throughout the matrix/dataframe operations
     """
     
-    
     def __init__(self,runtime,data_init): 
-        
         """
+        The constructor of Grid class.
+
         Parameters:
             runtime:   user-specified parameters
             data_init: dictionary;initialized data from the module 'initialization.py'
         """
+
         self.cycle          = int(runtime.loc['end_time',1])
         self.gridsize       = int(runtime.loc['gridsize',1])
         self.n_taxa         = int(runtime.loc["n_taxa",1])
@@ -126,9 +126,10 @@ class Grid():
     
 
     def degradation(self,pulse,day):
-        
         """
-        Explicit degradation of different substrates following the 'Michaelis-Menten' equation:
+        Explicit degradation of different substrates following the 'Michaelis-Menten' equation.
+
+        Calculation procedure:
             -> Determine substates pool: incl. inputs
             -> Compute Vmax & Km and make them follow the index of Substrates
             -> Follow MM to compute full degradation rate
@@ -193,9 +194,10 @@ class Grid():
 
 
     def uptake(self,pulse,day):
-        
         """
-        Explicit uptake of different monomers by transporters following the Michaelis-Menten equation:
+        Explicit uptake of different monomers by transporters following the Michaelis-Menten equation.
+
+        Calculaton procedure:
             -> Average monomers across the grid:
             -> Determine pool of monomers: add degradation and input, update stoichimoetry
             -> Maximum uptake:
@@ -291,10 +293,10 @@ class Grid():
 
         
     def metabolism(self,day):
-        
         """
-        explicitly calculate intra-cell production of metabolites from both constitutive (standing biomass)
-        and inducible pathways (the monomers taken up by microbial cells) as follows:
+        Explicitly calculate intra-cell production of metabolites.
+        
+        Handles both constitutive (standing biomass) and inducible pathways (the monomers taken up by microbial cells) following
         -> 1. constitutive enzyme and osmolyte production
         -> 2. inducible enzyme and osmolyte production
         -> 3. emergent CUE & Respiration
@@ -458,16 +460,16 @@ class Grid():
 
 
 
-    def mortality(self,day):
-                   
+    def mortality(self,day):       
         """
-        Calculate microbial mortality and update stoichiometry of the alive and microbial pools,
-        as well as substrates(input of dead microbes), monomers, and respiration.
+        Calculate microbial mortality.
         
+        And update stoichiometry of the alive and microbial pools,
+        as well as substrates(input of dead microbes), monomers, and respiration.
         -> Kill microbes that are starving and drought intolerant
         -> Monomers leaching is dealt with here
-        
         """
+
         # Constants
         Leaching = 0.1         # Abiotic monomer loss rate
         Psi_slope_leach = 0.5  # Mositure sensivity of abiotic monomer loss rate
@@ -605,21 +607,17 @@ class Grid():
         self.Kill = kill.sum()
 
 
-    def reproduction(self,day):
-                   
+    def reproduction(self,day):           
         """
-        Calculate reproduction and dispersal, and update microbial composition/distrituion on the spatial grid
-        in 4 steps:
-        ------------------------------------------------
-        
+        Calculate reproduction and dispersal, and update microbial composition/distrituion on the spatial grid.
+ 
         Parameters:
             fb         : index of fungal taxa
             max_size_b : threshold of cell division
             max_size_f : threshold of cell division
             x,y        : x,y dimension of grid
             dist       : maximum dispersal distance: 1 cell
-            direct     : dispersal direction: 0.95
-            
+            direct     : dispersal direction: 0.95    
         """
         
         # Microbes' index
@@ -695,17 +693,15 @@ class Grid():
         
 
     def repopulation(self,output,day,mic_reinit):
-        
         """
-        deal with reinitialization of microbial community and start with new subsrates
-        and monomers on the grid in each new pulse.
-        -----------------------------------------------------------------------
+        Deal with reinitialization of microbial community and start with new subsrates and monomers on the grid in each new pulse.
+
         Parameters:
             output: an instance of the Output class, in which a variable
                     referring to taxon-specific total mass over the grid of
                     every iteration is used--MicrobesSeries_repop
-            pulse: the pulse index
-            day:   the day index
+            pulse:      the pulse index
+            day:        the day index
             mic_reinit: 0/1; 1 means reinitialization
         Returns:
             update Substrates, Monomers, and Microbes
