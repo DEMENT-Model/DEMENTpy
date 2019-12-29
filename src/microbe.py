@@ -1,25 +1,23 @@
 """
-This microbe module has one class and two functions:
+This microbe.py module has one class and two functions.
     
-    Microbe(): class;
-    microbe_osmo_psi(): function; inducible osmolyte production efficiency
+    Microbe():                class
+    microbe_osmo_psi():       function; inducible osmolyte production efficiency
     microbe_mortality_prob(): function; cell mortality probability
         
 -------------------------------------------------------------------------------
 Last modified by Bin Wang on December 22nd, 2019
 """
 
-
 import numpy as np
 import pandas as pd
 from utility import LHS
 
 class Microbe():
-    
     """
-    This class holds all variables related to microbes and methods involving
-    composition,stoichiometry, enzyme and gene production, as well as responses
-    to environmental factors. These methods include:
+    This class holds all variables related to microbes.
+
+    Methods involving composition,stoichiometry, enzyme and gene production, as well as responses to environmental factors. These methods include:
         1) microbial_community_initialization(): initialize microbial community on the spatial grid
         2) minimum_cell_quota():          get minimum ratios
         3) microbe_enzyme_gene():         derive taxon-specific genes for enzyme
@@ -30,13 +28,12 @@ class Microbe():
         8) microbe_osmoproduction_rate(): cost of producing osmolytes
         9) microbe_drought_tol():         microbial drougth tolerance
        10) microbe_mortality():           paramters pertaining to microbial mortality
-    
     """
     
-    
     def __init__(self,runtime,parameters):
-        
         """
+        The constructor of Microbe class.
+
         Parameters:
             runtime:     user-specified runtime parameters
             paramteters: input dataframe of all parameters
@@ -90,15 +87,15 @@ class Microbe():
         self.beta_fun       = parameters.loc['beta_fun',1]                    # Fungal mortality coefficient
         
     
-    
     def microbial_community_initialization(self):
-    
         """
-        Initialize a microbial community on the grid with bacteria and/or fungi:
-        -> Firstly create a dataframe with only bacteria
-        -> Substitute part of bacteria with fungi
-        -> Randomly place this communtiy on the sptatial grid
-        -> Perform stats to the initialized community and output them for record
+        Initialize a microbial community on the grid with bacteria and/or fungi.
+
+        Calculation protocol:
+          - Firstly create a dataframe with only bacteria
+          - Substitute part of bacteria with fungi
+          - Randomly place this communtiy on the sptatial grid
+          - Perform stats to the initialized community and output them for record
         -----------------------------------------------------------------------
         Parameters:
             Cfrac_b: Bacterial C fraction:    0.825 mg mg-1
@@ -110,16 +107,11 @@ class Microbe():
             max_size_b: C quota threshold for bacterial cell division
             max_size_f: C quota threshold for fungal cell division
         Returns:
-            -1. microbes_pp: microbial community preceding placement on the spatial grid
-            -2. microbes_df: microbial community on the spatial grid
-            -3. fb_grid:     index of fungi taxa in the microbial community
-            -4. Bac_density: density of bacterial cells
-            -5. Fun_density: density of fungal cells
-            
-        Notes:
-        
-        References:
-            
+            microbes_pp: dataframe; microbial community preceding placement on the spatial grid
+            microbes_df: dataframe; microbial community on the spatial grid
+            fb_grid:     1D array; index of fungi taxa in the microbial community
+            Bac_density: scalar; density of bacterial cells
+            Fun_density: scalar; density of fungal cells  
         """
         
         BacC = 0.5  * self.max_size_b
@@ -174,12 +166,9 @@ class Microbe():
         return microbes_pp,microbes_df,fb_grid,Bac_density,Fun_density
     
     
-    
     def minimum_cell_quota(self):
-        
         """
-        This will be used in the mortality calculation
-        -----------------------------------------------------------------------
+        This will be used in the mortality calculation.
         
         Parameters:
             Cfrac_b: Bacterial C fraction:    0.825 mg mg-1
@@ -191,11 +180,10 @@ class Microbe():
             Crange:  Tolerance on C fraction: 0.090 mg mg-1
             Nrange:  Tolerance on N fraction: 0.040 mg mg-1
             Prange:  Tolerance on P fraction: 0.005 mg mg-1
-        
         Return:
-            MinRatios: dataframe
-            
+            MinRatios: dataframe   
         """
+
         # First derive the optimal stoichiometry of bacterial taxa
         OptimalRatios_array = np.tile([self.Cfrac_b,self.Nfrac_b,self.Pfrac_b],(self.n_taxa,1))
         index = ["Tax" + str(i) for i in range(1,self.n_taxa + 1)]
@@ -209,22 +197,22 @@ class Microbe():
         MinRatios = OptimalRatios_df - RangeRatios_df
         
         return MinRatios
-        
-        
-   
+    
+
     def microbe_enzyme_gene(self):
-        
         """ 
+        Derive taxon-specific enzyme genes.
+        
         Not all taxa need to have an enzyme gene; this method draws the
         number of genes per taxon from a uniform distribution:
         -----------------------------------------------------------------------   
         Parameters:
             Enz_per_taxon_min: minimum # genes a taxon can have (0)
-            Enz_per_taxon_max: maximum # genes a taxon can have (40)
-            
+            Enz_per_taxon_max: maximum # genes a taxon can have (40)   
         Return:
-            'EnzGenes_df': Rows are taxa; cols are genes;values: 0/1
+            'EnzGenes': Rows are taxa; cols are genes;values: 0/1
         """
+
         # gene pool producing the number of enzymes that system requires 
         n_genes = self.n_enzymes
         # taxon-specific number of genes
@@ -240,26 +228,26 @@ class Microbe():
         EnzGenes_list = [trial(i) for i in range(self.n_taxa)]
         index         = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns       = ['Enz' + str(i) for i in range(1,n_genes+1)]
-        EnzGenes_df   = pd.DataFrame(data=np.vstack(EnzGenes_list),index=index,columns=columns, dtype='int8')
+        EnzGenes   = pd.DataFrame(data=np.vstack(EnzGenes_list),index=index,columns=columns, dtype='int8')
         
-        return EnzGenes_df
+        return EnzGenes
     
     
     def microbe_osmolyte_gene(self):
-        
         """
-        Derive the taxon-specific number of genes encoding osmolytes
-        this method draws the number of genes per taxon from a uniform distribution.
+        Derive the taxon-specific number of genes encoding osmolytes.
+
+        This method draws the number of genes per taxon from a uniform distribution.
         Every taxon must have an osmotic gene.
         -----------------------------------------------------------------------
         Parameters:
             n_osmolyte:         total number of different genes allowed by a system
             Osmo_per_taxon_min: 
-            Osmo_per_taxon_max: 
-                
+            Osmo_per_taxon_max:       
         Return:
-            OsmoGenes_df: row: taxon; col: genes
+            OsmoGenes: row: taxon; col: genes
         """
+
         # Gene pools producing the system-required number of osmolytes
         n_genes = self.n_osmolyte
         # derive the number of osmolyte gene each taxon can have
@@ -282,26 +270,27 @@ class Microbe():
         
      
     def microbe_uptake_gene(self,ReqEnz,EnzGenes,MonomersProduced):
-        
         """
-        Derive the genes encoding uptake enzymes(transporters); all taxa must have at least one uptake gene
-        -----------------------------------------------------------------------
+        Derive the genes encoding uptake enzymes(transporters).
+        
+        All taxa must have at least one uptake gene.
+        
         Parameters:
             ReqEnz:           substrate-required enzymes;3-D dataframe (2 * n_substrates * n_enzymes); from the Substrate class
-            EnzGenes:         genes encoding enzymes degrading substrates; 2-D df(taxon*gene); from the 'microbe_enzyme_gene' method
-            MonomersProduced: sub * monomers; from the Substrae class
-        
+            EnzGenes:         genes encoding enzymes degrading substrates; 2-D df(taxon*gene); from the above 'microbe_enzyme_gene' method
+            MonomersProduced: dataframe; sub * monomers; from the Substrae class
         Return:
             UptakeGenes: dataframe:Rows-taxa; Cols-genes; Values: 0 (no gene) or 1 (yes)
         """
         
+        # substrate-required enzymes
         RE2 = ReqEnz.loc['set2'].iloc[0:self.n_substrates,]
         Sub_enz = RE2 + ReqEnz.loc['set1'].iloc[0:self.n_substrates,]
         
         # Matrix multiplication to relate taxa to the monomers they can generate with their enzymes
-        UptakeGenes = EnzGenes @ np.transpose(Sub_enz) @ MonomersProduced
+        UptakeGenes = EnzGenes @ Sub_enz.T @ MonomersProduced
         UptakeGenes.iloc[:,0:2] = 1
-        UptakeGenes[lambda df: df > 0] = 1   #... = UptakeGenes[UptakeGenes > 0] = 1
+        UptakeGenes[lambda df: df>0] = 1   # == UptakeGenes[UptakeGenes > 0] = 1
         
         # Ensure every taxon is likely to have an uptake enzyme for at least 1 organic monomer
         # Not guaranteed unless uptake_prob = 1 (refer to the R version)
@@ -323,25 +312,21 @@ class Microbe():
                 
         return UptakeGenes
     
-     
-
-    def microbe_uptake_cost(self,UptakeGenes):
-                                 
+    
+    def microbe_uptake_cost(self,UptakeGenes):                         
         """
-        Derive the taxon-specific cost of every single gene of uptake transporter (i.e.,fraction of biomass as transporters).
+        Derive the taxon-specific cost of every single gene of uptake transporter.
+        
         Note this cost (in terms of Fraction of Biomass C) is same among different genes from the same taxon
         -----------------------------------------------------------------------
-        Input:
-            UptakeGenesForEnz: taxon-specific transporter genes; from the above method
-            
         Parameters:
-            NormalizeUptake: Normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
+            UptakeGenes:       taxon-specific transporter genes; from the above method
+            NormalizeUptake:   Normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
             Uptake_C_cost_min: 0.01	transporter mg-1 biomass C
-            Uptake_C_cost_max: 0.1	transporter mg-1 biomass C
-              
+            Uptake_C_cost_max: 0.1	transporter mg-1 biomass C     
         Returns:
-            UptakeProd_series:
-            UptakeGenes_Cost:
+            UptakeProd_series: series; taxon-specific transporter cost
+            UptakeGenes_Cost:  dataframe; taxon- and gene-specific transporter cost
         """                         
         
         # If true (== 1), then the uptake potential is normalized to the number of uptake genes (n_uptake)
@@ -363,15 +348,14 @@ class Microbe():
         return UptakeProd_series, UptakeGenes_Cost
     
     
-
-    def microbe_enzproduction_rate(self,EnzGenes_df,EnzAttrib):
-        
+    def microbe_enzproduction_rate(self,EnzGenes,EnzAttrib):
         """
-        Derive the taxon-specific fraction of 'available C' as enzymes: note that
-        this fraction only varies with taxon; every gene within a taxon is same.
+        Derive the taxon-specific fraction of 'available C' as enzymes: note that.
+
+        This fraction only varies with taxon; every gene within a taxon is same.
         -----------------------------------------------------------------------
         Parameters:
-            EnzGenes_df:     taxon-specific available genes for enzyme;dataframe (taxon * genes); from the above microbe_enzyme_gene() method
+            EnzGenes:        taxon-specific available genes for enzyme;dataframe (taxon * genes); from the above microbe_enzyme_gene() method
             EnzAttrib:       basic enzyme stoichiometry;dataframe [enzyme * 4 (C,N,P,maintenence cost)]
             Constit_Prod_min:
             Constit_Prod_max:
@@ -382,7 +366,6 @@ class Microbe():
             Tax_Induce_Enzyme_C:  taxon-specific fraction of available C as enzyme for each enzyme
             Tax_Constit_Enzyme_C: taxon-specific fraction of available C as enzyme for each enzyme
         """
-        
         
         #...method 1....
         #...Tax_EnzProdInduce: series;storing the production rate (inducible or constituitive) of each taxon (axis=1)
@@ -405,11 +388,11 @@ class Microbe():
         #Tax_EnzProdInduce = EnzGenes.apply(lambda df: np.asscalar(np.random.uniform(self.Enz_Prod_min,self.Enz_Prod_max,1)),axis=1)
         
         #...derive the production rate of every single gene of each taxon
-        EnzProdInduce = EnzGenes_df.mul(Tax_EnzProdInduce,axis=0)
-        EnzProdConsti = EnzGenes_df.mul(Tax_EnzProdConsti,axis=0)
+        EnzProdInduce = EnzGenes.mul(Tax_EnzProdInduce,axis=0)
+        EnzProdConsti = EnzGenes.mul(Tax_EnzProdConsti,axis=0)
         #...Normalize inducible and constituitive enzyme production
         if self.NormalizeProd == 1:
-            Normalize = EnzGenes_df.sum(axis=1)/self.Enz_per_taxon_max
+            Normalize = EnzGenes.sum(axis=1)/self.Enz_per_taxon_max
         else:
             Normalize = 1
         EnzProdInduce = EnzProdInduce.divide(Normalize,axis=0)
@@ -425,10 +408,9 @@ class Microbe():
     
     
     def microbe_osmoproduction_rate(self,OsmoGenes_df):
-        
         """
-        Distribution of osmolyte production rate (i.e.,proportion of available C as osmolytes) 
-        -----------------------------------------------------------------------
+        Distribution of osmolyte production rate (i.e.,proportion of available C as osmolytes).
+
         Parameters:
             OsmoGenes_df: taxon-specific available genes for osmolyte;
                           dataframe (taxon * genes); Generated by the above microbe_osmolyte_gene() method
@@ -436,8 +418,7 @@ class Microbe():
             Osmo_Constit_Prod_max:
             Osmo_Induci_Prod_min:
             Osmo_Induci_Prod_max:
-            NormalizeProd:  0
-            
+            NormalizeProd:  0   
         Returns:
             Tax_OsmoProd_Consti_series:
             Tax_OsmoProd_Induci_series:
@@ -462,10 +443,10 @@ class Microbe():
     
     
     def microbe_drought_tol(self,Tax_Consti_Osmo_C,Tax_Induci_Osmo_C):
-        
         """
-        Drought tolerance is postively correlated with taxon-specific inducible
-        osmotic allocation efficiency.
+        Derive taxon-specific drought tolerance value.
+        
+        Drought tolerance is postively correlated with taxon-specific inducible osmotic allocation efficiency.
         -----------------------------------------------------------------------
         Parameter:
             Tax_Induci_Osmo_C: dataframe
@@ -479,13 +460,11 @@ class Microbe():
         
         return Tax_tolerance
     
-    
-    
+     
     def microbe_mortality(self,fb_grid):
-        
         """
-        Derive taxon-specific microbial mortality parameters
-        -----------------------------------------------------------------------
+        Derive taxon-specific microbial mortality parameters.
+        
         Parameters:
             fb_grid: 1D array;index of bacteria (0) vs fungi (1) over the grid    
         Returns:
@@ -499,8 +478,9 @@ class Microbe():
 
 
 def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
-    
     """
+    Derive water potential modifier of inducible osmolyte production.
+
     Inducible production of osmolytes triggered when PSI declines to a **threshold** value,wp_fc,
     below which the production increases and reaches maxima at water potential of wp_th
     ---------------------------------------------------------------------------
@@ -530,18 +510,16 @@ def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
 
 def microbe_mortality_prob(wp,wp_fc,basal_death_prob,death_rate,Tax_tolerance):
     """
-    Microbial mortality probability as a function of water potential and drought tolerance
-    ---------------------------------------------------------------------------
+    Microbial mortality probability as a function of water potential and drought tolerance.
+
     Paramters:
         wp:               scalar; water potential
         wp_fc:            scalar; field capacity
         basal_death_prob: array; basal mortality prob. distinguished btw fungi and bacteria
         death_rate:       array; mortality change rate with moisture
-        Tax_tolerance:    dataframe; taxon-specific drought tolerance
-        
+        Tax_tolerance:    dataframe; taxon-specific drought tolerance   
     Returns:
         mortality_rate: taxon-specific mortality probability
-    
     References:
         Allison and Goulden,2017,Soil Biology and Biochemistry
     """
