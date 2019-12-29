@@ -267,7 +267,6 @@ class Microbe():
         
         return OsmoGenes_df
         
-        
      
     def microbe_uptake_gene(self,ReqEnz,EnzGenes,MonomersProduced):
         """
@@ -283,15 +282,12 @@ class Microbe():
             UptakeGenes: dataframe:Rows-taxa; Cols-genes; Values: 0 (no gene) or 1 (yes)
         """
         
-        # substrate-required enzymes
-        RE2 = ReqEnz.loc['set2'].iloc[0:self.n_substrates,]
-        Sub_enz = RE2 + ReqEnz.loc['set1'].iloc[0:self.n_substrates,]
-        
+        # substrate-required enzymes 
+        Sub_enz = ReqEnz.loc['set1'].iloc[0:self.n_substrates,] + ReqEnz.loc['set2'].iloc[0:self.n_substrates,]
         # Matrix multiplication to relate taxa to the monomers they can generate with their enzymes
         UptakeGenes = EnzGenes @ Sub_enz.T @ MonomersProduced
         UptakeGenes.iloc[:,0:2] = 1
         UptakeGenes[lambda df: df>0] = 1   # == UptakeGenes[UptakeGenes > 0] = 1
-        
         # Ensure every taxon is likely to have an uptake enzyme for at least 1 organic monomer
         # Not guaranteed unless uptake_prob = 1 (refer to the R version)
         probability_list    = [0]*(self.n_monomers-2)
@@ -299,7 +295,6 @@ class Microbe():
         for i in range(self.n_taxa):
             if sum(UptakeGenes.iloc[i,2:self.n_monomers]) == 0:
                 UptakeGenes.iloc[i,2:self.n_monomers] = np.random.choice(probability_list,self.n_monomers-2,replace=False)
-
         # Give each taxon a random number of additional uptake genes between the number they have and n_upgenes
         for i in range(self.n_taxa):
             n_zero = sum(UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0])
