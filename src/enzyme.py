@@ -8,9 +8,10 @@ import numpy as np
 from utility import LHS
 
 class Enzyme():
-    
     """
-    This module deals with all traits related to exoenzymes and includes methods:
+    This class deals with all traits related to exoenzymes.
+    
+    Including methods:
     1. enzyme_pool_initialization():
     2. enzyme_attributes():
     3. enzyme_Ea():
@@ -21,34 +22,34 @@ class Enzyme():
     8. enzyme_uptake_Km():
     """
     
-    
     def __init__(self,runtime,parameters,substrate_index):
-        
         """
+        The constructor of Enzyme class.
+
         Parameters:
-            runtime:  runtime specifications by users
-            parameters: inputted parameters
+            runtime:    runtime specifications by users
+            parameters: model parameters
         """
         
-        self.n_enzymes    = int(runtime.loc['n_enzymes',1])      
-        self.n_substrates = int(runtime.loc['n_substrates',1])
-        self.n_monomers   = self.n_substrates + 2
-        self.n_uptake     = int(runtime.loc['n_uptake',1])
+        self.n_enzymes       = int(runtime.loc['n_enzymes',1])      
+        self.n_substrates    = int(runtime.loc['n_substrates',1])
+        self.n_monomers      = self.n_substrates + 2
+        self.n_uptake        = int(runtime.loc['n_uptake',1])
         self.substrate_index = substrate_index                   # index of substrates
 
-        self.Enz_min    = parameters.loc['Enz_min',1]            # Initial min. enzyme present in terms of carbon
-        self.Enz_max    = parameters.loc['Enz_max',1]            # Initial max. enzyme present in terms of carbon
-        self.Enz_C_cost = parameters.loc['Enz_C_cost',1]         # Per enzyme C cost as a fraction of uptake:1
-        self.Enz_N_cost = parameters.loc['Enz_N_cost',1]         # Per enzyme N cost as a fraction of C cost:0.3
-        self.Enz_P_cost = parameters.loc['Enz_P_cost',1]         # Per enzyme P cost as a fraction of C cost:0
-        self.Enz_Maint_cost = parameters.loc['Enz_Maint_cost',1] # Maintenence cost of enzyme production
-        self.Uptake_Ea_min = parameters.loc['Uptake_Ea_min',1]       # Minimum activation energy for uptake
-        self.Uptake_Ea_max = parameters.loc['Uptake_Ea_max',1]       # Maximum activation energy for uptake
-        self.Vmax0_min     = parameters.loc['Vmax0_min',1]           # Minimum Vmax for enzyme
-        self.Vmax0_max     = parameters.loc['Vmax0_max',1]           # Maximum Vmax for enzyme
-        self.Uptake_Vmax0_min = parameters.loc['Uptake_Vmax0_min',1] # Minimum uptake Vmax
-        self.Uptake_Vmax0_max = parameters.loc['Uptake_Vmax0_max',1] # Maximum uptake Vmax
-        self.Specif_factor    = parameters.loc['Specif_factor',1]    # Efficiency-specificity
+        self.Enz_min            = parameters.loc['Enz_min',1]               # Initial min. enzyme present in terms of carbon
+        self.Enz_max            = parameters.loc['Enz_max',1]               # Initial max. enzyme present in terms of carbon
+        self.Enz_C_cost         = parameters.loc['Enz_C_cost',1]            # Per enzyme C cost as a fraction of uptake:1
+        self.Enz_N_cost         = parameters.loc['Enz_N_cost',1]            # Per enzyme N cost as a fraction of C cost:0.3
+        self.Enz_P_cost         = parameters.loc['Enz_P_cost',1]            # Per enzyme P cost as a fraction of C cost:0
+        self.Enz_Maint_cost     = parameters.loc['Enz_Maint_cost',1]        # Maintenence cost of enzyme production
+        self.Uptake_Ea_min      = parameters.loc['Uptake_Ea_min',1]         # Minimum activation energy for uptake
+        self.Uptake_Ea_max      = parameters.loc['Uptake_Ea_max',1]         # Maximum activation energy for uptake
+        self.Vmax0_min          = parameters.loc['Vmax0_min',1]             # Minimum Vmax for enzyme
+        self.Vmax0_max          = parameters.loc['Vmax0_max',1]             # Maximum Vmax for enzyme
+        self.Uptake_Vmax0_min   = parameters.loc['Uptake_Vmax0_min',1]      # Minimum uptake Vmax
+        self.Uptake_Vmax0_max   = parameters.loc['Uptake_Vmax0_max',1]      # Maximum uptake Vmax
+        self.Specif_factor      = parameters.loc['Specif_factor',1]         # Efficiency-specificity
         self.Vmax_Km            = parameters.loc['Vmax_Km',1]               # slope for Km-Vmax relationship:1
         self.Vmax_Km_int        = parameters.loc['Vmax_Km_int',1]           # intercept for Km-Vmax relationship:0
         self.Km_min             = parameters.loc['Km_min',1]                # Minimum Km: default = 0.01
@@ -58,10 +59,9 @@ class Enzyme():
         self.Km_error           = parameters.loc['Km_error',1]              # Error term: default = 0
       
     def enzyme_pool_initialization(self):
-        
         """
-        Initialize the pool sizes of different enzymes
-        -----------
+        Initialize the pool sizes of different enzymes.
+
         Parameters:
             Enz_min = 0
             Enz_max = 0
@@ -76,12 +76,10 @@ class Enzyme():
         return Enzymes_df
     
     
-    
     def enzyme_attributes(self):
-        
         """
-        Enzyme stoichiometry and maintenence cost
-        ----------
+        Derive enzyme stoichiometry and maintenence cost.
+
         Parameters:
             Enz_C_cost
             Enz_N_cost
@@ -99,10 +97,9 @@ class Enzyme():
     
     
     def enzyme_Ea(self,Ea_input):
-        
         """ 
-        Enzyme specificity matrix of activation energies
-        -----------
+        Enzyme specificity matrix of activation energies.
+       
         Parameter:
             Ea_input: user-supplied activation energy range for each substrate (for now min.= max.)
         Return:
@@ -117,10 +114,9 @@ class Enzyme():
     
     
     def enzyme_uptake_Ea(self):
-        
         """
-        Uptake activation energies constant across monomers
-        -----------
+        Uptake activation energies constant across monomers.
+        
         Parameters:
             Uptake_Ea_min: 35
             Uptake_Ea_max: 35
@@ -139,10 +135,9 @@ class Enzyme():
         
         
     def enzyme_Vmax(self,ReqEnz):
-        
         """
-        Pre-exponential constants for enzymes
-        ------------
+        Pre-exponential constants for enzymes.
+        
         Inputs:
           ReqEnz:     substrate required enzymes from the substrate module
           Vmax0_min:  5  (mg substrate mg-1 enzyme day-1); Minimum Vmax for enzyme
@@ -181,18 +176,14 @@ class Enzyme():
         Vmax0_df[total_substrates==0] = 0 # get rid of NAs
         Vmax0_df = Vmax0_df.astype('float32')
         
-        
         return Vmax0_df, Vmax0_df.T
     
     
-        
     def enzyme_uptake_Vmax(self,Uptake_ReqEnz):
-        
         """
-        Pre-exponential constants for uptake
-        -----------------
+        Pre-exponential constants for uptake.
         
-        Input:
+        Parameters:
             Uptake_ReqEnz:    uptake required enzymes; monomers * enzymes; from the monomer module
             Uptake_Vmax0_min: 1	(mg substrate mg-1 substrate day-1)	Minimum uptake Vmax
             Uptake_Vmax0_max: 10 (mg substrate mg-1 substrate day-1)	Maximum uptake Vmax
@@ -224,16 +215,14 @@ class Enzyme():
 
         return Uptake_Vmax0_df
     
-    
-            
+           
     def enzyme_Km(self,Vmax0):
         
         """ 
-        Implement Vmax-Km tradeoff to derive Km as a linear function of Vmax:
-        ------------------------------------------
-        Input:
-          Vmax0:       from the above method
+        Implement Vmax-Km tradeoff to derive Km as a linear function of Vmax.
+        
         Parameters:
+          Vmax0:       from the above method
           Vmax_Km:     slope for Km-Vmax relationship (1)
           Vmax_Km_int: intercept (0)
           Km_error:    error term (0);error term normally distributed with magnitude Km_error.)
@@ -254,13 +243,11 @@ class Enzyme():
     
     
     def enzyme_uptake_Km(self,Uptake_Vmax0):
-        
         """
-        Implement Vmax-Km tradeoff to derive Uptake Km as a linear function of Uptake Vmax:
-        ---------------
-        Input:
-            Uptake_Vmax0:       from the above method
+        Implement Vmax-Km tradeoff to derive Uptake Km as a linear function of Uptake Vmax.
+        
         Parameters:
+            Uptake_Vmax0:       from the above method
             Uptake_Vmax_Km:     slope of Km-Vmax correlation (0.2)
             Uptake_Vmax_Km_int: intercept (0)
             Km_error:           error term normally distributed with magnitude (0)
@@ -281,14 +268,15 @@ class Enzyme():
 
 def Boltzman_Arrhenius(Ea,temperature):
     """
-    
+    Temperature constraint of Vmax from 
+
     Parameters:
-       Ea:          activation energy;dataframe;
-       temperature: daily temperature;scalar;
+       Ea:          activation energy; dataframe
+       temperature: daily temperature; scalar
     Return:
        BA:
-
     """
+
     Tref = 293
     BA = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref))
 
