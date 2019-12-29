@@ -294,7 +294,7 @@ class Microbe():
         
         # Ensure every taxon is likely to have an uptake enzyme for at least 1 organic monomer
         # Not guaranteed unless uptake_prob = 1 (refer to the R version)
-        probability_list = [0]*(self.n_monomers-2)
+        probability_list    = [0]*(self.n_monomers-2)
         probability_list[0] = 1
         for i in range(self.n_taxa):
             if sum(UptakeGenes.iloc[i,2:self.n_monomers]) == 0:
@@ -302,13 +302,13 @@ class Microbe():
 
         # Give each taxon a random number of additional uptake genes between the number they have and n_upgenes
         for i in range(self.n_taxa):
-            n_zero = len(UptakeGenes.iloc[i][UptakeGenes.iloc[i]==0])
+            n_zero = sum(UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0])
             if n_zero == 0: # has all genes
                 continue
             probability_list = [0]*n_zero
-            locator = np.random.choice(range(n_zero+1),1) # 0 <= locator <= n_zero
+            locator = np.random.choice(range(1, n_zero+1), 1, replace=True) # derive n_zero <= locater >= 1 (NOTE)
             probability_list[0:int(locator)] = [1]*int(locator)
-            UptakeGenes.iloc[i][UptakeGenes.iloc[i] == 0] = np.random.choice(probability_list,n_zero,replace=False)
+            UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0] = np.random.choice(probability_list,n_zero,replace=False)
                 
         return UptakeGenes
     
