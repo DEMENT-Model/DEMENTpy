@@ -11,14 +11,17 @@ import pickle
 from scipy.stats import distributions
 
 
-def LHS(n,loc,scale,dist):
-    
+def LHS(n,loc,upc,dist):
     """
+    Latin hypercube sampling.
+
     Parameters:
-        n:     integer;size of desired sampling
-        loc:   scalar;para 1 for specifying a desired probability distribution
-        scale: scalar;para 2 for specifying a distribution
+        n:     integer; size of desired sampling
+        loc:   scalar; lower bound of desired distribution
+        upc:   scalar; upper bound of desired distribution
         dist:  string; either 'uniform' or 'normal'
+    Returns:
+        lhs: 
     """
     
     lower_limits  = np.arange(0,n)/n
@@ -27,6 +30,7 @@ def LHS(n,loc,scale,dist):
     points = np.random.uniform(low=lower_limits,high=higher_limits,size=n)
     np.random.shuffle(points)
     
+    scale = upc - loc
     if dist == 'uniform':
         rv = distributions.uniform(loc=loc,scale=scale)
         
@@ -40,8 +44,8 @@ def LHS(n,loc,scale,dist):
 
 def expand(df,gridsize):
     """
-    Put data (df/series) on a spatial grid
-    ----------------------------------------------------
+    Put data (df/series) on a spatial grid.
+    
     Parameters:
          df:       dataframe/series
          gridsize: integer
@@ -56,7 +60,7 @@ def expand(df,gridsize):
 
 def export(output,name):
     """
-    Save the output object as a .pickle file
+    Save the output object as a .pickle file.
     
     Parameters:
         output: object
