@@ -1,8 +1,9 @@
 """
-this module contains a couple of functions that facilitate the calculation, including:
+This module, utility.py, contains three functions facilitating the calculation.
+
     1) LHS():    perform 1-D latin hypercube sampling
-    2) expand(): expand a community to the whole spatial grid;
-    3) export(): export the output object as a file to the local disk
+    2) expand(): put a community on the spatial grid
+    3) export(): export the output object to the local disk
 """
 
 import numpy as np
@@ -16,12 +17,12 @@ def LHS(n,loc,upc,dist):
     Latin hypercube sampling.
 
     Parameters:
-        n:     integer; size of desired sampling
-        loc:   scalar; lower bound of desired distribution
-        upc:   scalar; upper bound of desired distribution
-        dist:  string; either 'uniform' or 'normal'
+        n:    integer; size of desired sampling
+        loc:  scalar; lower bound of desired distribution
+        upc:  scalar; upper bound of desired distribution
+        dist: string; either 'uniform' or 'normal'
     Returns:
-        lhs: 
+        lhs: 1D array
     """
     
     lower_limits  = np.arange(0,n)/n
@@ -32,10 +33,9 @@ def LHS(n,loc,upc,dist):
     
     scale = upc - loc
     if dist == 'uniform':
-        rv = distributions.uniform(loc=loc,scale=scale)
-        
+        rv = distributions.uniform(loc=loc, scale=scale)  
     elif dist == 'normal':
-        rv = distributions.norm(loc=loc,scale=scale)
+        rv = distributions.norm(loc=loc, scale=scale)
     
     lhs = rv.ppf(points)
     
@@ -57,7 +57,6 @@ def expand(df,gridsize):
     return df_expanded
     
 
-
 def export(output,name):
     """
     Save the output object as a .pickle file.
@@ -69,4 +68,3 @@ def export(output,name):
     
     with open(str(name) + ".pickle", "wb") as f:
         pickle.dump(output, f, pickle.HIGHEST_PROTOCOL)
-    
