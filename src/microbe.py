@@ -2,7 +2,7 @@
 This microbe.py module has one class and two functions.
     
     Microbe():                class
-    microbe_osmo_psi():       function; inducible osmolyte production efficiency
+    microbe_osmo_psi():       function; moisture modifier of inducible osmolyte production efficiency
     microbe_mortality_prob(): function; cell mortality probability
         
 -------------------------------------------------------------------------------
@@ -62,9 +62,9 @@ class Microbe():
         self.Nrange     = parameters.loc['Nrange',1]      # Tolerance on N fraction: 0.04 mg mg-1
         self.Prange     = parameters.loc['Prange',1]      # Tolerance on P fraction: 0.005 mg mg-1
         # transporter
-        self.Uptake_C_cost_min = parameters.loc['Uptake_C_cost_min',1]  # Minimum C cost of one transporter gene being encoded 
-        self.Uptake_C_cost_max = parameters.loc['Uptake_C_cost_max',1]  # Maximum C cost of one transporter gene being encoded
-        self.NormalizeUptake   = parameters.loc['NormalizeUptake',1]    # Normalize uptake investment for the number of uptake genes;default:0
+        self.Uptake_C_cost_min = parameters.loc['Uptake_C_cost_min',1]      # Minimum C cost of one transporter gene being encoded 
+        self.Uptake_C_cost_max = parameters.loc['Uptake_C_cost_max',1]      # Maximum C cost of one transporter gene being encoded
+        self.NormalizeUptake   = parameters.loc['NormalizeUptake',1]        # Normalize uptake investment for the number of uptake genes;default:0
         # enzyme
         self.Enz_per_taxon_min = int(parameters.loc['Enz_per_taxon_min',1]) # =0;Minimum number of enzyme genes a taxon can hold
         self.Enz_per_taxon_max = int(parameters.loc['Enz_per_taxon_max',1]) # =40;Maximum number of enzyme genes a taxon can hold
@@ -203,32 +203,34 @@ class Microbe():
         """ 
         Derive taxon-specific enzyme genes.
         
-        Not all taxa need to have an enzyme gene; this method draws the
-        number of genes per taxon from a uniform distribution:
-        -----------------------------------------------------------------------   
+        This method draws the number of genes per taxon from a uniform distribution; Not all taxa need to have an enzyme gene.
+
         Parameters:
             Enz_per_taxon_min: minimum # genes a taxon can have (0)
             Enz_per_taxon_max: maximum # genes a taxon can have (40)   
         Return:
-            'EnzGenes': Rows are taxa; cols are genes;values: 0/1
+            EnzGenes: Rows are taxa; cols are genes;values: 0/1
         """
 
         # gene pool producing the number of enzymes that system requires 
         n_genes = self.n_enzymes
+
         # taxon-specific number of genes
         genes_per_taxon = np.random.choice(range(self.Enz_per_taxon_min,self.Enz_per_taxon_max+1),self.n_taxa,replace=True)
         
         # randomly assign genes from the gene pool to each individual taxon
-        def trial(i_taxon):
+        def assign_gene(i_taxon):
+            """Randomly assign a specific number of different genes to a taxon."""
+
             probability_list = [0]*n_genes
-            probability_list[0:int(genes_per_taxon[i_taxon])] = [1]*int(genes_per_taxon[i_taxon])
+            probability_list[0:genes_per_taxon[i_taxon]] = [1]*genes_per_taxon[i_taxon]
             taxon = np.random.choice(probability_list,n_genes,replace=False)
             return taxon
         
-        EnzGenes_list = [trial(i) for i in range(self.n_taxa)]
+        EnzGenes_list = [assign_gene(i) for i in range(self.n_taxa)]    # list of 1D array
         index         = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns       = ['Enz' + str(i) for i in range(1,n_genes+1)]
-        EnzGenes   = pd.DataFrame(data=np.vstack(EnzGenes_list),index=index,columns=columns, dtype='int8')
+        EnzGenes      = pd.DataFrame(data=np.vstack(EnzGenes_list), index=index, columns=columns, dtype='int8')
         
         return EnzGenes
     
@@ -237,9 +239,8 @@ class Microbe():
         """
         Derive the taxon-specific number of genes encoding osmolytes.
 
-        This method draws the number of genes per taxon from a uniform distribution.
-        Every taxon must have an osmotic gene.
-        -----------------------------------------------------------------------
+        This method draws the number of genes per taxon from a uniform distribution; every taxon must have an osmotic gene.
+        
         Parameters:
             n_osmolyte:         total number of different genes allowed by a system
             Osmo_per_taxon_min: 
@@ -250,22 +251,25 @@ class Microbe():
 
         # Gene pools producing the system-required number of osmolytes
         n_genes = self.n_osmolyte
+
         # derive the number of osmolyte gene each taxon can have
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
         
         # randomly determine different genes of a taxon
-        def trial(i_taxon):
+        def assign_gene(i_taxon):
+            """Randomly assign a specific numberof different genes to a taxon"""
+
             probability_list = [0]*n_genes
-            probability_list[0:int(genes_per_taxon[i_taxon])] = [1]*int(genes_per_taxon[i_taxon])
+            probability_list[0:genes_per_taxon[i_taxon]] = [1] * genes_per_taxon[i_taxon]
             taxon = np.random.choice(probability_list,n_genes,replace=False)
             return taxon
         
-        OsmoGenes_list = [trial(i) for i in range(self.n_taxa)]
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
-        columns = ['Osmo' + str(i) for i in range(1,n_genes+1)]
-        OsmoGenes_df = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=index, columns=columns, dtype='int8')
+        OsmoGenes_list = [assign_gene(i) for i in range(self.n_taxa)]
+        index          = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
+        columns        = ['Osmo'+ str(i) for i in range(1,n_genes+1)]
+        OsmoGenes   = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=index, columns=columns, dtype='int8')
         
-        return OsmoGenes_df
+        return OsmoGenes
         
      
     def microbe_uptake_gene(self,ReqEnz,EnzGenes,MonomersProduced):
@@ -283,11 +287,12 @@ class Microbe():
         """
         
         # substrate-required enzymes 
-        Sub_enz = ReqEnz.loc['set1'].iloc[0:self.n_substrates,] + ReqEnz.loc['set2'].iloc[0:self.n_substrates,]
+        Sub_enz = ReqEnz.loc['set1'].iloc[0:self.n_substrates,:] + ReqEnz.loc['set2'].iloc[0:self.n_substrates,:]
         # Matrix multiplication to relate taxa to the monomers they can generate with their enzymes
         UptakeGenes = EnzGenes @ Sub_enz.T @ MonomersProduced
         UptakeGenes.iloc[:,0:2] = 1
         UptakeGenes[lambda df: df>0] = 1   # == UptakeGenes[UptakeGenes > 0] = 1
+
         # Ensure every taxon is likely to have an uptake enzyme for at least 1 organic monomer
         # Not guaranteed unless uptake_prob = 1 (refer to the R version)
         probability_list    = [0]*(self.n_monomers-2)
@@ -295,6 +300,7 @@ class Microbe():
         for i in range(self.n_taxa):
             if sum(UptakeGenes.iloc[i,2:self.n_monomers]) == 0:
                 UptakeGenes.iloc[i,2:self.n_monomers] = np.random.choice(probability_list,self.n_monomers-2,replace=False)
+        
         # Give each taxon a random number of additional uptake genes between the number they have and n_upgenes
         for i in range(self.n_taxa):
             n_zero = sum(UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0])
@@ -313,9 +319,9 @@ class Microbe():
         Derive the taxon-specific cost of every single gene of uptake transporter.
         
         Note this cost (in terms of Fraction of Biomass C) is same among different genes from the same taxon
-        -----------------------------------------------------------------------
+        
         Parameters:
-            UptakeGenes:       taxon-specific transporter genes; from the above method
+            UptakeGenes:       dataframe; taxon-specific transporter genes; from the above method
             NormalizeUptake:   Normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
             Uptake_C_cost_min: 0.01	transporter mg-1 biomass C
             Uptake_C_cost_max: 0.1	transporter mg-1 biomass C     
@@ -327,18 +333,15 @@ class Microbe():
         # If true (== 1), then the uptake potential is normalized to the number of uptake genes (n_uptake)
         if self.NormalizeUptake == 1:
             Normalize = UptakeGenes.sum(axis=1)/self.n_uptake
-        else:
-            Normalize = 1
-        UptakeGenes = UptakeGenes.divide(Normalize,axis=0)
+            UptakeGenes = UptakeGenes.divide(Normalize,axis=0)
         
-        # Choose total amount of uptake allocation at random
-        # Old method:
-        # UptakeProd = np.random.uniform(self.Uptake_C_cost_min,self.Uptake_C_cost_max,self.n_taxa)
-        # Use LHS sampling instead:
+        # LHS sampling of transporter production efficiency for each taxon
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
-        UptakeProd_array  = LHS(self.n_taxa,self.Uptake_C_cost_min,self.Uptake_C_cost_max-self.Uptake_C_cost_min,'uniform')
+        UptakeProd_array  = LHS(self.n_taxa, self.Uptake_C_cost_min, self.Uptake_C_cost_max, 'uniform')
         UptakeProd_series = pd.Series(data=UptakeProd_array,index=index,dtype='float32')
-        UptakeGenes_Cost  = UptakeGenes.mul(UptakeProd_series,axis=0)  
+
+        # Derive gene-specific production efficiency of each taxon
+        UptakeGenes_Cost  = UptakeGenes.mul(UptakeProd_series,axis=0)
         
         return UptakeProd_series, UptakeGenes_Cost
     
@@ -348,7 +351,7 @@ class Microbe():
         Derive the taxon-specific fraction of 'available C' as enzymes: note that.
 
         This fraction only varies with taxon; every gene within a taxon is same.
-        -----------------------------------------------------------------------
+        
         Parameters:
             EnzGenes:        taxon-specific available genes for enzyme;dataframe (taxon * genes); from the above microbe_enzyme_gene() method
             EnzAttrib:       basic enzyme stoichiometry;dataframe [enzyme * 4 (C,N,P,maintenence cost)]
@@ -358,57 +361,44 @@ class Microbe():
             Enz_Prod_max:
             NormalizeProd: Normalize enzyme production for the number of enzyme genes (0 for no, 1 for yes)  
         Returns:
-            Tax_Induce_Enzyme_C:  taxon-specific fraction of available C as enzyme for each enzyme
-            Tax_Constit_Enzyme_C: taxon-specific fraction of available C as enzyme for each enzyme
+            Tax_EnzProdConsti:   series; taxon-specific fraction of available C as enzyme for each taxon
+            Tax_EnzProdInduce:   series; taxon-specific fraction of available C as enzyme for each taxon
+            Tax_Induce_Enzyme_C: dataframe; taxon-specific fraction of available C as enzyme for each enzyme
+            Tax_Consti_Enzyme_C: dataframe; taxon-specific fraction of available C as enzyme for each enzyme
         """
         
-        #...method 1....
-        #...Tax_EnzProdInduce: series;storing the production rate (inducible or constituitive) of each taxon (axis=1)
-        #index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
-        #Tax_EnzProdConstit_array = np.random.uniform(self.Constit_Prod_min,self.Constit_Prod_max,self.n_taxa)
-        #Tax_EnzProdInduce_array  = np.random.uniform(self.Enz_Prod_min,self.Enz_Prod_max,self.n_taxa)
-        #Tax_EnzProdConstit = pd.Series(data=Tax_EnzProdConstit_array,index=index)
-        #Tax_EnzProdInduce  = pd.Series(data=Tax_EnzProdInduce_array,index=index)
-        
-        #...LHS sampling...
+        # LHS sampling of constitutive and inducible enzyme production efficiency for each taxon
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
-        Tax_EnzProdConsti_array = LHS(self.n_taxa,self.Constit_Prod_min,self.Constit_Prod_max-self.Constit_Prod_min,'uniform')
-        Tax_EnzProdInduce_array = LHS(self.n_taxa,self.Enz_Prod_min,self.Enz_Prod_max-self.Enz_Prod_min,'uniform')
+        Tax_EnzProdConsti_array = LHS(self.n_taxa, self.Constit_Prod_min, self.Constit_Prod_max, 'uniform')
+        Tax_EnzProdInduce_array = LHS(self.n_taxa, self.Enz_Prod_min,     self.Enz_Prod_max,     'uniform')
         Tax_EnzProdConsti = pd.Series(data=Tax_EnzProdConsti_array, index=index, dtype='float32')
         Tax_EnzProdInduce = pd.Series(data=Tax_EnzProdInduce_array, index=index, dtype='float32')
         
-        #...method 2....
-        #...Tax_EnzProdInduce: series;storing the production rate (inducible or constituitive) of each taxon (axis=1)  
-        #Tax_EnzProdConstit= EnzGenes.apply(lambda df: np.asscalar(np.random.uniform(self.Constit_Prod_min,self.Constit_Prod_max,1)),axis=1)
-        #Tax_EnzProdInduce = EnzGenes.apply(lambda df: np.asscalar(np.random.uniform(self.Enz_Prod_min,self.Enz_Prod_max,1)),axis=1)
-        
-        #...derive the production rate of every single gene of each taxon
-        EnzProdInduce = EnzGenes.mul(Tax_EnzProdInduce,axis=0)
-        EnzProdConsti = EnzGenes.mul(Tax_EnzProdConsti,axis=0)
-        #...Normalize inducible and constituitive enzyme production
+        # Derive the production rate of every single gene of each taxon
+        EnzProdConsti = EnzGenes.mul(Tax_EnzProdConsti, axis=0)
+        EnzProdInduce = EnzGenes.mul(Tax_EnzProdInduce, axis=0)
+
+        # Normalize inducible and constituitive enzyme production
         if self.NormalizeProd == 1:
             Normalize = EnzGenes.sum(axis=1)/self.Enz_per_taxon_max
-        else:
-            Normalize = 1
-        EnzProdInduce = EnzProdInduce.divide(Normalize,axis=0)
-        EnzProdConsti = EnzProdConsti.divide(Normalize,axis=0)
-        #EnzProdInduce.fillna(0)  
-        #EnzProdConstit.fillna(0)
-                                        
-        #...Relative enzyme carbon cost for each enzyme gene of each taxon
-        Tax_Induce_Enzyme_C = EnzProdInduce.mul(EnzAttrib["C_cost"], axis=1)  #C_cost = 1; so it doesn't matter
-        Tax_Consti_Enzyme_C = EnzProdConsti.mul(EnzAttrib["C_cost"], axis=1)
+            EnzProdConsti = EnzProdConsti.divide(Normalize,axis=0)
+            EnzProdInduce = EnzProdInduce.divide(Normalize,axis=0)
+            EnzProdConsti[Normalize==0] = 0
+            EnzProdInduce[Normalize==0] = 0
+
+        # Relative enzyme carbon cost for each enzyme gene of each taxon
+        Tax_Consti_Enzyme_C = EnzProdConsti.mul(EnzAttrib["C_cost"], axis=1) #C_cost = 1; so it doesn't matter
+        Tax_Induce_Enzyme_C = EnzProdInduce.mul(EnzAttrib["C_cost"], axis=1)  
     
         return Tax_EnzProdConsti, Tax_EnzProdInduce, Tax_Consti_Enzyme_C, Tax_Induce_Enzyme_C 
     
     
-    def microbe_osmoproduction_rate(self,OsmoGenes_df):
+    def microbe_osmoproduction_rate(self,OsmoGenes):
         """
         Distribution of osmolyte production rate (i.e.,proportion of available C as osmolytes).
 
         Parameters:
-            OsmoGenes_df: taxon-specific available genes for osmolyte;
-                          dataframe (taxon * genes); Generated by the above microbe_osmolyte_gene() method
+            OsmoGenes:             dataframe(taxon*genes); generated by the above microbe_osmolyte_gene() method.
             Osmo_Constit_Prod_min:
             Osmo_Constit_Prod_max:
             Osmo_Induci_Prod_min:
@@ -420,21 +410,19 @@ class Microbe():
             Tax_Consti_Osmo_C: taxon-specific fraction of available C as osmolytes for each gene
             Tax_Induce_Osmo_C: taxon-specific fraction of available C as osmolytes for each gene
         """
-        
-        Tax_OsmoProd_Consti = LHS(self.n_taxa,self.Osmo_Consti_Prod_min,self.Osmo_Consti_Prod_max-self.Osmo_Consti_Prod_min,'uniform')
-        Tax_OsmoProd_Induci = LHS(self.n_taxa,self.Osmo_Induci_Prod_min,self.Osmo_Induci_Prod_max-self.Osmo_Induci_Prod_min,'uniform')
+        # LHS sampling of osmolyte production efficiency for every taxon
+        Tax_OsmoProd_Consti = LHS(self.n_taxa, self.Osmo_Consti_Prod_min, self.Osmo_Consti_Prod_max, 'uniform')
+        Tax_OsmoProd_Induci = LHS(self.n_taxa, self.Osmo_Induci_Prod_min, self.Osmo_Induci_Prod_max, 'uniform')
         
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         Tax_OsmoProd_Consti_series = pd.Series(data=Tax_OsmoProd_Consti, index=index, dtype='float32')
         Tax_OsmoProd_Induci_series = pd.Series(data=Tax_OsmoProd_Induci, index=index, dtype='float32')
                                               
-        #...derive the production rate of every single gene of each taxon
-        Tax_Consti_Osmo_C = OsmoGenes_df.mul(Tax_OsmoProd_Consti_series,axis=0)
-        Tax_Induci_Osmo_C = OsmoGenes_df.mul(Tax_OsmoProd_Induci_series,axis=0)
-        
+        # Derive the production rate of every single gene of each taxon
+        Tax_Consti_Osmo_C = OsmoGenes.mul(Tax_OsmoProd_Consti_series,axis=0)
+        Tax_Induci_Osmo_C = OsmoGenes.mul(Tax_OsmoProd_Induci_series,axis=0)
         
         return Tax_OsmoProd_Consti_series, Tax_OsmoProd_Induci_series, Tax_Consti_Osmo_C, Tax_Induci_Osmo_C
-    
     
     
     def microbe_drought_tol(self,Tax_Consti_Osmo_C,Tax_Induci_Osmo_C):
@@ -442,12 +430,13 @@ class Microbe():
         Derive taxon-specific drought tolerance value.
         
         Drought tolerance is postively correlated with taxon-specific inducible osmotic allocation efficiency.
-        -----------------------------------------------------------------------
+        
         Parameter:
             Tax_Induci_Osmo_C: dataframe
         Return:
             Tax_tolerance: series;float32
         """
+
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
         #Tax_tolerance = Tax_Osmo_Alloc.rank(axis=0,method='min')/self.n_taxa
         Tax_tolerance = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
