@@ -45,7 +45,7 @@ class Microbe():
         self.n_enzymes   = int(runtime.loc['n_enzymes',1])
         self.n_substrates= int(runtime.loc['n_substrates',1])
         self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # +2 b/c of two inorganic monomers
-        self.n_uptake    = int(runtime.loc['n_uptake',1])        # Number of uptake transporters for each taxon
+        self.n_uptake    = int(runtime.loc['n_uptake',1])        # number of transporters for each taxon
         self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])     # system-allowed number of osmotic compound
         self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[runtime.loc['fb',1],(1-runtime.loc['fb',1])]).astype('int8') #index of fungal taxa in a microbial pool (1);1-d array
         self.taxa_per_box= runtime.loc['taxa_per_box',1]         # Probability of each taxon entering a grid cell
@@ -121,19 +121,19 @@ class Microbe():
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)] * self.gridsize
         microbes_pp = pd.DataFrame(data=microbes_array, index=index, columns=["C","N","P"], dtype='float32')
         
-        # derive the Fungi index by expanding the fb to the spatial grid
+        # Derive the Fungi index by expanding the fb to the spatial grid
         fb_grid = np.tile(self.fb,self.gridsize)
         
         # Fungal pool sizes for all elements
         FunC = 0.5 * self.max_size_f
         FunN = FunC * self.Nfrac_f/self.Cfrac_f
         FunP = FunC * self.Pfrac_f/self.Cfrac_f
-        #...Substitute with fungal pools of elements: fb_grid == 1
+        # Substitute with fungal pools of elements: fb_grid == 1
         microbes_pp.loc[fb_grid == 1, "C"] = FunC
         microbes_pp.loc[fb_grid == 1, "N"] = FunN
         microbes_pp.loc[fb_grid == 1, "P"] = FunP
         
-        #...Derive the number of fungi and bacteria taxa
+        # Derive the number of fungi and bacteria taxa
         Bac_index = microbes_pp['C'] == BacC
         Fun_index = microbes_pp['C'] == FunC
         Bac_taxa = int(sum(Bac_index)/self.gridsize)
@@ -143,16 +143,14 @@ class Microbe():
         # Export the microbial community preceding placement on the grid
         microbes_df = microbes_pp.copy(deep=True)
 
-        # Randomly place the microbial community created above on the spatial grid to
-        #...initialize a spatially explicit microbial community by
-        #...creating an array choose_taxa [1:yes;0:no]
+        # Randomly place the microbial community created above on the spatial grid to initialize a spatially explicit microbial community by
         pb = self.taxa_per_box
         choose_taxa = np.random.choice([1,0], self.n_taxa*self.gridsize,replace=True, p=[pb,(1-pb)])
         pf = pb * self.max_size_b/self.max_size_f
         choose_taxa[fb_grid==1] = np.random.choice([1,0], sum(fb_grid),replace=True, p=[pf,(1-pf)])
         microbes_df.loc[choose_taxa==0] = 0
         
-        #...Derive the number of fungi and bacteria taxa
+        # Derive the number of fungi and bacteria taxa
         Bac_index = microbes_df['C'] == BacC
         Fun_index = microbes_df['C'] == FunC
         Bac_taxa = microbes_df[Bac_index].groupby(level=0).sum().shape[0]
@@ -223,7 +221,7 @@ class Microbe():
             """Randomly assign a specific number of different genes to a taxon."""
 
             probability_list = [0]*n_genes
-            probability_list[0:genes_per_taxon[i_taxon]] = [1]*genes_per_taxon[i_taxon]
+            probability_list[0:genes_per_taxon[i_taxon]] = [1] * genes_per_taxon[i_taxon]
             taxon = np.random.choice(probability_list,n_genes,replace=False)
             return taxon
         
@@ -243,31 +241,31 @@ class Microbe():
         
         Parameters:
             n_osmolyte:         total number of different genes allowed by a system
-            Osmo_per_taxon_min: 
-            Osmo_per_taxon_max:       
+            Osmo_per_taxon_min: min of osmotic genes in a taxon
+            Osmo_per_taxon_max: max of osmotic genes in a taxon
         Return:
-            OsmoGenes: row: taxon; col: genes
+            OsmoGenes: dataframe; row: taxon; col: genes
         """
 
-        # Gene pools producing the system-required number of osmolytes
+        # gene pools producing the system-required number of osmolytes
         n_genes = self.n_osmolyte
 
-        # derive the number of osmolyte gene each taxon can have
+        # derive the number of osmolyte genes each taxon can have randomly
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
         
-        # randomly determine different genes of a taxon
+        # randomly determine different genes within a taxon
         def assign_gene(i_taxon):
             """Randomly assign a specific numberof different genes to a taxon"""
 
             probability_list = [0]*n_genes
             probability_list[0:genes_per_taxon[i_taxon]] = [1] * genes_per_taxon[i_taxon]
-            taxon = np.random.choice(probability_list,n_genes,replace=False)
+            taxon = np.random.choice(probability_list, n_genes, replace=False)
             return taxon
         
         OsmoGenes_list = [assign_gene(i) for i in range(self.n_taxa)]
         index          = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns        = ['Osmo'+ str(i) for i in range(1,n_genes+1)]
-        OsmoGenes   = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=index, columns=columns, dtype='int8')
+        OsmoGenes      = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=index, columns=columns, dtype='int8')
         
         return OsmoGenes
         
@@ -279,8 +277,8 @@ class Microbe():
         All taxa must have at least one uptake gene.
         
         Parameters:
-            ReqEnz:           substrate-required enzymes;3-D dataframe (2 * n_substrates * n_enzymes); from the Substrate class
-            EnzGenes:         genes encoding enzymes degrading substrates; 2-D df(taxon*gene); from the above 'microbe_enzyme_gene' method
+            ReqEnz:           3D df (2 * n_substrates * n_enzymes); substrate-required enzymes; from the Substrate class
+            EnzGenes:         2D df(taxon*gene); genes encoding enzymes degrading substrates; from the above 'microbe_enzyme_gene' method
             MonomersProduced: dataframe; sub * monomers; from the Substrae class
         Return:
             UptakeGenes: dataframe:Rows-taxa; Cols-genes; Values: 0 (no gene) or 1 (yes)
@@ -321,7 +319,7 @@ class Microbe():
         Note this cost (in terms of Fraction of Biomass C) is same among different genes from the same taxon
         
         Parameters:
-            UptakeGenes:       dataframe; taxon-specific transporter genes; from the above method
+            UptakeGenes:       dataframe; taxon-specific transporter genes; from the above method, microbe_uptake_gene()
             NormalizeUptake:   Normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
             Uptake_C_cost_min: 0.01	transporter mg-1 biomass C
             Uptake_C_cost_max: 0.1	transporter mg-1 biomass C     
@@ -330,18 +328,18 @@ class Microbe():
             UptakeGenes_Cost:  dataframe; taxon- and gene-specific transporter cost
         """                         
         
-        # If true (== 1), then the uptake potential is normalized to the number of uptake genes (n_uptake)
-        if self.NormalizeUptake == 1:
-            Normalize = UptakeGenes.sum(axis=1)/self.n_uptake
-            UptakeGenes = UptakeGenes.divide(Normalize,axis=0)
-        
         # LHS sampling of transporter production efficiency for each taxon
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         UptakeProd_array  = LHS(self.n_taxa, self.Uptake_C_cost_min, self.Uptake_C_cost_max, 'uniform')
-        UptakeProd_series = pd.Series(data=UptakeProd_array,index=index,dtype='float32')
+        UptakeProd_series = pd.Series(data=UptakeProd_array, index=index, dtype='float32')
 
+        # If true (== 1), then the uptake potential is normalized to the number of uptake genes (n_uptake)
+        if self.NormalizeUptake == 1:
+            Normalize   = UptakeGenes.sum(axis=1)/self.n_uptake
+            UptakeGenes = UptakeGenes.divide(Normalize,axis=0)
+        
         # Derive gene-specific production efficiency of each taxon
-        UptakeGenes_Cost  = UptakeGenes.mul(UptakeProd_series,axis=0)
+        UptakeGenes_Cost = UptakeGenes.mul(UptakeProd_series,axis=0)
         
         return UptakeProd_series, UptakeGenes_Cost
     
@@ -350,16 +348,16 @@ class Microbe():
         """
         Derive the taxon-specific fraction of 'available C' as enzymes: note that.
 
-        This fraction only varies with taxon; every gene within a taxon is same.
+        This fraction only varies with taxon, which is independent of gene within a taxon
         
         Parameters:
-            EnzGenes:        taxon-specific available genes for enzyme;dataframe (taxon * genes); from the above microbe_enzyme_gene() method
-            EnzAttrib:       basic enzyme stoichiometry;dataframe [enzyme * 4 (C,N,P,maintenence cost)]
-            Constit_Prod_min:
-            Constit_Prod_max:
-            Enz_Prod_min:
-            Enz_Prod_max:
-            NormalizeProd: Normalize enzyme production for the number of enzyme genes (0 for no, 1 for yes)  
+            EnzGenes:         taxon-specific available genes for enzyme;dataframe (taxon * genes); from the above microbe_enzyme_gene() method
+            EnzAttrib:        dataframe [enzyme * 4 (C,N,P,maintenence cost)]; basic enzyme stoichiometry
+            Constit_Prod_min: min of constitutive enzyme production efficiency
+            Constit_Prod_max: max of constitutive enzyme production efficiency
+            Enz_Prod_min:     min of inducible enzyme production efficiency
+            Enz_Prod_max:     max of inducible enzyme production efficiency
+            NormalizeProd:    scalar; normalize enzyme production for the number of enzyme genes (0: No, 1: Yes)  
         Returns:
             Tax_EnzProdConsti:   series; taxon-specific fraction of available C as enzyme for each taxon
             Tax_EnzProdInduce:   series; taxon-specific fraction of available C as enzyme for each taxon
@@ -371,18 +369,18 @@ class Microbe():
         index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         Tax_EnzProdConsti_array = LHS(self.n_taxa, self.Constit_Prod_min, self.Constit_Prod_max, 'uniform')
         Tax_EnzProdInduce_array = LHS(self.n_taxa, self.Enz_Prod_min,     self.Enz_Prod_max,     'uniform')
-        Tax_EnzProdConsti = pd.Series(data=Tax_EnzProdConsti_array, index=index, dtype='float32')
-        Tax_EnzProdInduce = pd.Series(data=Tax_EnzProdInduce_array, index=index, dtype='float32')
+        Tax_EnzProdConsti       = pd.Series(data=Tax_EnzProdConsti_array, index=index, dtype='float32')
+        Tax_EnzProdInduce       = pd.Series(data=Tax_EnzProdInduce_array, index=index, dtype='float32')
         
         # Derive the production rate of every single gene of each taxon
         EnzProdConsti = EnzGenes.mul(Tax_EnzProdConsti, axis=0)
         EnzProdInduce = EnzGenes.mul(Tax_EnzProdInduce, axis=0)
 
-        # Normalize inducible and constituitive enzyme production
+        # Normalize constituitive and inducible enzyme production
         if self.NormalizeProd == 1:
-            Normalize = EnzGenes.sum(axis=1)/self.Enz_per_taxon_max
-            EnzProdConsti = EnzProdConsti.divide(Normalize,axis=0)
-            EnzProdInduce = EnzProdInduce.divide(Normalize,axis=0)
+            Normalize     = EnzGenes.sum(axis=1)/self.Enz_per_taxon_max
+            EnzProdConsti = EnzProdConsti.divide(Normalize, axis=0)
+            EnzProdInduce = EnzProdInduce.divide(Normalize, axis=0)
             EnzProdConsti[Normalize==0] = 0
             EnzProdInduce[Normalize==0] = 0
 
@@ -398,12 +396,12 @@ class Microbe():
         Distribution of osmolyte production rate (i.e.,proportion of available C as osmolytes).
 
         Parameters:
-            OsmoGenes:             dataframe(taxon*genes); generated by the above microbe_osmolyte_gene() method.
-            Osmo_Constit_Prod_min:
-            Osmo_Constit_Prod_max:
-            Osmo_Induci_Prod_min:
-            Osmo_Induci_Prod_max:
-            NormalizeProd:  0   
+            OsmoGenes:             dataframe(taxon*genes); generated by the above microbe_osmolyte_gene() method
+            Osmo_Constit_Prod_min: min of constitutive osmolyte production efficiency
+            Osmo_Constit_Prod_max: max of constitutive osmolyte production efficiency
+            Osmo_Induci_Prod_min:  min of inducible osmolyte production efficiency
+            Osmo_Induci_Prod_max:  max of inducible osmolyte production efficiency
+            NormalizeProd:         0   
         Returns:
             Tax_OsmoProd_Consti_series:
             Tax_OsmoProd_Induci_series:
@@ -455,6 +453,7 @@ class Microbe():
             basal_death_prop: spatial taxon-specific basal death probability; 1D array
             death_rate:       spatial death_rate; 1D array   
         """
+
         basal_death_prob = ((1-fb_grid) * self.death_rate_bac + fb_grid * self.death_rate_fun).astype('float32')
         death_rate       =  (1-fb_grid) * self.beta_bac + fb_grid * self.beta_fun
 
