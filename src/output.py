@@ -8,7 +8,7 @@ class Output():
     """
     This class deals with outputs.
     
-    Accepts data derived from the initialization.py and grid.py modules, and uses two methods:
+    Accepts data derived from the initialization.py and grid.py modules, and have two methods:
         output():      stores time series
         microbes_df(): a special method
     """
@@ -19,7 +19,7 @@ class Output():
         
         Parameters:
             runtime:   user-specified parameters when running the model
-            data_init: data dictionary;all inititialed data from the 'initialization.py' module   
+            data_init: data dictionary;all inititialized data from the 'initialization.py' module   
         Returns:
             Initialization:   all data initialized preceding the execution of grid.py: dictionary
             Microbial_traits: microbial traits only pulled out from Initialization: dataframe
@@ -134,9 +134,10 @@ class Output():
         #self.CUE_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
         
         # Enzymes
-        Enzymes_grid = data_init['Enzymes'].groupby(level=0,sort=False).sum() # the total of each enzyme summed over the spatial grid
+        Enzymes_grid       = data_init['Enzymes'].groupby(level=0,sort=False).sum() # total of each enzyme summed over the spatial grid
+        Enzymes_grid.name  = 0
         self.EnzymesSeries = Enzymes_grid 
-        #self.Enzymes_Sum   = pd.Series([Enzymes_grid.sum()],index=[0])
+        #self.Enzymes_Sum  = pd.Series([Enzymes_grid.sum()],index=[0])
         
         # Emergent properties over the grid
         self.RespSeries = pd.Series([0],index=[0]) # respiration
@@ -241,7 +242,7 @@ class Output():
         Enzymes_grid       = ecosystem.Enzymes.groupby(level=0,sort=False).sum()
         Enzymes_grid.name  = day + 1
         self.EnzymesSeries = pd.concat([self.EnzymesSeries,Enzymes_grid], axis=1, sort=False)
-        #self.Enzymes_Sum   = pd.concat([self.Enzymes_Sum,pd.Series([Enzymes_grid.sum()],index=[day+1])],axis=0,sort=False)
+        #self.Enzymes_Sum  = pd.concat([self.Enzymes_Sum,pd.Series([Enzymes_grid.sum()],index=[day+1])],axis=0,sort=False)
         
         # Respiration
         self.RespSeries = pd.concat([self.RespSeries, pd.Series([ecosystem.Respiration],index=[day+1])], axis=0, sort=False)
