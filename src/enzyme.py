@@ -149,8 +149,8 @@ class Enzyme():
           Vmax0.T: dataframe(enzyme*substrate); will feed expand()
         """
         
-        Vmax0_array = LHS(self.n_substrates*self.n_enzymes,self.Vmax0_min, self.Vmax0_max, 'uniform')
-        Vmax0_array = Vmax0_array.reshape(self.n_substrates,self.n_enzymes)
+        Vmax0_array = LHS(self.n_substrates*self.n_enzymes, self.Vmax0_min, self.Vmax0_max, 'uniform')
+        Vmax0_array = Vmax0_array.reshape(self.n_substrates, self.n_enzymes)
 
         columns  = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
         Vmax0    = pd.DataFrame(data=Vmax0_array, index=self.substrate_index, columns=columns, dtype='float32')
@@ -169,7 +169,7 @@ class Enzyme():
             total_substrates[total_substrates>1] = total_substrates[total_substrates>1]*self.Specif_factor
         
         Vmax0 = Vmax0.divide(total_substrates,axis=1)
-        Vmax0[total_substrates==0] = 0 # get rid of NAs
+        Vmax0.loc[:,total_substrates==0] = 0 # get rid of NAs
         Vmax0 = Vmax0.astype('float32')
         
         return Vmax0, Vmax0.T
@@ -203,7 +203,7 @@ class Enzyme():
         else:
             total_monomers[total_monomers>1] = total_monomers[total_monomers>1] * self.Specif_factor    
         Uptake_Vmax0 = Uptake_Vmax0.divide(total_monomers, axis=1)
-        Uptake_Vmax0[total_monomers==0] = 0
+        Uptake_Vmax0.loc[:,total_monomers==0] = 0
 
         Uptake_Vmax0 = Uptake_Vmax0.astype('float32')
 
@@ -228,7 +228,7 @@ class Enzyme():
         """
         
         mean = Vmax0.mean().mean()*self.Km_error
-        Km   = abs(Vmax0.apply(lambda df: np.random.normal(df*self.Vmax_Km, mean, axis=0)) + self.Vmax_Km_int)
+        Km   = abs(Vmax0.apply(lambda df: np.random.normal(df*self.Vmax_Km, mean), axis=0)) + self.Vmax_Km_int
         Km[Km < self.Km_min] = self.Km_min
         Km = Km.astype('float32')
         
@@ -252,7 +252,7 @@ class Enzyme():
         """
         
         mean = Uptake_Vmax0.mean().mean()*self.Km_error
-        Uptake_Km = abs(Uptake_Vmax0.apply(lambda df: np.random.normal(df*self.Uptake_Vmax_Km, mean, axis=0)) + self.Uptake_Vmax_Km_int)
+        Uptake_Km = abs(Uptake_Vmax0.apply(lambda df: np.random.normal(df*self.Uptake_Vmax_Km, mean), axis=0)) + self.Uptake_Vmax_Km_int
         Uptake_Km[Uptake_Km<self.Uptake_Km_min] = self.Uptake_Km_min
         Uptake_Km = Uptake_Km.astype('float32')
         
