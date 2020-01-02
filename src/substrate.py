@@ -55,7 +55,7 @@ class Substrate():
         SubInputC.name = 'C' 
         SubInputN.name = 'N'
         SubInputP.name = 'P'
-        SubInput_df = pd.concat([SubInputC,SubInputN,SubInputP],axis=1,sort=False, dtype='float32')
+        SubInput_df = pd.concat([SubInputC,SubInputN,SubInputP],axis=1,sort=False)
         SubInput_df['DeadMic'] = SubInput_df['DeadEnz'] = 0  # Change NAs to 0
         
         return SubInput_df
@@ -71,7 +71,7 @@ class Substrate():
         MonomersProduced_array = np.concatenate((np.array([0]*self.n_substrates*2).reshape((self.n_substrates,2),order='F'),np.diagflat([1]*self.n_substrates)),axis=1)
         index   = ['Sub'+str(i) for i in range(1,self.n_substrates+1)]
         columns = ['Mon'+str(i) for i in range(-1,self.n_substrates+1)]
-        MonomersProduced_df = pd.DataFrame(data=MonomersProduced_array,index=index,columns=columns,dtypes='int8')
+        MonomersProduced_df = pd.DataFrame(data=MonomersProduced_array,index=index,columns=columns,dtype='int8')
         MonomersProduced_df.rename(columns = {'Mon-1':"NH4",'Mon0':"PO4",'Mon1':"DeadMic",'Mon2':"DeadEnz"},inplace=True)
 
         return MonomersProduced_df
