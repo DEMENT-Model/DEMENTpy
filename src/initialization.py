@@ -144,7 +144,7 @@ def initialize_data(runtime_parameters):
                        "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),
                        "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),
                        "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),            # distribution of taxon-specific drought tol.
-                       'basal_death_rate':  microbial_mortality[0],                # basal death probability
+                       'basal_death_prob':  microbial_mortality[0],                # basal death probability
                        'death_rate':        microbial_mortality[1],                # sensitivity of death to mositure
                        "AE_ref":            parameters.loc["CUE_ref",1],           # Reference assimilation efficiency: 0.5
                        "AE_temp":           parameters.loc["CUE_temp",1],          # AE temperature sensitivity; default: -0.016
