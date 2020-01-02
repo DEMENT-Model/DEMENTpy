@@ -228,7 +228,7 @@ class Enzyme():
         """
         
         mean = Vmax0.mean().mean()*self.Km_error
-        Km   = abs(Vmax0.apply(lambda df: np.random.normal(df*self.Vmax_Km, mean), axis=0)) + self.Vmax_Km_int
+        Km   = abs(Vmax0.apply(lambda df: np.random.normal(df*self.Vmax_Km, mean), axis=0) + self.Vmax_Km_int)
         Km[Km < self.Km_min] = self.Km_min
         Km = Km.astype('float32')
         
@@ -252,7 +252,7 @@ class Enzyme():
         """
         
         mean = Uptake_Vmax0.mean().mean()*self.Km_error
-        Uptake_Km = abs(Uptake_Vmax0.apply(lambda df: np.random.normal(df*self.Uptake_Vmax_Km, mean), axis=0)) + self.Uptake_Vmax_Km_int
+        Uptake_Km = abs(Uptake_Vmax0.apply(lambda df: np.random.normal(df*self.Uptake_Vmax_Km, mean), axis=0) + self.Uptake_Vmax_Km_int)
         Uptake_Km[Uptake_Km<self.Uptake_Km_min] = self.Uptake_Km_min
         Uptake_Km = Uptake_Km.astype('float32')
         
