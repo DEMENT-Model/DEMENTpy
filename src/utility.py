@@ -62,7 +62,7 @@ def export(output,name):
     Save the output object as a .pickle file.
     
     Parameters:
-        output: object of class Output
+        output: object of the class, Output
         name:   naming output file
     """
     
