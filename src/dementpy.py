@@ -78,7 +78,7 @@ def main():
             # microbial reproduction and dispersal
             Ecosystem.reproduction(i)
         
-            # output data using the output method in the Output class
+            # output data using the "output" method in the Output class
             if i == 0:
                 Output_init.output(Ecosystem,i)  # day 1
             elif i%interval==interval-1:
@@ -88,7 +88,7 @@ def main():
             #if pulse == 1:
             #    continue
             
-            # output every day's microbial mass 
+            # output microbial mass of every iteration using the "microbes_df" method in the Output class
             Output_init.microbes_df(Ecosystem,i)
             
             # re-initialize microbial community in each new pulse
