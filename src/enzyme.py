@@ -271,6 +271,6 @@ def Boltzman_Arrhenius(Ea,temperature):
     """
 
     Tref = 293
-    BA = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref))
+    BA = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref)).astype('float32')
 
     return BA
