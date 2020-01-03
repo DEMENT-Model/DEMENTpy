@@ -31,11 +31,11 @@ class Enzyme():
             parameters: model parameters
         """
         
-        self.n_enzymes       = int(runtime.loc['n_enzymes',1])      
-        self.n_substrates    = int(runtime.loc['n_substrates',1])
-        self.n_monomers      = self.n_substrates + 2
-        self.n_uptake        = int(runtime.loc['n_uptake',1])
-        self.substrate_index = substrate_index                              # index of substrates
+        self.n_enzymes          = int(runtime.loc['n_enzymes',1])      
+        self.n_substrates       = int(runtime.loc['n_substrates',1])
+        self.n_monomers         = self.n_substrates + 2
+        self.n_uptake           = int(runtime.loc['n_uptake',1])
+        self.substrate_index    = substrate_index                           # index of substrates in their actual names
 
         self.Enz_min            = parameters.loc['Enz_min',1]               # Initial min. enzyme present in terms of carbon
         self.Enz_max            = parameters.loc['Enz_max',1]               # Initial max. enzyme present in terms of carbon
@@ -64,8 +64,8 @@ class Enzyme():
         Initialize the pool sizes of different enzymes.
 
         Parameters:
-            Enz_min = 0
-            Enz_max = 0
+            Enz_min: min. of initial enzyme in C
+            Enz_max: max. of initial enzyme in C
         Return:
             Enzymes_df: series; index:Enz
         """
@@ -87,7 +87,7 @@ class Enzyme():
             Enz_P_cost:     scalar; 
             Enz_Maint_cost: scalar; 
         Return:
-            EnzAttrib_df: dataframe; row: Enz; col:
+            EnzAttrib_df: dataframe; row: Enz; col:["C_cost","N_cost","P_cost","Maint_cost"]
         """
         
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
@@ -104,7 +104,7 @@ class Enzyme():
         Parameter:
             Ea_input: dataframe; substrate-specific activation energy range (min = max for now)
         Return:
-            Ea_df.T: Rows:enzymes; cols: substrates
+            Ea_df.T: dataframe; Rows:enzymes; cols: substrates
         """
         
         Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1) # series of 1D array
@@ -122,7 +122,7 @@ class Enzyme():
             Uptake_Ea_min: 35
             Uptake_Ea_max: 35
         Return:
-            Uptake_Ea: Rows are monomers; cols are uptake enzymes
+            Uptake_Ea: dataframe; Rows are monomers; cols are uptake enzymes
         """
         
         Uptake_Ea_array = np.random.uniform(self.Uptake_Ea_min, self.Uptake_Ea_max, self.n_uptake*self.n_monomers)
