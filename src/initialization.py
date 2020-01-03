@@ -2,12 +2,9 @@
 This module, with only one function "initialized_data(), initializes data related to 
 substrate, monomer, enzyme, and microbe, as well as their distribution on the spatial grid,
 preceding the actual decompostion-related computations.
--------------------
-Bin Wang
-Last modified: 07/09/2019
-
 """
 import pandas as pd
+import numpy as np
 
 from substrate import Substrate
 from monomer   import Monomer
@@ -27,11 +24,11 @@ def initialize_data(runtime_parameters):
     """
     
     # Load all input files
-    parameters      = pd.read_csv('parameters.csv',         header=None, index_col=0)     # parameters
-    substrates_init = pd.read_csv('initial_substrates.csv', header=0,    index_col=0)     # initial substrates
-    sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',     header=0,    index_col=0)     # inputs of substrates and monomers
-    Ea_input        = pd.read_csv("enzyme_ea.csv",          header=0,    index_col=0)     # enzyme activation energy
-    climate         = pd.read_csv('climate.csv',            header=0,    index_col=0)     # climate forcings
+    parameters      = pd.read_csv('parameters.csv',         header=None, index_col=0).astype('float32')   # parameters
+    substrates_init = pd.read_csv('initial_substrates.csv', header=0,    index_col=0).astype('float32')   # initial substrates
+    sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',     header=0,    index_col=0).astype('float32')   # inputs of substrates and monomers
+    Ea_input        = pd.read_csv("enzyme_ea.csv",          header=0,    index_col=0).astype('float32')   # enzyme activation energy
+    climate         = pd.read_csv('climate.csv',            header=0,    index_col=0)                     # climate forcings
 
     # daily temperature and water potential
     daily_temp = climate['Temp'].astype('float32')  # temperaure series
