@@ -56,8 +56,8 @@ class Grid():
         self.Ea              = data_init['Ea']                         # Enzyme activatin energy
         self.Vmax0           = data_init['Vmax0']                      # Max. reaction speed
         self.Km0             = data_init['Km0']                        # Half-saturation constant
-        self.SubstrateRatios = float('nan')                            # Substrate stoichiometry
-        self.DecayRates      = float('nan')                            # Substrate decay rate
+        self.SubstrateRatios = np.float32('nan')                            # Substrate stoichiometry
+        self.DecayRates      = np.float32('nan')                            # Substrate decay rate
 
         #Uptake
         self.Microbes_init  = data_init['Microbes_pp']                   # microbial community before placement
@@ -71,9 +71,9 @@ class Grid():
         self.Monomer_ratios = data_init['Monomer_ratio'].copy(deep=True) # monomer stoichiometry
         self.Uptake_ReqEnz  = data_init['Uptake_ReqEnz']                 # Enzymes required by monomers 
         self.Uptake_Enz_Cost= data_init['UptakeGenesCost']               # Cost of encoding each uptake gene
-        self.Taxon_Uptake_C = float('nan')                               # taxon uptake of C 
-        self.Taxon_Uptake_N = float('nan')                               # taxon uptake of N 
-        self.Taxon_Uptake_P = float('nan')                               # taxon uptake of P
+        self.Taxon_Uptake_C = np.float32('nan')                          # taxon uptake of C 
+        self.Taxon_Uptake_N = np.float32('nan')                          # taxon uptake of N 
+        self.Taxon_Uptake_P = np.float32('nan')                          # taxon uptake of P
         
         #Metabolism
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
@@ -84,8 +84,8 @@ class Grid():
         self.Enz_Attrib        = data_init['EnzAttrib']         # Enzyme attributes; dataframe
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5;scalar
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature;scalar
-        self.Respiration       = float('nan')                   # Respiration
-        self.CUE_System        = float('nan')                   # emergent CUE
+        self.Respiration       = np.float32('nan')              # Respiration
+        self.CUE_System        = np.float32('nan')              # emergent CUE
         #self.Transporters = float('nan')
         #self.Osmolyte_Con = float('nan')
         #self.Osmolyte_Ind = float('nan')
@@ -105,7 +105,7 @@ class Grid():
         self.wp_fc            = data_init['wp_fc']               # -1.0
         self.wp_th            = data_init['wp_th']               # -6.0
         self.alpha            = data_init['alpha']               # integer;1
-        self.Kill             = float('nan')                     # number of cells stochastically killed
+        self.Kill             = np.float32('nan')                # number of cells stochastically killed
         
         # Reproduction
         self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
@@ -266,7 +266,7 @@ class Grid():
         # Take the min of the monomer available and the max potential uptake and Scale the uptake to what's available
         csmu = Max_Uptake.sum(axis=1)  # Total potential uptake of each monomer
         Uptake = Max_Uptake.mul(pd.concat([csmu,rsm],axis=1).min(axis=1,skipna=True)/csmu,axis=0) #(Monomer*gridsize) * Taxon
-        Uptake.loc[csmu==0] = 0
+        Uptake.loc[csmu==0] = np.float32(0)
         # End computing monomer uptake
         
         # Update monomers
@@ -337,12 +337,12 @@ class Grid():
         MNAOEC = (pd.concat([OECCN[OECCN>0],self.Microbes["N"][OECCN>0]],axis=1)).min(axis=1,skipna=True) # Get the minimum value
         ARROEC = (MNAOEC/OECCN[OECCN>0]).fillna(0)  # Derive ratio of availabe N to required N
         # 3) Osmolyte adjusted
-        Taxon_Osmo_Consti.loc[OECCN>0] = Taxon_Osmo_Consti.loc[OECCN>0].mul(ARROEC,axis=0)  # adjusted osmolyte
+        Taxon_Osmo_Consti.loc[OECCN>0] = Taxon_Osmo_Consti.loc[OECCN>0].mul(ARROEC,axis=0)        # adjusted osmolyte
         Taxon_Osmo_Consti_Maint        = (Taxon_Osmo_Consti * Osmo_Maint_cost).sum(axis=1)        # maintenece
         Taxon_Osmo_Consti_Cost_C       = Taxon_Osmo_Consti.sum(axis=1) + Taxon_Osmo_Consti_Maint  # total C consumption
         Taxon_Osmo_Consti_Cost_N       = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)            # N cost (no P)
         # 4) Enzyme adjusted
-        Taxon_Enzyme_Consti.loc[OECCN>0] = Taxon_Enzyme_Consti.loc[OECCN>0].mul(ARROEC,axis=0)                   # adjusted enzyme
+        Taxon_Enzyme_Consti.loc[OECCN>0] = Taxon_Enzyme_Consti.loc[OECCN>0].mul(ARROEC,axis=0)                         # adjusted enzyme
         Taxon_Enzyme_Consti_Maint        = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1) # maintinence
         Taxon_Enzyme_Consti_Cost_C       = Taxon_Enzyme_Consti.sum(axis=1) + Taxon_Enzyme_Consti_Maint                 # C cost (total)
         Taxon_Enzyme_Consti_Cost_N       = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["N_cost"], axis=1)).sum(axis=1)    # N cost
@@ -353,9 +353,9 @@ class Grid():
         #---------------------------------------------------------------------#
         
         # 1) Assimilation efficiency constrained by temperature
-        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float(273)) * self.AE_temp  #scalar
+        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - 273)) * self.AE_temp  #scalar
 
-        # 2) Taxon growth respiration
+        # taxon growth respiration
         Taxon_Growth_Respiration = self.Taxon_Uptake_C * (1 - Taxon_AE)
         
         #.................................................
@@ -367,6 +367,7 @@ class Grid():
         # 3) Inducible Osmolyte production only when psi reaches below wp_fc
         Taxon_Osmo_Induci        = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0) * f_psi
         Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1) # Total osmotic N cost of each taxon (.sum(axis=1))
+        
         # 4) Inducible enzyme production
         Taxon_Enzyme_Induci        = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0)
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
@@ -412,7 +413,7 @@ class Grid():
         # System-level emergent CUE
         Taxon_Uptake_C_grid = self.Taxon_Uptake_C.sum()  # Total C Uptake
         if Taxon_Uptake_C_grid == 0:
-            self.CUE_system = 0
+            self.CUE_system = np.float32(0)
         else:
             self.CUE_system = Microbe_C_Gain.sum()/Taxon_Uptake_C_grid
         
@@ -435,7 +436,7 @@ class Grid():
         # Update Substrates pools with dead enzymes
         DeadEnz_df = pd.concat([Enzyme_Loss,Enzyme_Loss.mul(self.Enz_Attrib["N_cost"].tolist()*self.gridsize,axis=0),Enzyme_Loss.mul(self.Enz_Attrib["P_cost"].tolist()*self.gridsize,axis=0)],axis=1)
         # Calculate the dead mass across taxa in each grid cell
-        DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes),DeadEnz_df.index] # create a multi-index
+        DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes), DeadEnz_df.index] # create a multi-index
         DeadEnz_gridcell = DeadEnz_df.groupby(level=0).sum()
         # update dead microbes
         self.Substrates.loc[is_deadEnz] += DeadEnz_gridcell.values
@@ -452,21 +453,21 @@ class Grid():
         """
 
         # Constants
-        Leaching =        np.float32(0.1)  # Abiotic monomer loss rate
+        Leaching        = np.float32(0.1)  # Abiotic monomer loss rate
         Psi_slope_leach = np.float32(0.5)  # Mositure sensivity of abiotic monomer loss rate
         # Indices
         Mic_index  = self.Microbes.index
         is_DeadMic = self.Substrates.index == "DeadMic"
-        is_NH4     = self.Monomers.index == "NH4"
-        is_PO4     = self.Monomers.index == "PO4"
+        is_NH4     = self.Monomers.index   == "NH4"
+        is_PO4     = self.Monomers.index   == "PO4"
         
         # Reset the index to arabic numerals from taxa series 
         self.Microbes  = self.Microbes.reset_index(drop=True)
         MinRatios = self.MinRatios.reset_index(drop=True)
         
         # Create a blank dataframe, Death, having the same structure as Microbes
-        Death = self.Microbes.copy(deep=True)
-        Death[:] = 0
+        Death    = self.Microbes.copy(deep=True)
+        Death[:] = np.float32(0)
         # Create a series, kill, holding boolean value of False
         kill = pd.Series([False]*self.n_taxa*self.gridsize)
         
@@ -476,18 +477,19 @@ class Grid():
         # Index the dead and put them in Death
         Death.loc[starve_index] = self.Microbes[starve_index]
         # Update Microbes by setting grid cells with dead microbes to 0
-        self.Microbes.loc[starve_index] = 0
+        self.Microbes.loc[starve_index] = np.float32(0)
         # Index the locations where microbial cells remain alive
         mic_index = self.Microbes["C"] > 0
         
         # Mortality prob. b/c drought with the function: MMP:microbe_mortality_psi() 
         r_death = MMP(self.psi[day],self.wp_fc,self.basal_death_prob,self.death_rate,self.tolerance)
+
         # Kill microbes randomly
         #kill.loc[mic_index] = r_death[mic_index] > np.repeat(np.random.uniform(0,1),sum(mic_index))
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index))
-        Death.loc[kill] = self.Microbes[kill]
+        Death.loc[kill]     = self.Microbes[kill]
         # Update Microbes Again
-        self.Microbes.loc[kill] = 0
+        self.Microbes.loc[kill] = np.float32(0)
 
         # Index locations where microbes remain alive
         mic_index = self.Microbes['C']>0 
@@ -507,21 +509,21 @@ class Grid():
             # Index only those taxa in Microbes that have below-minimum quotas: Mic_subset
             MicrobeRatios = self.Microbes[mic_index].divide(self.Microbes[mic_index].sum(axis=1),axis=0)
             mic_index_sub = (MicrobeRatios["C"]<MinRatios[mic_index]["C"])|(MicrobeRatios["N"]<MinRatios[mic_index]["N"])|(MicrobeRatios["P"]<MinRatios[mic_index]["P"])
-            rat_index = self.Microbes.index.map(mic_index_sub).fillna(False)
+            rat_index     = self.Microbes.index.map(mic_index_sub).fillna(False)
             # Derive the Microbes wanted
-            Mic_subset = self.Microbes[rat_index]
+            Mic_subset    = self.Microbes[rat_index]
             StartMicrobes = Mic_subset.copy(deep=True)
 
             # Derive new ratios and Calculate difference between actual and min ratios  
             MicrobeRatios = Mic_subset.divide(Mic_subset.sum(axis=1),axis=0)
-            MinRat = MinRatios[rat_index]  
-            Ratio_dif = MicrobeRatios - MinRat
+            MinRat        = MinRatios[rat_index]  
+            Ratio_dif     = MicrobeRatios - MinRat
             # Create a df recording the ratio differences < 0
             Ratio_dif_0 = Ratio_dif.copy(deep=True)
-            Ratio_dif_0[Ratio_dif>0] = 0
+            Ratio_dif_0[Ratio_dif>0] = np.float32(0)  
             # Create a df recording the ratio differences > 0
             Excess = Ratio_dif.copy(deep=True)
-            Excess[Ratio_dif<0] = 0 
+            Excess[Ratio_dif<0] = np.float32(0)
 
             # Determine the limiting nutrient that will be conserved
             Limiting = (-Ratio_dif/MinRat).idxmax(axis=1) # Series of index of the first occurrence of maximum in each row
@@ -541,17 +543,17 @@ class Grid():
 
             new_C = pd.concat([MC, MN*MRC/MRN, MP*MRC/MRP],axis=1)
             new_C = new_C.fillna(0)
-            new_C[np.isinf(new_C)] = 0
+            new_C[np.isinf(new_C)] = np.float32(0)
             new_C.columns = ['C','N','P']
-            
+
             new_N = pd.concat([MC*MRN/MRC, MN, MP*MRN/MRP],axis=1)
             new_N = new_N.fillna(0)
-            new_N[np.isinf(new_N)] = 0
+            new_N[np.isinf(new_N)] = np.float32(0)
             new_N.columns = ['C','N','P']
             
             new_P = pd.concat([MC*MRP/MRC, MN*MRP/MRN, MP],axis=1)
             new_P = new_P.fillna(0)
-            new_P[np.isinf(new_P)] = 0
+            new_P[np.isinf(new_P)] = np.float32(0)
             new_P.columns = ['C','N','P']
             
             # Insert the appropriate set of nutrient quotas scaled to the minimum nutrient
@@ -606,21 +608,20 @@ class Grid():
         # Set up the colonization dataframe: taxon * 3(C,N,&P)
         Colonization    = self.Microbes.copy(deep=True)
         Colonization    = Colonization.reset_index(drop=True)
-        Colonization[:] = np.float32(0.0)
+        Colonization[:] = np.float32(0)
         
         
         #STEP 1: count the fungal taxa before cell division 
         # Set the Series of fungal locations to 0
-        Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize, index=Mic_index, name='Count')
+        Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize, index=Mic_index, name='Count', dtype='int8')
         # Add one or two fungi to the count vector based on size
-        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)]               = 1
-        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = 2
+        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)]               = np.int8(1)
+        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = np.int8(2)
         # Fungal translocation: calculate average biomass within fungal taxa
-        Fungi_count = Fungi_df.groupby(level=0,sort=False).sum()
+        Fungi_count   = Fungi_df.groupby(level=0,sort=False).sum()
         Microbes_grid = self.Microbes.groupby(level=0,sort=False).sum()
-        Mean_fungi = Microbes_grid.divide(Fungi_count,axis=0)
-        Mean_fungi[np.isinf(Mean_fungi)] = 0
-        Mean_fungi = Mean_fungi.fillna(0)
+        Mean_fungi    = Microbes_grid.divide(Fungi_count,axis=0)
+        Mean_fungi[Fungi_count==0] = np.float32(0)
         # Expand the fungal average across the grid
         eMF = expand(Mean_fungi,self.gridsize) 
         
@@ -645,26 +646,27 @@ class Grid():
         
 
         #STEP 3: dispersal calculation
-        num_b = sum(daughters_b)
-        num_f = sum(daughters_f)
-        shift_x = pd.Series(data=[0] * self.gridsize*self.n_taxa, index = Mic_index)
-        shift_y = pd.Series(data=[0] * self.gridsize*self.n_taxa, index = Mic_index)
+        num_b   = sum(daughters_b)
+        num_f   = sum(daughters_f)
+        shift_x = pd.Series(data=[0] * self.gridsize*self.n_taxa, index=Mic_index, dtype='int8')
+        shift_y = pd.Series(data=[0] * self.gridsize*self.n_taxa, index=Mic_index, dtype='int8')
         # Bacterial dispersal movements in X & Y direction  
-        shift_x.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True)
-        shift_y.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True)
+        shift_x.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
+        shift_y.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
         # Fungi always move positively in x direction           
-        shift_x.loc[daughters_f] = 1
+        shift_x.loc[daughters_f] = np.int8(1)
         # Series of dispersal movements in y direction; constrained to one box away determined by probability "direct"      
-        shift_y.loc[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)])
+        shift_y.loc[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)]).astype('int8')
         # calculate x coordinates of dispersal destinations (% remainder of x/x)
-        new_x = (list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + shift_x + self.x) % self.x
+        new_x           = (list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + shift_x + self.x) % self.x
         new_x[new_x==0] = self.x  # Substitute coordinates when there is no shift
         # calculate y coordinates of dispersal destinations           
-        new_y = (list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)) + shift_y + self.y) % self.y
+        new_y           = (list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)) + shift_y + self.y) % self.y
         new_y[new_y==0] = self.y  # Substitute coordinates when there is no shift
         # convert x,y coordinates to a series of destination locations
         index_series = (self.n_taxa * ((new_y-1)*self.x + (new_x-1))) + list(range(1,self.n_taxa+1)) * self.gridsize - 1
         
+
         #Step 4: colonization of dispersed microbes
         #.....Transfer cells to new locations and sum when two or more of the same taxa go to same location
         Colonization.iloc[index_series[daughters_b],] = Reprod[daughters_b].values
@@ -715,7 +717,7 @@ class Grid():
             # Switched to taxon abundance-based, so no more adjustments
             frequencies = cum_abundance/cum_abundance.sum()
             frequencies = frequencies.fillna(0)
-            probs = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
+            probs       = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
             # Randomly assign microbes to each grid box based on prior densities
             choose_taxa = np.array([0]* self.gridsize * self.n_taxa).reshape(self.n_taxa,self.gridsize)
             for i in range(self.n_taxa):
@@ -723,7 +725,4 @@ class Grid():
                 choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
                         
             # Note order='F'
-            self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = 0
-            
-            # reinitialize the microbial community
-            #self.Microbes = New_microbes
+            self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0)
