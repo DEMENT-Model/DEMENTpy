@@ -435,8 +435,7 @@ class Grid():
         Enzyme_Loss = self.Enzymes * Enzyme_Loss_Rate # enzyme turnover rate(=0.04; Allison 2006)
 
         # Update Enzyme pools by substracting the 'dead' enzymes
-        # Enzymes = (Enzymes - Enzyme_Loss).add(Enzyme_Production,axis=0)
-        self.Enzymes -= Enzyme_Loss + Enzyme_Production
+        self.Enzymes += Enzyme_Production- Enzyme_Loss
 
         # Update Substrates pools with dead enzymes
         DeadEnz_df = pd.concat([Enzyme_Loss,Enzyme_Loss.mul(self.Enz_Attrib["N_cost"].tolist()*self.gridsize,axis=0),Enzyme_Loss.mul(self.Enz_Attrib["P_cost"].tolist()*self.gridsize,axis=0)],axis=1)
