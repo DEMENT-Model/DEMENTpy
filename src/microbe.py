@@ -4,11 +4,8 @@ This microbe.py module has one class and two functions.
     Microbe():                class
     microbe_osmo_psi():       function; moisture modifier of inducible osmolyte production efficiency
     microbe_mortality_prob(): function; cell mortality probability
-        
--------------------------------------------------------------------------------
-Last modified by Bin Wang on December 22nd, 2019
 """
-import sys
+
 import numpy as np
 import pandas as pd
 from utility import LHS
@@ -489,7 +486,7 @@ def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
         
         f_osmo = (x/y)**alfa
 
-    return f_osmo
+    return np.float32(f_osmo)
 
 
 def microbe_mortality_prob(wp,wp_fc,basal_death_prob,death_rate,Tax_tolerance):
@@ -517,4 +514,4 @@ def microbe_mortality_prob(wp,wp_fc,basal_death_prob,death_rate,Tax_tolerance):
         # option 2
         #mortality_rate = death_rate * (1/np.exp(tolerance)) * (1 - beta*(wp-wp_fc))
     
-    return mortality_rate
+    return mortality_rate.astype('float32')
