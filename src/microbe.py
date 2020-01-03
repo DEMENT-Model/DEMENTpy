@@ -8,7 +8,7 @@ This microbe.py module has one class and two functions.
 -------------------------------------------------------------------------------
 Last modified by Bin Wang on December 22nd, 2019
 """
-
+import sys
 import numpy as np
 import pandas as pd
 from utility import LHS
@@ -17,7 +17,8 @@ class Microbe():
     """
     This class holds all variables related to microbes.
 
-    Methods involving composition,stoichiometry, enzyme and gene production, as well as responses to environmental factors. These methods include:
+    Methods involving composition,stoichiometry, enzyme and gene production, as well as responses to environmental factors.
+    These methods include:
         1) microbial_community_initialization(): initialize microbial community on the spatial grid
         2) minimum_cell_quota():          get minimum ratios
         3) microbe_enzyme_gene():         derive taxon-specific genes for enzyme
@@ -288,8 +289,8 @@ class Microbe():
         Sub_enz = ReqEnz.loc['set1'].iloc[0:self.n_substrates,:] + ReqEnz.loc['set2'].iloc[0:self.n_substrates,:]
         # Matrix multiplication to relate taxa to the monomers they can generate with their enzymes
         UptakeGenes = EnzGenes @ Sub_enz.T @ MonomersProduced
-        UptakeGenes.iloc[:,0:2] = 1
-        UptakeGenes[lambda df: df>0] = 1   # == UptakeGenes[UptakeGenes > 0] = 1
+        UptakeGenes.iloc[:,0:2] = np.int8(1)
+        UptakeGenes[lambda df: df>0] = np.int8(1)  # == UptakeGenes[UptakeGenes > 0] = 1
 
         # Ensure every taxon is likely to have an uptake enzyme for at least 1 organic monomer
         # Not guaranteed unless uptake_prob = 1 (refer to the R version)
@@ -297,7 +298,7 @@ class Microbe():
         probability_list[0] = 1
         for i in range(self.n_taxa):
             if sum(UptakeGenes.iloc[i,2:self.n_monomers]) == 0:
-                UptakeGenes.iloc[i,2:self.n_monomers] = np.random.choice(probability_list,self.n_monomers-2,replace=False)
+                UptakeGenes.iloc[i,2:self.n_monomers] = np.random.choice(probability_list,self.n_monomers-2,replace=False).astype('int8')
         
         # Give each taxon a random number of additional uptake genes between the number they have and n_upgenes
         for i in range(self.n_taxa):
@@ -305,10 +306,10 @@ class Microbe():
             if n_zero == 0: # has all genes
                 continue
             probability_list = [0]*n_zero
-            locator = np.random.choice(range(1, n_zero+1), 1, replace=True) # derive n_zero <= locater >= 1 (NOTE)
+            locator = np.random.choice(range(1, n_zero+1), 1, replace=True) # derive n_zero >= locater >= 1 (NOTE)
             probability_list[0:int(locator)] = [1]*int(locator)
-            UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0] = np.random.choice(probability_list,n_zero,replace=False)
-                
+            UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0] = np.random.choice(probability_list,n_zero,replace=False).astype('int8')
+           
         return UptakeGenes
     
     
