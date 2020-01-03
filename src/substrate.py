@@ -1,31 +1,27 @@
 # substrate.py module holding a class, Substrate()
 # by Bin Wang on Dec. 26th, 2019ls
 
-
 import pandas as pd
 import numpy as np
 
 
 class Substrate():
-    
     """
-    this class deals with all properties closely related to substrates, including
-    methods of:
-        
+    Deals with all properties related to substrates.
+    
+    Includs methods of:
         1) substrate_input(): input rates of varying substrates to the system
         2) substrate_produced_monomer():  substrate-produced monomers
         3) substrate_degradation_enzyme(): substrate-required enzymes
-    
-    ------------------------------------  
-    Last modified by Bin Wang on August 17th, 2019
     """
     
     def __init__(self,runtime,parameters,substrates_init):
-        
         """
-        inputs:
-        ...runtime: dataframe; user-specified parameters when running the model
-        ...parameters: dataframe; parameters related to microbes, substrates,enzymes, and monomers
+        The constructor Substrate class.
+
+        Parameters:
+            runtime:    dataframe; user-specified parameters when running the model
+            parameters: dataframe; parameters related to microbes, substrates,enzymes, and monomers
         """
         
         self.n_substrates      = int(runtime.loc['n_substrates',1])
@@ -37,18 +33,17 @@ class Substrate():
     
     
     def substrate_input(self,sub_mon_input):
-        
         """
-        Substrate inputs during simulation
-        --------------------------------------------
+        Substrate inputs during simulation.
+
         Parameter:
-          sub_mon_input: dataframe; user-provided substrates and monomers input data
+            sub_mon_input: dataframe; user-provided substrates and monomers input data
         Return:
-          SubInput_df:   dataframe;
+            SubInput_df: dataframe; datatype: float32
         """
         
         # Substrate input rates
-        SubInputC = sub_mon_input['Sub']
+        SubInputC = sub_mon_input['Sub'] # access only the Substrate column
         SubInputN = SubInputC * self.Substrates_start["N"]/self.Substrates_start["C"]
         SubInputP = SubInputC * self.Substrates_start["P"]/self.Substrates_start["C"]
         # Rename series name
@@ -57,15 +52,17 @@ class Substrate():
         SubInputP.name = 'P'
         SubInput_df = pd.concat([SubInputC,SubInputN,SubInputP],axis=1,sort=False)
         SubInput_df['DeadMic'] = SubInput_df['DeadEnz'] = 0  # Change NAs to 0
-        
+        SubInput_df = SubInput_df.astype('float32')
+
         return SubInput_df
         
   
     def substrate_produced_monomer(self):
-        
         """
-        Monomers produced by each substrate (binary)
-        Rows are substrates; cols are monomers; all rows should sum to 1
+        Monomers produced by each substrate.
+
+        Return:
+            MonomersProduced_df: dataframe; row:substrate; col:monomers; all rows should sum to 1
         """
         
         MonomersProduced_array = np.concatenate((np.array([0]*self.n_substrates*2).reshape((self.n_substrates,2),order='F'),np.diagflat([1]*self.n_substrates)),axis=1)
@@ -78,25 +75,28 @@ class Substrate():
         
     
     def substrate_degradation_enzyme(self):
-        
         """
+        Derive the required enzymes of each substrate.
+
+        Return:
+            ReqEnz_df: 3-D DataFrame: sets (2) * substrates * enzymes
         .............................................................
-        ...Derive the required enzymes of each substrate....
-        ...which is a 3-D DataFrame: sets (2) * substrates * enzymes
+        Strcuture illustration:
         .............................................................
-                   enz1 enz2 ... enzn
-        set 1 sub1 ------------------
-        set 1 sub1 ------------------
+                   Enz1 Enz2 ... Enzn
+        Set 1 Sub1 ------------------
+        Set 1 Sub1 ------------------
         .     .    .     .       .
         .     .    .     .       .
-        set 1 subn ------------------
-        set 2 sub1 ------------------
-        set 2 sub1 ------------------
+        Set 1 Subn ------------------
+        Set 2 Sub1 ------------------
+        Set 2 Sub1 ------------------
         .     .    .     .       .
         .     .    .     .       .
-        set 2 subn ------------------
-        ........................................................
+        Set 2 Subn ------------------
+        .............................................................
         """
+
         # Every enzyme has a substrate
         probability_list_enz = [0] * self.n_enzymes
         probability_list_enz[0:self.Enzymes_per_sub] = [1]*self.Enzymes_per_sub
