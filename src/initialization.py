@@ -129,23 +129,23 @@ def initialize_data(runtime_parameters):
                        "fb":          microbial_community[2],                  # tuple[2]: fungi index
                        "Bac_density": microbial_community[3],                  # tuple[3]: bacterial density
                        "Fun_density": microbial_community[4],                  # tuple[4]: fungi density
-                       "MinRatios":   expand(microbial_min_ratios,gridsize),   # 
-                       "UptakeGenes": expand(microbial_uptake_gene,gridsize),  # Gene distribution across taxa
-                       "OsmoGenes":   expand(microbial_osmolyte_gene,gridsize),#
-                       "EnzGenes":    expand(microbial_enzyme_gene,gridsize),  #
-                       "UptakeGenes_trait":   expand(microbial_uptake_cost[0],gridsize), # cost of every single gene
-                       "OsmoProdConsti_trait":expand(microbial_osmolyte_prod_rate[0],gridsize),
-                       "OsmoProdInduci_trait":expand(microbial_osmolyte_prod_rate[1],gridsize),
-                       "EnzProdConsti_trait": expand(microbial_enzyme_prod_rate[0],gridsize),
-                       "EnzProdInduci_trait": expand(microbial_enzyme_prod_rate[1],gridsize),
-                       "UptakeGenesCost":     expand(microbial_uptake_cost[1],gridsize),        # distribution of gene cost across taxa
-                       "OsmoProdConsti":      expand(microbial_osmolyte_prod_rate[2],gridsize),
-                       "OsmoProdInduci":      expand(microbial_osmolyte_prod_rate[3],gridsize),
-                       "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),
-                       "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),
-                       "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),            # distribution of taxon-specific drought tol.
+                       "MinRatios":   expand(microbial_min_ratios,gridsize),   # microbial cell min. ratios
+                       "UptakeGenes": expand(microbial_uptake_gene,gridsize),  # transporter gene distribution across taxa
+                       "OsmoGenes":   expand(microbial_osmolyte_gene,gridsize),# osmolyte gene distribution across taxa
+                       "EnzGenes":    expand(microbial_enzyme_gene,gridsize),  # enzyme gene distribution across taxa
+                       "UptakeGenes_trait":   expand(microbial_uptake_cost[0],gridsize),        # single gene cost of transporter
+                       "OsmoProdConsti_trait":expand(microbial_osmolyte_prod_rate[0],gridsize), # single gene cost of constitutive osmolyte
+                       "OsmoProdInduci_trait":expand(microbial_osmolyte_prod_rate[1],gridsize), # single gene cost of inducible osmolyte
+                       "EnzProdConsti_trait": expand(microbial_enzyme_prod_rate[0],gridsize),   # single gene cost of constitutive enzyme
+                       "EnzProdInduci_trait": expand(microbial_enzyme_prod_rate[1],gridsize),   # single gene cost of inducible enzyme
+                       "UptakeGenesCost":     expand(microbial_uptake_cost[1],gridsize),        # distribution of transporter gene cost across taxa
+                       "OsmoProdConsti":      expand(microbial_osmolyte_prod_rate[2],gridsize), # distribution of consti. osmolyte gene cost across taxa
+                       "OsmoProdInduci":      expand(microbial_osmolyte_prod_rate[3],gridsize), # distribution of induci. osmolyte gene cost across taxa
+                       "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),   # distribution of consti. enzyme gene cost across taxa
+                       "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),   # distribution of induci. enzyme gene cost across taxa
+                       "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),           # distribution of taxon-specific drought tol.
                        'basal_death_prob':  microbial_mortality[0],                # basal death probability
-                       'death_rate':        microbial_mortality[1],                # sensitivity of death to mositure
+                       'death_rate':        microbial_mortality[1],                # change rate of death prob. agaist mositure
                        "AE_ref":            parameters.loc["CUE_ref",1],           # Reference assimilation efficiency: 0.5
                        "AE_temp":           parameters.loc["CUE_temp",1],          # AE temperature sensitivity; default: -0.016
                        'Uptake_Maint_cost': parameters.loc['Uptake_Maint_cost',1], # constant of transporter maintenence cost
