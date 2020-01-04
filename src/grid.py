@@ -48,32 +48,32 @@ class Grid():
         self.n_monomers     = self.n_substrates + 2
         
         #Degradation
-        self.Substrates_init = data_init['Substrates']                 # Substrates initialized
-        self.Substrates      = data_init['Substrates'].copy(deep=True) # Substrates;df; w/ .copy() avoiding mutation
-        self.SubInput        = data_init['SubInput']                   # Substrate inputs
-        self.Enzymes         = data_init['Enzymes'].copy(deep=True)    # Enzymes
-        self.ReqEnz          = data_init['ReqEnz']                     # Enzymes required by each substrate
-        self.Ea              = data_init['Ea']                         # Enzyme activatin energy
-        self.Vmax0           = data_init['Vmax0']                      # Max. reaction speed
-        self.Km0             = data_init['Km0']                        # Half-saturation constant
-        self.SubstrateRatios = np.float32('nan')                            # Substrate stoichiometry
-        self.DecayRates      = np.float32('nan')                            # Substrate decay rate
+        self.Substrates_init = data_init['Substrates']                    # Substrates initialized
+        self.Substrates      = data_init['Substrates'].copy(deep=True)    # Substrates;df; w/ .copy() avoiding mutation
+        self.SubInput        = data_init['SubInput']                      # Substrate inputs
+        self.Enzymes         = data_init['Enzymes'].copy(deep=True)       # Enzymes
+        self.ReqEnz          = data_init['ReqEnz']                        # Enzymes required by each substrate
+        self.Ea              = data_init['Ea']                            # Enzyme activatin energy
+        self.Vmax0           = data_init['Vmax0']                         # Max. reaction speed
+        self.Km0             = data_init['Km0']                           # Half-saturation constant
+        self.SubstrateRatios = np.float32('nan')                          # Substrate stoichiometry
+        self.DecayRates      = np.float32('nan')                          # Substrate decay rate
 
         #Uptake
-        self.Microbes_init  = data_init['Microbes_pp']                   # microbial community before placement
-        self.Microbes       = data_init['Microbes'].copy(deep=True)      # microbial community after placement
-        self.Monomers_init  = data_init['Monomers']                      # Monomers initialized
-        self.Monomers       = data_init['Monomers'].copy(deep=True)      # Monomers
-        self.MonInput       = data_init['MonInput']                      # Inputs of monomers
-        self.Uptake_Ea      = data_init['Uptake_Ea']                     # transporter enzyme Ea
-        self.Uptake_Vmax0   = data_init['Uptake_Vmax0']                  # transporter Vmax
-        self.Uptake_Km0     = data_init['Uptake_Km0']                    # transporter Km
-        self.Monomer_ratios = data_init['Monomer_ratio'].copy(deep=True) # monomer stoichiometry
-        self.Uptake_ReqEnz  = data_init['Uptake_ReqEnz']                 # Enzymes required by monomers 
-        self.Uptake_Enz_Cost= data_init['UptakeGenesCost']               # Cost of encoding each uptake gene
-        self.Taxon_Uptake_C = np.float32('nan')                          # taxon uptake of C 
-        self.Taxon_Uptake_N = np.float32('nan')                          # taxon uptake of N 
-        self.Taxon_Uptake_P = np.float32('nan')                          # taxon uptake of P
+        self.Microbes_init   = data_init['Microbes_pp']                   # microbial community before placement
+        self.Microbes        = data_init['Microbes'].copy(deep=True)      # microbial community after placement
+        self.Monomers_init   = data_init['Monomers']                      # Monomers initialized
+        self.Monomers        = data_init['Monomers'].copy(deep=True)      # Monomers
+        self.MonInput        = data_init['MonInput']                      # Inputs of monomers
+        self.Uptake_Ea       = data_init['Uptake_Ea']                     # transporter enzyme Ea
+        self.Uptake_Vmax0    = data_init['Uptake_Vmax0']                  # transporter Vmax
+        self.Uptake_Km0      = data_init['Uptake_Km0']                    # transporter Km
+        self.Monomer_ratios  = data_init['Monomer_ratio'].copy(deep=True) # monomer stoichiometry
+        self.Uptake_ReqEnz   = data_init['Uptake_ReqEnz']                 # Enzymes required by monomers 
+        self.Uptake_Enz_Cost = data_init['UptakeGenesCost']               # Cost of encoding each uptake gene
+        self.Taxon_Uptake_C  = np.float32('nan')                          # taxon uptake of C 
+        self.Taxon_Uptake_N  = np.float32('nan')                          # taxon uptake of N 
+        self.Taxon_Uptake_P  = np.float32('nan')                          # taxon uptake of P
         
         #Metabolism
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
@@ -108,13 +108,13 @@ class Grid():
         self.Kill             = np.float32('nan')                # number of cells stochastically killed
         
         # Reproduction
-        self.fb         =  data_init['fb']                 # index of fungal taxa (=1)
-        self.max_size_b =  data_init['max_size_b']         # threshold of cell division
-        self.max_size_f =  data_init['max_size_f']         # threshold of cell division
-        self.x          =  int(runtime.loc['x',1])         # x dimension of grid
-        self.y          =  int(runtime.loc['y',1])         # y dimension of grid
-        self.dist       =  int(runtime.loc['dist',1])      # maximum dispersal distance: 1 cell
-        self.direct     =  int(runtime.loc['direct',1])    # dispersal direction: 0.95
+        self.fb         =  data_init['fb']                       # index of fungal taxa (=1)
+        self.max_size_b =  data_init['max_size_b']               # threshold of cell division
+        self.max_size_f =  data_init['max_size_f']               # threshold of cell division
+        self.x          =  int(runtime.loc['x',1])               # x dimension of grid
+        self.y          =  int(runtime.loc['y',1])               # y dimension of grid
+        self.dist       =  int(runtime.loc['dist',1])            # maximum dispersal distance: 1 cell
+        self.direct     =  int(runtime.loc['direct',1])          # dispersal direction: 0.95
         
         # Climate data
         self.temp = data_init['Temp']       # Temperature
@@ -190,7 +190,7 @@ class Grid():
         
         # Pass these two back to the global variables to be used in the next method
         self.SubstrateRatios = SubstrateRatios
-        self.DecayRates = DecayRates
+        self.DecayRates      = DecayRates
 
 
     def uptake(self,pulse,day):
@@ -292,19 +292,18 @@ class Grid():
         Explicitly calculate intra-cell production of metabolites.
         
         Handles both constitutive (standing biomass) and inducible pathways (the monomers taken up by microbial cells) following
-        -> 1. constitutive enzyme and osmolyte production
-        -> 2. inducible enzyme and osmolyte production
-        -> 3. emergent CUE & Respiration
-        -> 4. update Enzyme with cell production and Substrate by adding dead enzymes
+          1. constitutive enzyme and osmolyte production
+          2. inducible enzyme and osmolyte production
+          3. emergent CUE & Respiration
+          4. update Enzyme with cell production and Substrate by adding dead enzymes
         """
         
-        # Some indices
+        # index of dead enzyme in Substrates
         is_deadEnz = self.Substrates.index == "DeadEnz"
-        
         # Constants
         Osmo_N_cost      = np.float32(0.3)
         Osmo_Maint_cost  = np.float32(5.0)
-        Enzyme_Loss_Rate = np.float32(0.04)  # enzyme turnover rate
+        Enzyme_Loss_Rate = np.float32(0.04)  # enzyme turnover rate(=0.04; Allison 2006)
 
         # Scalar of water potential impact: call the function microbe_osmo_psi()
         f_psi = microbe_osmo_psi(self.psi[day],self.alpha,self.wp_fc,self.wp_th)
@@ -312,12 +311,10 @@ class Grid():
         #---------------------------------------------------------------------#
         #......................constitutive processes.........................#
         #---------------------------------------------------------------------#
-        
-        # 1)"Transporters' maintenence" 
-        #...Taxon-specific uptake cost determined by total biomass C: 0.1 - 0.01
-        #Taxon_Transporter_Total = (self.Uptake_Cost.mul(Microbes.sum(axis=1),axis=0)).sum(axis=1)
-        Taxon_Transporter_Cost  = (self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0)).sum(axis=1)
-        #...Taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
+        # Transporters' maintenence
+        # taxon-specific uptake cost determined by total biomass C: 0.1 - 0.01
+        Taxon_Transporter_Cost  = (self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0)).sum(axis=1) #NOTE Microbes['C'] vs Microbes.sum(axis=1)
+        # taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
         Taxon_Transporter_Maint = Taxon_Transporter_Cost * self.Uptake_Maint_Cost
         
         #...............................................
@@ -326,36 +323,34 @@ class Grid():
         # ARROEC: Avail_Req_ratio_osmo_enzyme_consti
         # MNAOEC: Min_N_Avail_Osmo_Enzyme_Consti
         #...............................................
-        # 2) Osmolyte before adjustment
+        # Osmolyte before adjustment
         Taxon_Osmo_Consti        = self.Consti_Osmo_C.mul(self.Microbes['C'],axis=0) * f_psi
         Taxon_Osmo_Consti_Cost_N = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
-        # 3) Enzyme before adjustment
+        # Enzyme before adjustment
         Taxon_Enzyme_Consti        = self.Consti_Enzyme_C.mul(self.Microbes['C'],axis=0)
         Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1)
         # Adjust osmolyte & enzyme production based on available N in microbial biomass
-        OECCN  = Taxon_Osmo_Consti_Cost_N + Taxon_Enzyme_Consti_Cost_N # Total N cost
-        MNAOEC = (pd.concat([OECCN[OECCN>0],self.Microbes["N"][OECCN>0]],axis=1)).min(axis=1,skipna=True) # Get the minimum value
-        ARROEC = (MNAOEC/OECCN[OECCN>0]).fillna(0)  # Derive ratio of availabe N to required N
-        # 3) Osmolyte adjusted
-        Taxon_Osmo_Consti.loc[OECCN>0] = Taxon_Osmo_Consti.loc[OECCN>0].mul(ARROEC,axis=0)        # adjusted osmolyte
-        Taxon_Osmo_Consti_Maint        = (Taxon_Osmo_Consti * Osmo_Maint_cost).sum(axis=1)        # maintenece
-        Taxon_Osmo_Consti_Cost_C       = Taxon_Osmo_Consti.sum(axis=1) + Taxon_Osmo_Consti_Maint  # total C consumption
-        Taxon_Osmo_Consti_Cost_N       = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)            # N cost (no P)
-        # 4) Enzyme adjusted
+        OECCN  = Taxon_Osmo_Consti_Cost_N + Taxon_Enzyme_Consti_Cost_N                                    # Total N cost
+        MNAOEC = (pd.concat([OECCN[OECCN>0],self.Microbes['N'][OECCN>0]],axis=1)).min(axis=1,skipna=True) # get the minimum value
+        ARROEC = (MNAOEC/OECCN[OECCN>0]).fillna(0)                                                        # Derive ratio of availabe N to required N
+        # Osmolyte adjusted
+        Taxon_Osmo_Consti[OECCN>0] = Taxon_Osmo_Consti[OECCN>0].mul(ARROEC,axis=0)            # adjusted osmolyte
+        Taxon_Osmo_Consti_Maint    = (Taxon_Osmo_Consti * Osmo_Maint_cost).sum(axis=1)        # maintenece
+        Taxon_Osmo_Consti_Cost_N   = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)            # N cost (no P)
+        Taxon_Osmo_Consti_Cost_C   = Taxon_Osmo_Consti.sum(axis=1) + Taxon_Osmo_Consti_Maint  # total C consumption
+        # Enzyme adjusted
         Taxon_Enzyme_Consti.loc[OECCN>0] = Taxon_Enzyme_Consti.loc[OECCN>0].mul(ARROEC,axis=0)                         # adjusted enzyme
-        Taxon_Enzyme_Consti_Maint        = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1) # maintinence
+        Taxon_Enzyme_Consti_Maint        = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['Maint_cost'],axis=1)).sum(axis=1) # maintinence
+        Taxon_Enzyme_Consti_Cost_N       = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['N_cost'],    axis=1)).sum(axis=1) # N cost
+        Taxon_Enzyme_Consti_Cost_P       = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['P_cost'],    axis=1)).sum(axis=1) # P cost
         Taxon_Enzyme_Consti_Cost_C       = Taxon_Enzyme_Consti.sum(axis=1) + Taxon_Enzyme_Consti_Maint                 # C cost (total)
-        Taxon_Enzyme_Consti_Cost_N       = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["N_cost"], axis=1)).sum(axis=1)    # N cost
-        Taxon_Enzyme_Consti_Cost_P       = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib["P_cost"], axis=1)).sum(axis=1)    # P cost
-                
-        #---------------------------------------------------------------------#
-        #...............................Inducible processes...................#
-        #---------------------------------------------------------------------#
-        
-        # 1) Assimilation efficiency constrained by temperature
-        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - 273)) * self.AE_temp  #scalar
 
-        # taxon growth respiration
+        #---------------------------------------------------------------------#
+        #.....Inducible processes.............................................#
+        #---------------------------------------------------------------------#
+        # Assimilation efficiency constrained by temperature
+        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - 273)) * self.AE_temp  #scalar
+        # Taxon growth respiration
         Taxon_Growth_Respiration = self.Taxon_Uptake_C * (1 - Taxon_AE)
         
         #.................................................
@@ -363,33 +358,31 @@ class Grid():
         # OEICN : Osmo_Enzyme_Induci_Cost_N
         # OEIAN : Osmo_Enzyme_Induci_Avail_N
         # ARROEI: Avail_Req_ratio_osmo_enzyme_induci
+        # MNAOEI: Min_N_Avail_Osmo_Enzyme_Induci
         #..................................................
-        # 3) Inducible Osmolyte production only when psi reaches below wp_fc
+        # Inducible Osmolyte production only when psi reaches below wp_fc
         Taxon_Osmo_Induci        = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0) * f_psi
-        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1) # Total osmotic N cost of each taxon (.sum(axis=1))
-        
-        # 4) Inducible enzyme production
+        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)                             # Total osmotic N cost of each taxon (.sum(axis=1))
+        # Inducible enzyme production
         Taxon_Enzyme_Induci        = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0)
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
-        # total N required
-        OEICN = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N    # N cost of osmolyte and enzymes
-        OEIAN = pd.Series(data=self.Taxon_Uptake_N,index=self.Microbes.index) # N available
-        # Get the minimum value by comparing N cost to N available
-        Min_N_Avail_Osmo_Enzyme_Induci = (pd.concat([OEICN[OEICN>0],OEIAN[OEICN>0]],axis=1)).min(axis=1,skipna=True)
-        # Ratio of Available to Required
-        ARROEI = (Min_N_Avail_Osmo_Enzyme_Induci/OEICN[OEICN>0]).fillna(0)
-        # 5) Osmolyte adjusted: accompanying maintenence and N cost
-        Taxon_Osmo_Induci.loc[OEICN>0] = Taxon_Osmo_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
-        Taxon_Osmo_Induci_Maint        = (Taxon_Osmo_Induci * Osmo_Maint_cost).sum(axis=1) 
-        Taxon_Osmo_Induci_Cost_C       = Taxon_Osmo_Induci.sum(axis=1) + Taxon_Osmo_Induci_Maint
-        Taxon_Osmo_Induci_Cost_N       = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)
-        # 6) Enzyme adjusted: Total enzyme carbon cost (+ CO2 loss), N cost, and P cost for each taxon
-        Taxon_Enzyme_Induci.loc[OEICN>0] = Taxon_Enzyme_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
-        Taxon_Enzyme_Induci_Maint        = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1)
-        Taxon_Enzyme_Induci_Cost_C       = Taxon_Enzyme_Induci.sum(axis=1) + Taxon_Enzyme_Induci_Maint
-        Taxon_Enzyme_Induci_Cost_N       = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["N_cost"], axis=1)).sum(axis=1)
-        Taxon_Enzyme_Induci_Cost_P       = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["P_cost"], axis=1)).sum(axis=1)
-        # 7) Derive C, N, & P deposited as biomass from Uptake; ensure no negative values
+        # Adjust production based on N availabe
+        OEICN  = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N                        # Total N cost of osmolyte and enzymes
+        OEIAN  = pd.Series(data=self.Taxon_Uptake_N,index=self.Microbes.index)                # N available
+        MNAOEI = (pd.concat([OEICN[OEICN>0],OEIAN[OEICN>0]],axis=1)).min(axis=1,skipna=True)  # Get the minimum value by comparing N cost to N available
+        ARROEI = (MNAOEI/OEICN[OEICN>0]).fillna(0)                                            # Ratio of Available to Required
+        # Osmolyte adjusted: accompanying maintenence and N cost
+        Taxon_Osmo_Induci[OEICN>0] = Taxon_Osmo_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
+        Taxon_Osmo_Induci_Maint    = (Taxon_Osmo_Induci * Osmo_Maint_cost).sum(axis=1) 
+        Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)
+        Taxon_Osmo_Induci_Cost_C   = Taxon_Osmo_Induci.sum(axis=1) + Taxon_Osmo_Induci_Maint
+        # Enzyme adjusted: Total enzyme carbon cost (+ CO2 loss), N cost, and P cost for each taxon
+        Taxon_Enzyme_Induci[OEICN>0] = Taxon_Enzyme_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
+        Taxon_Enzyme_Induci_Maint    = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1)
+        Taxon_Enzyme_Induci_Cost_N   = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["N_cost"],    axis=1)).sum(axis=1)
+        Taxon_Enzyme_Induci_Cost_P   = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["P_cost"],    axis=1)).sum(axis=1)
+        Taxon_Enzyme_Induci_Cost_C   = Taxon_Enzyme_Induci.sum(axis=1) + Taxon_Enzyme_Induci_Maint
+        # Derive C, N, & P deposited as biomass from Uptake; ensure no negative values
         Microbe_C_Gain = self.Taxon_Uptake_C - Taxon_Growth_Respiration   - Taxon_Enzyme_Induci_Cost_C - Taxon_Osmo_Induci_Cost_C
         Microbe_N_Gain = self.Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N
         Microbe_P_Gain = self.Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
@@ -401,7 +394,7 @@ class Grid():
         self.Microbes.loc[:,'C'] += Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
         self.Microbes.loc[:,'N'] += Microbe_N_Gain - Taxon_Enzyme_Consti_Cost_N - Taxon_Osmo_Consti_Cost_N 
         self.Microbes.loc[:,'P'] += Microbe_P_Gain - Taxon_Enzyme_Consti_Cost_P
-        self.Microbes[self.Microbes<0] = 0 #Avoid negative values
+        self.Microbes[self.Microbes<0] = np.float32(0)  # avoid negative values
         # Growth_yield = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
 
         # Taxon-specific emergent CUE
@@ -420,25 +413,21 @@ class Grid():
         # Respiration from Constitutive + Inducible(NOTE: missing sum(MicLoss[,"C"]) in the Mortality below)
         self.Respiration = (Taxon_Transporter_Maint + Taxon_Growth_Respiration + Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint + Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint).sum(axis=0)
         
-        # Sum each enzyme across taxon in each grid cell
-        Taxon_Enzyme_Production       = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci # gene-specific prod of enzyme of each taxon: "(taxon*gridsize) * enzyme"
+        # Derive Enzyme production
+        Taxon_Enzyme_Production       = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci  # gene-specific prod of enzyme of each taxon: (taxon*gridsize) * enzyme
         Taxon_Enzyme_Production.index = [np.arange(self.gridsize).repeat(self.n_taxa),Taxon_Enzyme_Production.index] # create a multi-index
-        # Derive Enzyme_Production
-        EP_df = Taxon_Enzyme_Production.groupby(level=0).sum()
+        EP_df = Taxon_Enzyme_Production.groupby(level=0).sum() # enzyme-specific production in each grid cell
         Enzyme_Production = EP_df.stack().values # 1-D array
+        # Derive Enzyme turnover
+        Enzyme_Loss = self.Enzymes * Enzyme_Loss_Rate 
 
-        # Enzyme turnover
-        Enzyme_Loss = self.Enzymes * Enzyme_Loss_Rate # enzyme turnover rate(=0.04; Allison 2006
-
-        # Update Enzyme pools by substracting the 'dead' enzymes
+        # Update Enzyme pools by adding enzymes produced and substracting the 'dead' enzymes
         self.Enzymes += Enzyme_Production - Enzyme_Loss
 
         # Update Substrates pools with dead enzymes
-        DeadEnz_df = pd.concat([Enzyme_Loss,Enzyme_Loss.mul(self.Enz_Attrib["N_cost"].tolist()*self.gridsize,axis=0),Enzyme_Loss.mul(self.Enz_Attrib["P_cost"].tolist()*self.gridsize,axis=0)],axis=1)
-        # Calculate the dead mass across taxa in each grid cell
+        DeadEnz_df       = pd.concat([Enzyme_Loss,Enzyme_Loss.mul(self.Enz_Attrib["N_cost"].tolist()*self.gridsize,axis=0),Enzyme_Loss.mul(self.Enz_Attrib["P_cost"].tolist()*self.gridsize,axis=0)],axis=1)
         DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes), DeadEnz_df.index] # create a multi-index
-        DeadEnz_gridcell = DeadEnz_df.groupby(level=0).sum()
-        # update dead microbes
+        DeadEnz_gridcell = DeadEnz_df.groupby(level=0).sum()  # total dead mass across taxa in each grid cell
         self.Substrates.loc[is_deadEnz] += DeadEnz_gridcell.values
 
     
@@ -446,10 +435,9 @@ class Grid():
         """
         Calculate microbial mortality.
         
-        And update stoichiometry of the alive and microbial pools,
-        as well as substrates(input of dead microbes), monomers, and respiration.
-        -> Kill microbes that are starving and drought intolerant
-        -> Monomers leaching is dealt with here
+        And update stoichiometry of the alive and microbial pools, as well as substrates(input of dead microbes), monomers, and respiration.
+        --> Kill microbes that are starving and drought intolerant
+        --> Monomers leaching is dealt with here
         """
 
         # Constants
@@ -486,9 +474,9 @@ class Grid():
 
         # Kill microbes randomly
         #kill.loc[mic_index] = r_death[mic_index] > np.repeat(np.random.uniform(0,1),sum(mic_index))
-        kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index))
+        kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index)).astype('float32')
         Death.loc[kill]     = self.Microbes[kill]
-        # Update Microbes Again
+        # Update Microbes again
         self.Microbes.loc[kill] = np.float32(0)
 
         # Index locations where microbes remain alive
@@ -586,7 +574,7 @@ class Grid():
         # Restore the index to taxa series
         self.Microbes.index = Mic_index
 
-        # Pass back to the global variables
+        # Pass back the death toll of cells to the global variable
         self.Kill = kill.sum()
 
     
@@ -611,36 +599,36 @@ class Grid():
         Colonization[:] = np.float32(0)
         
         
-        #STEP 1: count the fungal taxa before cell division 
-        # Set the Series of fungal locations to 0
+        #STEP 1: Fungal translocation by calculating average biomass within fungal taxa 
+        # Count the fungal taxa before cell division
+        # Add one or two fungi to the count series based on size
         Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize, index=Mic_index, name='Count', dtype='int8')
-        # Add one or two fungi to the count vector based on size
         Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)]               = np.int8(1)
         Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = np.int8(2)
-        # Fungal translocation: calculate average biomass within fungal taxa
         Fungi_count   = Fungi_df.groupby(level=0,sort=False).sum()
-        Microbes_grid = self.Microbes.groupby(level=0,sort=False).sum()
-        Mean_fungi    = Microbes_grid.divide(Fungi_count,axis=0)
+        # Derive average biomass of fungal taxa
+        Microbes_grid              = self.Microbes.groupby(level=0,sort=False).sum()
+        Mean_fungi                 = Microbes_grid.divide(Fungi_count,axis=0)
         Mean_fungi[Fungi_count==0] = np.float32(0)
         # Expand the fungal average across the grid
-        eMF = expand(Mean_fungi,self.gridsize) 
+        eMF = expand(Mean_fungi,self.gridsize)
         
         
         #STEP 2: Cell division & translocate nutrients
         MicrobesBeforeDivision = self.Microbes.copy(deep=True)
-        #bacteria
-        bac_index = (self.fb==0)&(self.Microbes['C']>self.max_size_b)
-        self.Microbes.loc[bac_index] = self.Microbes.loc[bac_index]/2
-        #fungi
-        fun_index = (self.fb==1)&(self.Microbes['C']>self.max_size_f)
-        self.Microbes.loc[fun_index] = self.Microbes.loc[fun_index]/2
-        # Add daughter cells to a dataframe of reproduction
-        Reprod = MicrobesBeforeDivision - self.Microbes 
-        # Translocate nutrients within fungal taxa
-        self.Microbes.loc[(self.fb==1)&(self.Microbes['C']>0)] = eMF.loc[(self.fb==1)&(self.Microbes['C']>0)]
+        #bacterial cell division
+        bac_index = (self.fb==0) & (self.Microbes['C']>self.max_size_b)
+        self.Microbes[bac_index] = self.Microbes[bac_index]/2
+        #fungal cell division
+        fun_index = (self.fb==1) & (self.Microbes['C']>self.max_size_f)
+        self.Microbes[fun_index] = self.Microbes[fun_index]/2
+        # Translocate nutrients within fungal taxa after reproduction
+        self.Microbes[(self.fb==1)&(self.Microbes['C']>0)] = eMF[(self.fb==1)&(self.Microbes['C']>0)]
+        # Put daughter cells into a seperate dataframe, Reprod
+        Reprod = MicrobesBeforeDivision - self.Microbes
         # Index the daughter cells that are fungi versus bacteria
-        daughters_b = (Reprod["C"]>0) & (self.fb==0)
-        daughters_f = (Reprod["C"]>0) & (self.fb==1)
+        daughters_b = (Reprod['C']>0) & (self.fb==0)
+        daughters_f = (Reprod['C']>0) & (self.fb==1)
         # set all fungi equal to their grid averages for translocation before colonization
         Reprod[daughters_f] = eMF[daughters_f]
         
@@ -653,22 +641,20 @@ class Grid():
         # Bacterial dispersal movements in X & Y direction  
         shift_x.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
         shift_y.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
-        # Fungi always move positively in x direction           
+        # Fungi always move positively in x direction, and in y direction constrained to one box away determined by probability "direct"                
         shift_x.loc[daughters_f] = np.int8(1)
-        # Series of dispersal movements in y direction; constrained to one box away determined by probability "direct"      
         shift_y.loc[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)]).astype('int8')
-        # calculate x coordinates of dispersal destinations (% remainder of x/x)
+        # Calculate x,y coordinates of dispersal destinations (% remainder of x/x)
         new_x           = (list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + shift_x + self.x) % self.x
-        new_x[new_x==0] = self.x  # Substitute coordinates when there is no shift
-        # calculate y coordinates of dispersal destinations           
-        new_y           = (list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)) + shift_y + self.y) % self.y
+        new_y           = (list(np.repeat(range(1,self.y+1),self.n_taxa*self.x))   + shift_y + self.y) % self.y
+        new_x[new_x==0] = self.x  # Substitute coordinates when there is no shift 
         new_y[new_y==0] = self.y  # Substitute coordinates when there is no shift
-        # convert x,y coordinates to a series of destination locations
+        # Convert x,y coordinates to a Series of destination locations
         index_series = (self.n_taxa * ((new_y-1)*self.x + (new_x-1))) + list(range(1,self.n_taxa+1)) * self.gridsize - 1
         
 
         #Step 4: colonization of dispersed microbes
-        #.....Transfer cells to new locations and sum when two or more of the same taxa go to same location
+        # Transfer reproduced cells to new locations and sum when two or more of the same taxa go to same location
         Colonization.iloc[index_series[daughters_b],] = Reprod[daughters_b].values
         Colonization.iloc[index_series[daughters_f],] = Reprod[daughters_f].values
         # Colonization of dispersing microbes
@@ -680,9 +666,7 @@ class Grid():
         Deal with reinitialization of microbial community and start with new subsrates and monomers on the grid in each new pulse.
 
         Parameters:
-            output: an instance of the Output class, in which a variable
-                    referring to taxon-specific total mass over the grid of
-                    every iteration is used--MicrobesSeries_repop
+            output:     an instance of the Output class, from which the var referring to taxon-specific total mass over the grid is retrieved--MicrobesSeries_repop
             pulse:      the pulse index
             day:        the day index
             mic_reinit: 0/1; 1 means reinitialization
