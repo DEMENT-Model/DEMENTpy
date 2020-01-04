@@ -25,8 +25,8 @@ class Monomer():
 
         self.n_monomers  = int(runtime.loc['n_substrates',1]) + 2                  # Number of monomers within the system
         self.n_uptake    = int(runtime.loc['n_uptake',1])                          # Number of uptake transporters for each taxon
-        self.Monomer_Substrate_Ratio = parameters.loc['Monomer_Substrate_Ratio',1] # default:0; amount of initial monomer relative to substrate per grid box
-        self.Uptake_per_monomer      = int(parameters.loc['Uptake_per_monomer',1]) # default:1; number of transporters per monomer 
+        self.Monomer_Substrate_Ratio = parameters.loc['Monomer_Substrate_Ratio',1] # amount of initial monomer relative to substrate per grid box; default:0
+        self.Uptake_per_monomer      = int(parameters.loc['Uptake_per_monomer',1]) # number of transporters per monomer;default:1
         self.Init_NH4  = parameters.loc['Init_NH4',1]                              # Initial NH4
         self.Init_PO4  = parameters.loc['Init_PO4',1]                              # Initial PO4
         self.Input_NH4 = parameters.loc['Input_NH4',1]                             # Input of NH4
