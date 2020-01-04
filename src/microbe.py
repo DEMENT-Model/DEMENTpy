@@ -453,7 +453,7 @@ class Microbe():
         """
 
         basal_death_prob = ((1-fb_grid) * self.death_rate_bac + fb_grid * self.death_rate_fun).astype('float32')
-        death_rate       =  (1-fb_grid) * self.beta_bac + fb_grid * self.beta_fun
+        death_rate       = ((1-fb_grid) * self.beta_bac + fb_grid * self.beta_fun).astype('float32')
 
         return basal_death_prob, death_rate 
 
