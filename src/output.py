@@ -248,7 +248,7 @@ class Output():
         self.RespSeries = pd.concat([self.RespSeries, pd.Series([ecosystem.Respiration],index=[day+1])], axis=0, sort=False)
         
         # Carbon use efficiency
-        self.CUE_system = pd.concat([self.CUE_system, pd.Series([ecosystem.CUE_System],index=[day+1])], axis=0, sort=False)
+        self.CUE_system = pd.concat([self.CUE_system, pd.Series([ecosystem.CUE_system],index=[day+1])], axis=0, sort=False)
         
         # Death toll of stochasticity origin 
         self.Kill = pd.concat([self.Kill, pd.Series([ecosystem.Kill],index=[day+1])], axis=0, sort=False)

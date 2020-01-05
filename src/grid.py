@@ -51,6 +51,7 @@ class Grid():
         self.Substrates_init = data_init['Substrates']                    # Substrates initialized
         self.Substrates      = data_init['Substrates'].copy(deep=True)    # Substrates;df; w/ .copy() avoiding mutation
         self.SubInput        = data_init['SubInput']                      # Substrate inputs
+        self.Enzymes_init    = data_init['Enzymes']
         self.Enzymes         = data_init['Enzymes'].copy(deep=True)       # Enzymes
         self.ReqEnz          = data_init['ReqEnz']                        # Enzymes required by each substrate
         self.Ea              = data_init['Ea']                            # Enzyme activatin energy
@@ -85,7 +86,7 @@ class Grid():
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5;scalar
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature;scalar
         self.Respiration       = np.float32('nan')              # Respiration
-        self.CUE_System        = np.float32('nan')              # emergent CUE
+        self.CUE_system        = np.float32('nan')              # emergent CUE
         #self.Transporters = float('nan')
         #self.Osmolyte_Con = float('nan')
         #self.Osmolyte_Ind = float('nan')
@@ -182,8 +183,8 @@ class Grid():
         DecayRates = pd.concat([batch1,rss],axis=1,sort=False).min(axis=1,skipna=True)
         
         # Adjust cellulose rate by linking cellulose degradation to lignin concentration (LCI) 
-        ss7 = self.Substrates.loc[Sub_index=="Lignin"].sum(axis=1).values
-        DecayRates.loc[Sub_index=="Cellulose"] *= 1 + (ss7/(ss7 + self.Substrates.loc[Sub_index=="Cellulose",'C'])) * LCI_slope
+        ss7 = self.Substrates.loc[Sub_index=='Lignin'].sum(axis=1).values
+        DecayRates.loc[Sub_index=='Cellulose'] *= 1 + (ss7/(ss7 + self.Substrates.loc[Sub_index=='Cellulose','C'])) * LCI_slope
         
         # Update Substrates Pool by removing decayed C, N, & P. Depending on specific needs, adding inputs of substrates can be done here
         self.Substrates -= SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
@@ -264,7 +265,7 @@ class Grid():
             Max_Uptake.iloc[i_monomer,:] = Potential_Uptake.iloc[i_monomer,:].values @ MicCXGenes.iloc[:,i_taxa].values
         
         # Take the min of the monomer available and the max potential uptake and Scale the uptake to what's available
-        csmu = Max_Uptake.sum(axis=1)  # Total potential uptake of each monomer
+        csmu   = Max_Uptake.sum(axis=1)  # Total potential uptake of each monomer
         Uptake = Max_Uptake.mul(pd.concat([csmu,rsm],axis=1).min(axis=1,skipna=True)/csmu,axis=0) #(Monomer*gridsize) * Taxon
         Uptake.loc[csmu==0] = np.float32(0)
         # End computing monomer uptake
@@ -324,8 +325,8 @@ class Grid():
         # MNAOEC: Min_N_Avail_Osmo_Enzyme_Consti
         #...............................................
         # Osmolyte before adjustment
-        Taxon_Osmo_Consti        = self.Consti_Osmo_C.mul(self.Microbes['C'],axis=0) * f_psi
-        Taxon_Osmo_Consti_Cost_N = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
+        Taxon_Osmo_Consti          = self.Consti_Osmo_C.mul(self.Microbes['C'],axis=0) * f_psi
+        Taxon_Osmo_Consti_Cost_N   = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
         # Enzyme before adjustment
         Taxon_Enzyme_Consti        = self.Consti_Enzyme_C.mul(self.Microbes['C'],axis=0)
         Taxon_Enzyme_Consti_Cost_N = (Taxon_Enzyme_Consti.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1)
@@ -361,8 +362,8 @@ class Grid():
         # MNAOEI: Min_N_Avail_Osmo_Enzyme_Induci
         #..................................................
         # Inducible Osmolyte production only when psi reaches below wp_fc
-        Taxon_Osmo_Induci        = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0) * f_psi
-        Taxon_Osmo_Induci_Cost_N = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)                             # Total osmotic N cost of each taxon (.sum(axis=1))
+        Taxon_Osmo_Induci          = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0) * f_psi
+        Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)            # Total osmotic N cost of each taxon (.sum(axis=1))
         # Inducible enzyme production
         Taxon_Enzyme_Induci        = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0)
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
@@ -663,7 +664,9 @@ class Grid():
     
     def repopulation(self,output,day,mic_reinit):
         """
-        Deal with reinitialization of microbial community and start with new subsrates and monomers on the grid in each new pulse.
+        Reinitialize a microbial community on the spatial grid in a new pulse.
+        
+        Meanwhile, start with new subsrates, monomers, and enzymes on the grid
 
         Parameters:
             output:     an instance of the Output class, from which the var referring to taxon-specific total mass over the grid is retrieved--MicrobesSeries_repop
@@ -671,12 +674,14 @@ class Grid():
             day:        the day index
             mic_reinit: 0/1; 1 means reinitialization
         Returns:
-            update Substrates, Monomers, and Microbes
+            update Substrates, Monomers, and Microbes, as well as Enzymes
         """
-        # reinitialize substrates and monomers in a new pulse
+
+        # reinitialize substrates, monomers, and enzymes in a new pulse
         self.Substrates = self.Substrates_init.copy(deep=True)
         self.Monomers   = self.Monomers_init.copy(deep=True)
-        
+        self.Enzymes    = self.Enzymes_init.copy(deep=True)
+
         # reinitialize microbial community in a new pulse if True
         if mic_reinit == True:
             
