@@ -213,10 +213,10 @@ class Grid():
         # Indices
         is_org = (self.Monomers.index != "NH4") & (self.Monomers.index != "PO4") # organic monomers
         #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
+
         # Update monomer ratios in each time step with organic monomers following the substrates
         self.Monomer_ratios[is_org] = self.SubstrateRatios.values
-        # Keep track of mass balance for inputs
-        #self.MonomerRatios_Cum = MR_transition
+        
         # Determine monomer pool from decay and input
         # Organic monomers derived from substrate-decomposition
         Decay_Org = self.Monomer_ratios[is_org].mul(self.DecayRates.values,axis=0)
@@ -594,7 +594,7 @@ class Grid():
         
         # Microbes' index
         Mic_index = self.Microbes.index
-        # Set up the colonization dataframe: taxon * 3(C,N,&P)
+        # Set up the Colonization dataframe: taxon * 3(C,N,&P)
         Colonization    = self.Microbes.copy(deep=True)
         Colonization    = Colonization.reset_index(drop=True)
         Colonization[:] = np.float32(0)
@@ -623,11 +623,11 @@ class Grid():
         #fungal cell division
         fun_index = (self.fb==1) & (self.Microbes['C']>self.max_size_f)
         self.Microbes[fun_index] = self.Microbes[fun_index]/2
-        # Translocate nutrients within fungal taxa after reproduction
-        self.Microbes[(self.fb==1)&(self.Microbes['C']>0)] = eMF[(self.fb==1)&(self.Microbes['C']>0)]
         # Put daughter cells into a seperate dataframe, Reprod
         Reprod = MicrobesBeforeDivision - self.Microbes
-        # Index the daughter cells that are fungi versus bacteria
+        # Translocate nutrients within fungal taxa after reproduction
+        self.Microbes[(self.fb==1)&(self.Microbes['C']>0)] = eMF[(self.fb==1)&(self.Microbes['C']>0)]
+        # Index the daughter cells of fungi vs bacteria
         daughters_b = (Reprod['C']>0) & (self.fb==0)
         daughters_f = (Reprod['C']>0) & (self.fb==1)
         # set all fungi equal to their grid averages for translocation before colonization
@@ -669,7 +669,8 @@ class Grid():
         Meanwhile, start with new subsrates, monomers, and enzymes on the grid
 
         Parameters:
-            output:     an instance of the Output class, from which the var referring to taxon-specific total mass over the grid is retrieved--MicrobesSeries_repop
+            output:     an instance of the Output class, from which the var
+                          referring to taxon-specific total mass over the grid is retrieved--MicrobesSeries_repop
             pulse:      the pulse index
             day:        the day index
             mic_reinit: 0/1; 1 means reinitialization
