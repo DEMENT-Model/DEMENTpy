@@ -32,9 +32,9 @@ def main():
     
      
     #...Obtain the command line arguments
-    input_folder = sys.argv[1]    # input folder name
+    input_folder  = sys.argv[1]   # input folder name
     output_folder = sys.argv[2]   # output folder name
-    outname = sys.argv[3]         # output file name
+    outname       = sys.argv[3]   # output file name
     
     #...Set up the working directory
     os.chdir('../'+input_folder)
@@ -43,11 +43,11 @@ def main():
     np.random.seed(int(outname[:-4]))
 
     #...a few system constants
-    runtime = pd.read_csv('runtime.txt',header=None,index_col=0,sep='\t')
-    pulse = int(runtime.loc['pulse',1])         # number of pulses
-    cycle = int(runtime.loc['end_time',1])      # number of time steps in each pulse
-    interval = int(runtime.loc['interval',1])   # interval of time step to record outputs
-    mic_reinit = True    # indicate reinitialization of microbial community or not
+    runtime    = pd.read_csv('runtime.txt',header=None,index_col=0,sep='\t')
+    pulse      = int(runtime.loc['pulse',1])         # number of pulses
+    cycle      = int(runtime.loc['end_time',1])      # number of time steps in each pulse
+    interval   = int(runtime.loc['interval',1])      # interval of time step to record outputs
+    mic_reinit = True    # indicate reinitialization of microbial community
     
     #...Initialize data by calling the Function: Initialize_Data()
     data_initialization = initialize_data(runtime)
