@@ -190,7 +190,7 @@ class Output():
         ## Taxon abundance
         Taxon_index      = ecosystem.Microbes['C'] > 0
         Taxon_index.name = day + 1
-        self.Taxon_count = pd.concat([self.Taxon_count, Taxon_index.groupby(level=0,sort=False).sum().astype('unit32')], axis=1, sort=False)
+        self.Taxon_count = pd.concat([self.Taxon_count, Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')], axis=1, sort=False)
         ## Taxon biomass
         Microbes_grid           = ecosystem.Microbes.groupby(level=0,sort=False).sum()
         Microbes_grid['C'].name = day + 1
@@ -277,5 +277,5 @@ class Output():
         # Track abundance of every taxon
         Taxon_index      = ecosystem.Microbes['C'] > 0
         Taxon_index.name = day + 1
-        taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('unit32')
+        taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('uint32')
         self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count], axis=1, sort=False)
