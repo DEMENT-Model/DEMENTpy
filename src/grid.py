@@ -106,7 +106,7 @@ class Grid():
         self.wp_fc            = data_init['wp_fc']               # -1.0
         self.wp_th            = data_init['wp_th']               # -6.0
         self.alpha            = data_init['alpha']               # integer;1
-        self.Kill             = np.float32('nan')                # number of cells stochastically killed
+        self.Kill             = np.float32('nan')                # total number of cells stochastically killed
         
         # Reproduction
         self.fb         =  data_init['fb']                       # index of fungal taxa (=1)
@@ -184,7 +184,7 @@ class Grid():
         
         # Adjust cellulose rate by linking cellulose degradation to lignin concentration (LCI) 
         ss7 = self.Substrates.loc[Sub_index=='Lignin'].sum(axis=1).values
-        DecayRates.loc[Sub_index=='Cellulose'] *= 1 + (ss7/(ss7 + self.Substrates.loc[Sub_index=='Cellulose','C'])) * LCI_slope
+        DecayRates.loc[Sub_index=='Cellulose'] *= np.float32(1) + (ss7/(ss7 + self.Substrates.loc[Sub_index=='Cellulose','C'])) * LCI_slope
         
         # Update Substrates Pool by removing decayed C, N, & P. Depending on specific needs, adding inputs of substrates can be done here
         self.Substrates -= SubstrateRatios.mul(DecayRates,axis=0) #+ self.SubInput 
@@ -350,9 +350,9 @@ class Grid():
         #.....Inducible processes.............................................#
         #---------------------------------------------------------------------#
         # Assimilation efficiency constrained by temperature
-        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - 273)) * self.AE_temp  #scalar
+        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float(273))) * self.AE_temp  #scalar
         # Taxon growth respiration
-        Taxon_Growth_Respiration = self.Taxon_Uptake_C * (1 - Taxon_AE)
+        Taxon_Growth_Respiration = self.Taxon_Uptake_C * (np.float32(1) - Taxon_AE)
         
         #.................................................
         # Variable definition:
@@ -434,11 +434,10 @@ class Grid():
     
     def mortality(self,day):       
         """
-        Calculate microbial mortality.
+        Calculate microbial mortality and update stoichiometry of the alive and microbial pools.
         
-        And update stoichiometry of the alive and microbial pools, as well as substrates(input of dead microbes), monomers, and respiration.
-        --> Kill microbes that are starving and drought intolerant
-        --> Monomers leaching is dealt with here
+        Kill microbes that are starving deterministically and microbes that are drought intolerant stochastically
+        Also update Substrates with input from dead microbes, monomers(with leaching lss), and respiration
         """
 
         # Constants
@@ -452,7 +451,7 @@ class Grid():
         
         # Reset the index to arabic numerals from taxa series 
         self.Microbes  = self.Microbes.reset_index(drop=True)
-        MinRatios = self.MinRatios.reset_index(drop=True)
+        MinRatios      = self.MinRatios.reset_index(drop=True)
         
         # Create a blank dataframe, Death, having the same structure as Microbes
         Death    = self.Microbes.copy(deep=True)
@@ -461,27 +460,24 @@ class Grid():
         kill = pd.Series([False]*self.n_taxa*self.gridsize)
         
         # Start of calcualtion of mortality first with THRESHOLD
-        # Index the dead taxa based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
+        # Kill microbes deterministically based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
         starve_index = (self.Microbes["C"]>0) & ((self.Microbes["C"]<self.C_min)|(self.Microbes["N"]<self.N_min)|(self.Microbes["P"]<self.P_min))
-        # Index the dead and put them in Death
-        Death.loc[starve_index] = self.Microbes[starve_index]
-        # Update Microbes by setting grid cells with dead microbes to 0
+        # Index the dead, put them in Death, and set them to 0 in Microbes 
+        Death.loc[starve_index]         = self.Microbes[starve_index]
         self.Microbes.loc[starve_index] = np.float32(0)
         # Index the locations where microbial cells remain alive
         mic_index = self.Microbes["C"] > 0
         
-        # Mortality prob. b/c drought with the function: MMP:microbe_mortality_psi() 
-        r_death = MMP(self.psi[day],self.wp_fc,self.basal_death_prob,self.death_rate,self.tolerance)
-
-        # Kill microbes randomly
-        #kill.loc[mic_index] = r_death[mic_index] > np.repeat(np.random.uniform(0,1),sum(mic_index))
+        # Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
+        # call the function, MMP:microbe_mortality_psi() 
+        r_death             = MMP(self.psi[day],self.wp_fc,self.basal_death_prob,self.death_rate,self.tolerance)
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index)).astype('float32')
-        Death.loc[kill]     = self.Microbes[kill]
-        # Update Microbes again
+        # Index the dead, put them in Death, and set them to 0 in Microbes 
+        Death.loc[kill]         = self.Microbes[kill]
         self.Microbes.loc[kill] = np.float32(0)
-
         # Index locations where microbes remain alive
-        mic_index = self.Microbes['C']>0 
+        mic_index = self.Microbes['C']>0
+
         # Calculate the total dead mass (threshold & drought) across taxa in each grid cell
         Death_gridcell = Death.groupby(Death.index//self.n_taxa).sum(axis=0)
         
@@ -575,8 +571,8 @@ class Grid():
         # Restore the index to taxa series
         self.Microbes.index = Mic_index
 
-        # Pass back the death toll of cells to the global variable
-        self.Kill = kill.sum()
+        # Update the death toll of cells
+        self.Kill = kill.sum().astype('uint32')
 
     
     def reproduction(self,day):           
@@ -669,8 +665,8 @@ class Grid():
         Meanwhile, start with new subsrates, monomers, and enzymes on the grid
 
         Parameters:
-            output:     an instance of the Output class, from which the var
-                          referring to taxon-specific total mass over the grid is retrieved--MicrobesSeries_repop
+            output:     an instance of the Output class, from which the var, MicrobesSeries_repop,
+                        referring to taxon-specific total mass over the grid is retrieved
             pulse:      the pulse index
             day:        the day index
             mic_reinit: 0/1; 1 means reinitialization
