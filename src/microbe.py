@@ -500,7 +500,7 @@ def microbe_mortality_prob(wp,wp_fc,basal_death_prob,death_rate,Tax_tolerance):
         death_rate:       array; mortality change rate with moisture
         Tax_tolerance:    dataframe; taxon-specific drought tolerance   
     Returns:
-        mortality_rate: taxon-specific mortality probability
+        mortality_rate:   taxon-specific mortality probability
     References:
         Allison and Goulden,2017,Soil Biology and Biochemistry
     """
