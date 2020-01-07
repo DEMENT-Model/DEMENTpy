@@ -1,5 +1,5 @@
 # output.py module dealing with outputs of DEMENTpy.
-# Bin Wang on Dec. 27th, 2019
+# Bin Wang in January, 2020
 
 import numpy as np
 import pandas as pd
@@ -111,8 +111,8 @@ class Output():
         # Number of individuals of Taxon count
         Taxon_index            = data_init['Microbes']['C'] > 0
         Taxon_index.name       = 0
-        self.Taxon_count       = Taxon_index.groupby(level=0,sort=False).sum()
-        self.Taxon_count_repop = Taxon_index.groupby(level=0,sort=False).sum()
+        self.Taxon_count       = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
+        self.Taxon_count_repop = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
         
         # Transporters: taxon-specific production summed over the grid by taxon
         #self.TransporterSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
@@ -140,9 +140,9 @@ class Output():
         #self.Enzymes_Sum  = pd.Series([Enzymes_grid.sum()],index=[0])
         
         # Emergent properties over the grid
-        self.RespSeries = pd.Series([0],index=[0]) # respiration
-        self.CUE_system = pd.Series([0],index=[0]) # emergent CUE   
-        self.Kill       = pd.Series([0],index=[0]) # stochastic death toll
+        self.RespSeries = pd.Series([0],index=[0], dtype='float32')  # respiration
+        self.CUE_system = pd.Series([0],index=[0], dtype='float32')  # emergent CUE   
+        self.Kill       = pd.Series([0],index=[0], dtype='uint32')   # stochastic death toll
         
        
     def output(self,ecosystem,day):
@@ -190,7 +190,7 @@ class Output():
         ## Taxon abundance
         Taxon_index      = ecosystem.Microbes['C'] > 0
         Taxon_index.name = day + 1
-        self.Taxon_count = pd.concat([self.Taxon_count, Taxon_index.groupby(level=0,sort=False).sum()], axis=1, sort=False)
+        self.Taxon_count = pd.concat([self.Taxon_count, Taxon_index.groupby(level=0,sort=False).sum().astype('unit32')], axis=1, sort=False)
         ## Taxon biomass
         Microbes_grid           = ecosystem.Microbes.groupby(level=0,sort=False).sum()
         Microbes_grid['C'].name = day + 1
@@ -245,13 +245,11 @@ class Output():
         #self.Enzymes_Sum  = pd.concat([self.Enzymes_Sum,pd.Series([Enzymes_grid.sum()],index=[day+1])],axis=0,sort=False)
         
         # Respiration
-        self.RespSeries = pd.concat([self.RespSeries, pd.Series([ecosystem.Respiration],index=[day+1])], axis=0, sort=False)
-        
+        self.RespSeries = pd.concat([self.RespSeries, pd.Series([ecosystem.Respiration],index=[day+1],dtype='float32')], axis=0, sort=False)
         # Carbon use efficiency
-        self.CUE_system = pd.concat([self.CUE_system, pd.Series([ecosystem.CUE_system],index=[day+1])], axis=0, sort=False)
-        
+        self.CUE_system = pd.concat([self.CUE_system, pd.Series([ecosystem.CUE_system], index=[day+1],dtype='float32')], axis=0, sort=False)
         # Death toll of stochasticity origin 
-        self.Kill = pd.concat([self.Kill, pd.Series([ecosystem.Kill],index=[day+1])], axis=0, sort=False)
+        self.Kill       = pd.concat([self.Kill, pd.Series([ecosystem.Kill],index=[day+1],dtype='uint32')], axis=0, sort=False)
     
     
     def microbes_df(self,ecosystem,day):
@@ -279,5 +277,5 @@ class Output():
         # Track abundance of every taxon
         Taxon_index      = ecosystem.Microbes['C'] > 0
         Taxon_index.name = day + 1
-        taxon_count      = Taxon_index.groupby(level=0, sort=False).sum()
+        taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('unit32')
         self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count], axis=1, sort=False)
