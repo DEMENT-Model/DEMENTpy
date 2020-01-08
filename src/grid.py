@@ -2,13 +2,14 @@
 # this module, grid.py, deal with calculations of all microbe-related activites on a spatial grid with a class, Grid().
 # by Bin Wang on December 27th, 2019 
 # ------------------
+
 import sys
 import numpy  as np
 import pandas as pd
 
 from microbe import microbe_osmo_psi
 from microbe import microbe_mortality_prob as MMP
-from enzyme  import Boltzman_Arrhenius as f_temp
+from enzyme  import Arrhenius
 from utility import expand
 
 class Grid():
@@ -22,7 +23,6 @@ class Grid():
         4) mortality():    determine mortality of microbial cells based on mass thresholds
         5) reproduction(): compute cell division and dispersal
         6) repopulation(): resample taxa from the microbial pool and place them on the grid
-    ----------------------------------
     Coding philosophy:
         Each method starts with passing some global variables to local ones and creating
         some indices facilitating dataframe index/column processing and ends up with updating
@@ -128,14 +128,14 @@ class Grid():
 
     def degradation(self,pulse,day):
         """
-        Explicit degradation of different substrates following the 'Michaelis-Menten' equation.
+        Explicit degradation of different substrates.
 
         Calculation procedure:
-            -> Determine substates pool: incl. inputs
-            -> Compute Vmax & Km and make them follow the index of Substrates
-            -> Follow MM to compute full degradation rate
-            -> Impose the substrate-required enzymes upon the full degradation rate
-            -> Adjust cellulose rate with LCI(lignocellulose index)
+        1. Determine substates pool: incl. inputs
+        2. Compute Vmax & Km and make them follow the index of Substrates
+        3. Follow the Michaelis-Menten equation to compute full degradation rate
+        4. Impose the substrate-required enzymes upon the full degradation rate
+        5. Adjust cellulose rate with LCI(lignocellulose index)
         """
         
         # constant of lignocellulose index--LCI
@@ -156,11 +156,11 @@ class Grid():
         else:
             f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc)).astype('float32')
         
-        # Boltzman-Arrhenius equation for Vmax and Km multiplied by exponential decay for Psi sensitivity
-        #Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi # Vmax: (enz*gridsize) * sub
-        #Km = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))          # Km: (sub*gridsize) * enz
-        Vmax = self.Vmax0 * f_temp(self.Ea,   self.temp[day]) * f_psi  # Vmax: (enz*gridsize) * sub
-        Km   = self.Km0   * f_temp(self.Km_Ea,self.temp[day])          # Km:   (sub*gridsize) * enz
+        # Arrhenius equation for Vmax and Km multiplied by exponential decay for Psi sensitivity
+        #Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi  # Vmax: (enz*gridsize) * sub
+        #Km   = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))         # Km: (sub*gridsize) * enz
+        Vmax = self.Vmax0 * Arrhenius(self.Ea,   self.temp[day]) * f_psi  # Vmax: (enz*gridsize) * sub
+        Km   = self.Km0   * Arrhenius(self.Km_Ea,self.temp[day])          # Km:   (sub*gridsize) * enz
 
         # Multiply Vmax by enzyme concentration
         tev_transition       = Vmax.mul(self.Enzymes,axis=0)                                          # (enz*gridsize) * sub
@@ -244,8 +244,8 @@ class Grid():
         # Caculate uptake enzyme kinetic parameters; monomer * Upt
         #Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
         #Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
-        Uptake_Vmax = self.Uptake_Vmax0 * f_temp(self.Uptake_Ea,self.temp[day]) * f_psi
-        Uptake_Km   = self.Uptake_Km0   * f_temp(self.Km_Ea,self.temp[day])
+        Uptake_Vmax = self.Uptake_Vmax0 * Arrhenius(self.Uptake_Ea,self.temp[day]) * f_psi
+        Uptake_Km   = self.Uptake_Km0   * Arrhenius(self.Km_Ea,self.temp[day])
 
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
         Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.values,axis=0)/Uptake_Km.add(rsm.values,axis=0)
