@@ -9,8 +9,8 @@ class Output():
     This class deals with outputs.
     
     Accepts data derived from the initialization.py and grid.py modules, and have two methods:
-        output():      stores time series
-        microbes_df(): a special method
+        output():             stores all time series
+        microbes_abundance(): a special method
     """
     
     def __init__(self,runtime,data_init):
@@ -252,15 +252,15 @@ class Output():
         self.Kill       = pd.concat([self.Kill, pd.Series([ecosystem.Kill],index=[day+1],dtype='uint32')], axis=0, sort=False)
     
     
-    def microbes_df(self,ecosystem,day):
+    def microbes_abundance(self,ecosystem,day):
         """
         Seperately output Microbes from each time step and put them in a dataframe.
 
         Aims to eventually deal with reinitializing microbial community on the
         grid in a new pulse via calculating the cumulative frequency of different
-        taxa over each cycle. The reason to have this seperate method instead of using the method
+        taxa over each cycle/pulse. The reason to have this seperate method instead of using the method
         above is b/c of the need to track outputs in every iteration, whereas the
-        method above only track outputs with a certain time interval.
+        method above tracks outputs with a certain time interval (unless the interval set to 1)
         
         Parameters:
             ecosystem: an instance of the Grid object, in which only the Microbes is used.
