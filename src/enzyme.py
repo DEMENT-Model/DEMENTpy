@@ -258,18 +258,20 @@ class Enzyme():
         return Uptake_Km
 
 
-def Boltzman_Arrhenius(Ea,temperature):
+def Arrhenius(Ea,temperature):
     """
-    Temperature constraint of Vmax from 
+    Temperature dependence of rate constant. 
 
     Parameters:
        Ea:          dataframe/scalar; activation energy;
        temperature: scalar;           daily temperature; 
     Return:
        BA:          dataframe/scalar; dependent on Ea
+    Reference:
+        Wikipedia: https://en.wikipedia.org/wiki/Arrhenius_equation
     """
 
     Tref = 293
-    BA = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref)).astype('float32')
+    k = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref)).astype('float32')
 
-    return BA
+    return k
