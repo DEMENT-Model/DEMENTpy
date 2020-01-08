@@ -89,7 +89,7 @@ def main():
             #    continue
             
             # output microbial mass of every iteration using the "microbes_df" method in the Output class
-            Output_init.microbes_df(Ecosystem,i)
+            Output_init.microbes_abundance(Ecosystem,i)
             
             # re-initialize microbial community in each new pulse
             if i == (p+1)*cycle-1:
