@@ -1,7 +1,7 @@
-
-"""
-this module, enzyme.py, deals with exclusively only enzyme-related parameters.
-"""
+# This module, enzyme.py, deals with exclusively only enzyme-related parameters, holding:
+# ............Enzyme():           class    
+# ............Boltzman_Arrhenius: function
+# Bin Wang in Janunary, 2020 
 
 import pandas as pd
 import numpy as np
@@ -9,7 +9,7 @@ from utility import LHS
 
 class Enzyme():
     """
-    This class deals with all traits related to exoenzymes.
+    This class deals with all properties associated with exoenzymes.
     
     Including methods:
     1. enzyme_pool_initialization():
@@ -91,8 +91,9 @@ class Enzyme():
         """
         
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
-        index = ["Enz" + str(i) for i in range(1,self.n_enzymes+1)]
-        EnzAttrib_df = pd.DataFrame(data=EnzAttrib_array,index=index, columns=["C_cost","N_cost","P_cost","Maint_cost"], dtype='float32')
+        index           = ["Enz" + str(i) for i in range(1,self.n_enzymes+1)]
+        columns         = ["C_cost","N_cost","P_cost","Maint_cost"]
+        EnzAttrib_df    = pd.DataFrame(data=EnzAttrib_array,index=index, columns=columns, dtype='float32')
         
         return EnzAttrib_df
     
@@ -104,7 +105,7 @@ class Enzyme():
         Parameter:
             Ea_input: dataframe; substrate-specific activation energy range (min = max for now)
         Return:
-            Ea_df.T: dataframe; Rows:enzymes; cols: substrates
+            Ea_df.T:  dataframe; Rows:enzymes; cols: substrates
         """
         
         Ea_series = Ea_input.apply(lambda df: np.random.uniform(df['Ea_min'],df['Ea_max'],self.n_enzymes),axis=1) # series of 1D array
@@ -119,8 +120,8 @@ class Enzyme():
         Uptake activation energies constant across monomers.
         
         Parameters:
-            Uptake_Ea_min: 35
-            Uptake_Ea_max: 35
+            Uptake_Ea_min: scalar; 35
+            Uptake_Ea_max: scalar; 35
         Return:
             Uptake_Ea: dataframe; Rows are monomers; cols are uptake enzymes
         """
@@ -139,21 +140,20 @@ class Enzyme():
         """
         Pre-exponential constants for enzymes.
         
-        Inputs:
+        Parameters:
           ReqEnz:        substrate required enzymes, from the substrate module
           Vmax0_min:     5  (mg substrate mg-1 enzyme day-1); Minimum Vmax for enzyme
           Vmax0_max:     50 (mg substrate mg-1 enzyme day-1); Maximum Vmax for enzyme
           Specif_factor: default 1; Efficiency-specificity   
-        Return:
-          Vmax0:   dataframe(substrates * enzymes); feed the the method, enzyme_Km(), below
-          Vmax0.T: dataframe(enzyme*substrate); will feed expand()
+        Returns:
+          Vmax0:         dataframe(substrates * enzymes); feed the the method, enzyme_Km(), below
+          Vmax0.T:       dataframe(enzyme*substrate); will feed the expand()
         """
         
         Vmax0_array = LHS(self.n_substrates*self.n_enzymes, self.Vmax0_min, self.Vmax0_max, 'uniform')
         Vmax0_array = Vmax0_array.reshape(self.n_substrates, self.n_enzymes)
-
-        columns  = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
-        Vmax0    = pd.DataFrame(data=Vmax0_array, index=self.substrate_index, columns=columns, dtype='float32')
+        columns     = ['Enz'+str(i) for i in range(1,self.n_enzymes + 1)]
+        Vmax0       = pd.DataFrame(data=Vmax0_array, index=self.substrate_index, columns=columns, dtype='float32')
         
         # Account for efficiency-specificity tradeoff by dividing Vmax_0 by the number of substrates (or monomers)
         # targeted and multiplied by a specificity factor
@@ -211,7 +211,6 @@ class Enzyme():
     
            
     def enzyme_Km(self,Vmax0):
-        
         """ 
         Derive Km through implementing a Vmax-Km tradeoff.
 
@@ -264,10 +263,10 @@ def Boltzman_Arrhenius(Ea,temperature):
     Temperature constraint of Vmax from 
 
     Parameters:
-       Ea:          activation energy; dataframe
-       temperature: daily temperature; scalar
+       Ea:          dataframe/scalar; activation energy;
+       temperature: scalar;           daily temperature; 
     Return:
-       BA:
+       BA:          dataframe/scalar; dependent on Ea
     """
 
     Tref = 293
