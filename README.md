@@ -24,15 +24,17 @@ This model is built upon its predecessor--DEMENT, an R-based framework initially
 
 **Running DEMENTpy**
 
-File structure
+File structure and run DEMENTpy
 
-./src: all source code
+- src/: all source code
 
-./input: data required to drive the model
+- input/: data required to drive the model
 
-./output: folder where the output object in .pickle will be residing
+- output/: folder where the output object in .pickle will be residing
 
-dementpy.sh: bash script for submitting job to HPC.
+Run DEMENTpy on HPC
+
+- a simple example of bash script, dementpy.sh submitting jobs to HPC is provided.
 
 **Contributing Guide**
 
@@ -40,3 +42,4 @@ Please follow these rules if you want to contribute to this open source model:
 
 **License**
 
+MIT LICENSE
