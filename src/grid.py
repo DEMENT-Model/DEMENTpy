@@ -126,7 +126,7 @@ class Grid():
         self.Tref  = np.float32(293)        # reference temperature of 20 celcius
     
 
-    def degradation(self,pulse,day):
+    def degradation(self,day):
         """
         Explicit degradation of different substrates.
 
@@ -184,7 +184,7 @@ class Grid():
         self.DecayRates      = DecayRates
 
 
-    def uptake(self,pulse,day):
+    def uptake(self,day):
         """
         Explicit uptake of different monomers by transporters following the Michaelis-Menten equation.
 
@@ -650,7 +650,6 @@ class Grid():
         Parameters:
             output:     an instance of the Output class, from which the var, MicrobesSeries_repop,
                         referring to taxon-specific total mass over the grid is retrieved
-            pulse:      the pulse index
             day:        the day index
             mic_reinit: 0/1; 1 means reinitialization
         Returns:
