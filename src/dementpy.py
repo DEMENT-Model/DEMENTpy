@@ -64,10 +64,10 @@ def main():
         for i in range(p*cycle, (p+1)*cycle):
         
             # substrates degradation
-            Ecosystem.degradation(p,i)
+            Ecosystem.degradation(i)
         
             # monomers uptake
-            Ecosystem.uptake(p,i)
+            Ecosystem.uptake(i)
         
             # microbial metabolism
             Ecosystem.metabolism(i)
