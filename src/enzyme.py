@@ -258,20 +258,43 @@ class Enzyme():
         return Uptake_Km
 
 
-def Arrhenius(Ea,temperature):
+def Arrhenius(Vmax, Ea, temperature):
     """
     Temperature dependence of rate constant. 
 
     Parameters:
-       Ea:          dataframe/scalar; activation energy;
-       temperature: scalar;           daily temperature; 
+        Vmax:        dataframe; max. reaction rates
+        Ea:          dataframe/scalar; activation energy
+        temperature: scalar;           daily temperature 
     Return:
-       BA:          dataframe/scalar; dependent on Ea
+        k:           dataframe
     Reference:
         Wikipedia: https://en.wikipedia.org/wiki/Arrhenius_equation
     """
 
     Tref = 293
-    k = np.exp((-Ea/0.008314)*(1/(temperature+273) - 1/Tref)).astype('float32')
+    R    = np.float32(0.008314)
 
+    k = Vmax * np.exp((-Ea/R) * np.float32(1/(temperature+273) - 1/Tref))
+    
     return k
+
+
+def Allison(rate, wp_fc, psi):
+    """
+    Moisture multiplier of reaction rate.
+
+    Parameters:
+      rate:  scalar; a parameter governing change rate
+      wp_fc: scalar;
+      psi:   scalar; daily water potential
+    Return:
+      f_psi: scalar
+    """
+
+    if psi >= wp_fc:
+        f_psi = np.float32(1)
+    else:
+        f_psi = np.exp(np.float32(rate) * (psi - wp_fc))
+
+    return f_psi
