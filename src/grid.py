@@ -428,9 +428,9 @@ class Grid():
         Psi_slope_leach = np.float32(0.5)  # Mositure sensivity of abiotic monomer loss rate
         # Indices
         Mic_index  = self.Microbes.index
-        is_DeadMic = self.Substrates.index == "DeadMic"
-        is_NH4     = self.Monomers.index   == "NH4"
-        is_PO4     = self.Monomers.index   == "PO4"
+        is_DeadMic = self.Substrates.index == 'DeadMic'
+        is_NH4     = self.Monomers.index   == 'NH4'
+        is_PO4     = self.Monomers.index   == 'PO4'
         
         # Reset the index to arabic numerals from taxa series 
         self.Microbes  = self.Microbes.reset_index(drop=True)
@@ -444,12 +444,12 @@ class Grid():
         
         # Start of calcualtion of mortality first with THRESHOLD
         # Kill microbes deterministically based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
-        starve_index = (self.Microbes["C"]>0) & ((self.Microbes["C"]<self.C_min)|(self.Microbes["N"]<self.N_min)|(self.Microbes["P"]<self.P_min))
+        starve_index = (self.Microbes['C']>0) & ((self.Microbes['C']<self.C_min)|(self.Microbes['N']<self.N_min)|(self.Microbes['P']<self.P_min))
         # Index the dead, put them in Death, and set them to 0 in Microbes 
         Death.loc[starve_index]         = self.Microbes[starve_index]
         self.Microbes.loc[starve_index] = np.float32(0)
         # Index the locations where microbial cells remain alive
-        mic_index = self.Microbes["C"] > 0
+        mic_index = self.Microbes['C'] > 0
         
         # Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
         # call the function, MMP:microbe_mortality_psi() 
@@ -571,7 +571,7 @@ class Grid():
             direct     : dispersal direction: 0.95    
         """
         
-        # Microbes' index
+        # index of Microbes
         Mic_index = self.Microbes.index
         # Set up the Colonization dataframe: taxon * 3(C,N,&P)
         Colonization    = self.Microbes.copy(deep=True)
@@ -581,11 +581,11 @@ class Grid():
         
         #STEP 1: Fungal translocation by calculating average biomass within fungal taxa 
         # Count the fungal taxa before cell division
-        # Add one or two fungi to the count series based on size
         Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize, index=Mic_index, name='Count', dtype='int8')
+        # Add one or two fungi to the count series based on size
         Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)]               = np.int8(1)
         Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = np.int8(2)
-        Fungi_count   = Fungi_df.groupby(level=0,sort=False).sum()
+        Fungi_count = Fungi_df.groupby(level=0,sort=False).sum()
         # Derive average biomass of fungal taxa
         Microbes_grid              = self.Microbes.groupby(level=0,sort=False).sum()
         Mean_fungi                 = Microbes_grid.divide(Fungi_count,axis=0)
@@ -618,15 +618,15 @@ class Grid():
         num_f   = sum(daughters_f)
         shift_x = pd.Series(data=[0] * self.gridsize*self.n_taxa, index=Mic_index, dtype='int8')
         shift_y = pd.Series(data=[0] * self.gridsize*self.n_taxa, index=Mic_index, dtype='int8')
-        # Bacterial dispersal movements in X & Y direction  
-        shift_x.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
-        shift_y.loc[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
+        # Bacterial dispersal movements in X & Y direction
+        shift_x[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
+        shift_y[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
         # Fungi always move positively in x direction, and in y direction constrained to one box away determined by probability "direct"                
-        shift_x.loc[daughters_f] = np.int8(1)
-        shift_y.loc[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)]).astype('int8')
+        shift_x[daughters_f] = np.int8(1)
+        shift_y[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)]).astype('int8')
         # Calculate x,y coordinates of dispersal destinations (% remainder of x/x)
-        new_x           = (list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + shift_x + self.x) % self.x
-        new_y           = (list(np.repeat(range(1,self.y+1),self.n_taxa*self.x))   + shift_y + self.y) % self.y
+        new_x           = (shift_x + self.x + list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y) % self.x
+        new_y           = (shift_y + self.y + list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)))   % self.y
         new_x[new_x==0] = self.x  # Substitute coordinates when there is no shift 
         new_y[new_y==0] = self.y  # Substitute coordinates when there is no shift
         # Convert x,y coordinates to a Series of destination locations
@@ -635,8 +635,8 @@ class Grid():
 
         #Step 4: colonization of dispersed microbes
         # Transfer reproduced cells to new locations and sum when two or more of the same taxa go to same location
-        Colonization.iloc[index_series[daughters_b],] = Reprod[daughters_b].values
-        Colonization.iloc[index_series[daughters_f],] = Reprod[daughters_f].values
+        Colonization.iloc[index_series[daughters_b],:] = Reprod[daughters_b].values
+        Colonization.iloc[index_series[daughters_f],:] = Reprod[daughters_f].values
         # Colonization of dispersing microbes
         self.Microbes += Colonization.values
 
@@ -645,7 +645,7 @@ class Grid():
         """
         Reinitialize a microbial community on the spatial grid in a new pulse.
         
-        Meanwhile, start with new subsrates, monomers, and enzymes on the grid that are initialized from the very beginning
+        Meanwhile, start with new Subsrates, Monomers, and Enzymes on the grid that are initialized from the very beginning
 
         Parameters:
             output:     an instance of the Output class, from which the var, MicrobesSeries_repop,
