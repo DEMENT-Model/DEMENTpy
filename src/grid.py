@@ -1,5 +1,5 @@
 # ------------------
-# this module, grid.py, deal with calculations of all microbe-related activites on a spatial grid with a class, Grid().
+# this module, grid.py, deals with calculations of all microbe-related activites on a spatial grid with a class, Grid().
 # by Bin Wang on December 27th, 2019 
 # ------------------
 
@@ -9,7 +9,7 @@ import pandas as pd
 
 from microbe import microbe_osmo_psi
 from microbe import microbe_mortality_prob as MMP
-from enzyme  import Arrhenius
+from enzyme  import Arrhenius, Allison
 from utility import expand
 
 class Grid():
@@ -143,24 +143,14 @@ class Grid():
         # Substrates index by subtrate names
         Sub_index = self.Substrates.index
         
-        
-        # total mass of each substrate: C+N+P
-        rss = self.Substrates.sum(axis=1) 
-        # substrate stoichiometry; NOTE:ensure NA(b/c of 0/0 in df) = 0
+        # Calculate total mass of each substrate (C+N+P) and derive substrate stoichiometry
+        rss             = self.Substrates.sum(axis=1) 
         SubstrateRatios = self.Substrates.divide(rss,axis=0)
-        SubstrateRatios = SubstrateRatios.fillna(0)
-        
-        # moisture effects on enzymatic kinetics
-        if self.psi[day] >= self.wp_fc:
-            f_psi = np.float32(1.0)
-        else:
-            f_psi = np.exp(0.25*(self.psi[day] - self.wp_fc)).astype('float32')
+        SubstrateRatios = SubstrateRatios.fillna(0) # NOTE:ensure NA(b/c of 0/0 in df) = 0
         
         # Arrhenius equation for Vmax and Km multiplied by exponential decay for Psi sensitivity
-        #Vmax = self.Vmax0 * np.exp((-self.Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi  # Vmax: (enz*gridsize) * sub
-        #Km   = self.Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))         # Km: (sub*gridsize) * enz
-        Vmax = self.Vmax0 * Arrhenius(self.Ea,   self.temp[day]) * f_psi  # Vmax: (enz*gridsize) * sub
-        Km   = self.Km0   * Arrhenius(self.Km_Ea,self.temp[day])          # Km:   (sub*gridsize) * enz
+        Vmax = Arrhenius(self.Vmax0, self.Ea,    self.temp[day]) * Allison(0.25, self.wp_fc, self.psi[day])  # Vmax: (enz*gridsize) * sub
+        Km   = Arrhenius(self.Km0,   self.Km_Ea, self.temp[day])                                             # Km:   (sub*gridsize) * enz
 
         # Multiply Vmax by enzyme concentration
         tev_transition       = Vmax.mul(self.Enzymes,axis=0)                                          # (enz*gridsize) * sub
@@ -199,11 +189,11 @@ class Grid():
         Explicit uptake of different monomers by transporters following the Michaelis-Menten equation.
 
         Calculaton procedure:
-        -> Average monomers across the grid:
-        -> Determine pool of monomers: add degradation and input, update stoichimoetry
-        -> Maximum uptake:
-        -> Uptake by Monomer:
-        -> Uptake by Taxon:
+        1. Average monomers across the grid:
+        2. Determine pool of monomers: add degradation and input, update stoichimoetry
+        3. Maximum uptake:
+        4. Uptake by Monomer:
+        5. Uptake by Taxon:
         """
         
         # Every monomer averaged over the grid in each time step
@@ -235,17 +225,9 @@ class Grid():
 
 
         # Start calculating monomer uptake
-        # Moisture impacts on uptake, mimicking the diffusivity implications
-        if self.psi[day] >= self.wp_fc:
-            f_psi = np.float32(1.0)
-        else:
-            f_psi = np.exp(0.5*(self.psi[day] - self.wp_fc)).astype('float32')
-        
-        # Caculate uptake enzyme kinetic parameters; monomer * Upt
-        #Uptake_Vmax = self.Uptake_Vmax0 * np.exp((-self.Uptake_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref)) * f_psi
-        #Uptake_Km   = self.Uptake_Km0 * np.exp((-self.Km_Ea/0.008314)*(1/(self.temp[day]+273) - 1/self.Tref))
-        Uptake_Vmax = self.Uptake_Vmax0 * Arrhenius(self.Uptake_Ea,self.temp[day]) * f_psi
-        Uptake_Km   = self.Uptake_Km0   * Arrhenius(self.Km_Ea,self.temp[day])
+        # Caculate uptake enzyme kinetic parameters, multiplied by moisture multiplier accounting for the diffusivity implications
+        Uptake_Vmax = Arrhenius(self.Uptake_Vmax0, self.Uptake_Ea, self.temp[day]) * Allison(0.5, self.wp_fc, self.psi[day])
+        Uptake_Km   = Arrhenius(self.Uptake_Km0,   self.Km_Ea,     self.temp[day])
 
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
         Potential_Uptake = (self.Uptake_ReqEnz * Uptake_Vmax).mul(rsm.values,axis=0)/Uptake_Km.add(rsm.values,axis=0)
@@ -254,7 +236,7 @@ class Grid():
         MicCXGenes = (self.Uptake_Enz_Cost.mul(self.Microbes.sum(axis=1),axis=0)).T
         
         # Define Max_Uptake: (Monomer*gridsize) * Taxon
-        Max_Uptake_array = np.array([0]*self.gridsize*self.n_monomers*self.n_taxa).reshape(self.gridsize*self.n_monomers,self.n_taxa).astype('float32')
+        Max_Uptake_array = np.zeros((self.n_monomers*self.gridsize,self.n_taxa), dtype='float32')
         Max_Uptake       = pd.DataFrame(data=Max_Uptake_array, index=self.Monomers.index, columns=self.Microbes.index[0:self.n_taxa])
         # Matrix multiplication to get max possible uptake by monomer(extract each grid point separately for operation)
         for i in range(self.gridsize):
@@ -706,7 +688,7 @@ class Grid():
             frequencies = frequencies.fillna(0)
             probs       = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
             # Randomly assign microbes to each grid box based on prior densities
-            choose_taxa = np.array([0]* self.gridsize * self.n_taxa).reshape(self.n_taxa,self.gridsize)
+            choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
             for i in range(self.n_taxa):
                 # Alternative 1
                 choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
