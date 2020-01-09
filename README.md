@@ -19,7 +19,7 @@ DEMENTpy is devoted to longterm maintanence and development with inputs not only
 
 **Structure and Process**
 
-This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Allison back in 2012. Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessible to the research and teaching communities as broad as microbial ecology, theoretical ecology, and ecosystem ecology, as well as biology. This model simulates processes ranging from degradation of substrates through microbial processes encompassing uptake, metabolism, mortality, reproduction, and dispersal in a spatially explicit, mechanistically explicit fashion. Here is the underlying conceptual structure of DEMENTpy. For more detailed information about DEMENTpy, we refer readers/users to the Documentation(in pdf) archived in the documentation/ folder. 
+This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Allison back in 2012. Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessible to the research and teaching communities as broad as microbial ecology, theoretical ecology, and ecosystem ecology, as well as biology. This model simulates processes ranging from degradation of substrates through microbial processes encompassing uptake, metabolism, mortality, reproduction, and dispersal in a spatially explicit, mechanistically explicit fashion. Here is the underlying conceptual structure of DEMENTpy. For more detailed information about DEMENTpy, we refer readers/users to the **Documentation**(in pdf) archived in the documentation/ folder. 
 
 
 **Running DEMENTpy**
