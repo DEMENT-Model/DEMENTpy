@@ -95,18 +95,16 @@ class Output():
         # Monomers
         Monomers_grid           = data_init['Monomers'].groupby(level=0,sort=False).sum()
         Monomers_grid['C'].name = 0
-        self.MonomersSeries     = Monomers_grid["C"]
+        self.MonomersSeries     = Monomers_grid['C']
         #self.Monomers_Sum      = pd.Series([sum(Monomers_grid["C"])],index=[0])
         #self.NH4Series         = pd.Series([Monomers_grid.loc["NH4","N"]],index=[0])
         #self.PO4Series         = pd.Series([Monomers_grid.loc["PO4","P"]],index=[0])
         
         # Microbes
-        Microbes_grid           = data_init['Microbes'].groupby(level=0,sort=False).sum() 
-        Microbes_grid['C'].name = 0                                                     # Rename the series name to 0
-        self.MicrobesSeries     = Microbes_grid['C']                                    # Taxon-specific total biomass summed over the grid
-        #self.Microbes_Sum      = pd.Series([Microbes_grid['C'].sum(axis=0)],index=[0]) # Total biomass summed over the grid
-        #self.Microbes_Interim  = Microbes_grid['C']                                    # Microbes right before executing metabolism calcualtion
-        #self.MicrobesSeries_repop = Microbes_grid['C']                                 # Originally created for reinitialization
+        Microbes_grid             = data_init['Microbes'].groupby(level=0,sort=False).sum() 
+        Microbes_grid['C'].name   = 0                   # rename the series name to 0
+        self.MicrobesSeries       = Microbes_grid['C']  # taxon-specific total biomass summed over the grid
+        self.MicrobesSeries_repop = Microbes_grid['C']  # created for reinitialization
 
         # Number of individuals of Taxon count
         Taxon_index            = data_init['Microbes']['C'] > 0
@@ -242,7 +240,6 @@ class Output():
         Enzymes_grid       = ecosystem.Enzymes.groupby(level=0,sort=False).sum()
         Enzymes_grid.name  = day + 1
         self.EnzymesSeries = pd.concat([self.EnzymesSeries,Enzymes_grid], axis=1, sort=False)
-        #self.Enzymes_Sum  = pd.concat([self.Enzymes_Sum,pd.Series([Enzymes_grid.sum()],index=[day+1])],axis=0,sort=False)
         
         # Respiration
         self.RespSeries = pd.concat([self.RespSeries, pd.Series([ecosystem.Respiration],index=[day+1],dtype='float32')], axis=0, sort=False)
@@ -270,12 +267,12 @@ class Output():
             Taxon_count_repop:    dataframe; tracking abundances of differing taxa
         """
         # Track biomass of every taxon
-        #Microbes_grid             = ecosystem.Microbes.groupby(level=0,sort=False).sum()
-        #Microbes_grid['C'].name   = day + 1
-        #self.MicrobesSeries_repop = pd.concat([self.MicrobesSeries_repop,Microbes_grid['C']],axis=1,sort=False)
+        Microbes_grid             = ecosystem.Microbes.groupby(level=0,sort=False).sum()
+        Microbes_grid['C'].name   = day + 1
+        self.MicrobesSeries_repop = pd.concat([self.MicrobesSeries_repop,Microbes_grid['C']],axis=1,sort=False)
         
         # Track abundance of every taxon
-        Taxon_index      = ecosystem.Microbes['C'] > 0
-        Taxon_index.name = day + 1
-        taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('uint32')
-        self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count], axis=1, sort=False)
+        #Taxon_index      = ecosystem.Microbes['C'] > 0
+        #Taxon_index.name = day + 1
+        #taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('uint32')
+        #self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count], axis=1, sort=False)
