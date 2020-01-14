@@ -624,13 +624,13 @@ class Grid():
         # Fungi always move positively in x direction, and in y direction constrained to one box away determined by probability "direct"                
         shift_x[daughters_f] = np.int8(1)
         shift_y[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)]).astype('int8')
-        # Calculate x,y coordinates of dispersal destinations (% remainder of x/x)
-        new_x           = (shift_x + self.x + list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y) % self.x
-        new_y           = (shift_y + self.y + list(np.repeat(range(1,self.y+1),self.n_taxa*self.x)))   % self.y
-        new_x[new_x==0] = self.x  # Substitute coordinates when there is no shift 
-        new_y[new_y==0] = self.y  # Substitute coordinates when there is no shift
-        # Convert x,y coordinates to a Series of destination locations
-        index_series = (self.n_taxa * ((new_y-1)*self.x + (new_x-1))) + list(range(1,self.n_taxa+1)) * self.gridsize - 1
+        # Calculate x,y coordinates of dispersal destinations (% remainder of x/x) and substitute coordinates when there is no shift
+        new_x           = (shift_x + list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + self.x) % self.x
+        new_y           = (shift_y + list(np.repeat(range(1,self.y+1),self.n_taxa*self.x))   + self.y) % self.y
+        new_x[new_x==0] = self.x
+        new_y[new_y==0] = self.y
+        # Convert x,y coordinates to a Series of destination locations; NOTE: must -1
+        index_series = ((new_y-1)*self.x + (new_x-1)) * self.n_taxa  + list(range(1,self.n_taxa+1)) * self.gridsize - 1
         
 
         #Step 4: colonization of dispersed microbes
@@ -664,33 +664,26 @@ class Grid():
         # reinitialize microbial community in a new pulse if True
         if mic_reinit == True:
             
+            # microbial pool
             self.Microbes = self.Microbes_init.copy(deep=True) #NOTE copy()
-            #fb = self.fb[0:self.n_taxa]
-            #max_size_b = self.max_size_b
-            #max_size_f = self.max_size_f
             
-            # cumulative abundance; note the column index
-            # option 1: mass-based.
-            #cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
+            # derive cumulative abundance; NOTE the column index
+            # option 1: mass-based
+            cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             # option 2: abundance-based
-            cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
+            #cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             
-            # account for different cell mass sizes of bacteria and fungi
-            #if sum(fb==1) == 0: # no fungal taxa
-            #    frequencies = cum_abundance/cum_abundance.sum()
-            #else:
-            #    cum_abundance.loc[fb==1] = cum_abundance[fb==1]*max_size_b/max_size_f
-            #    frequencies = cum_abundance/cum_abundance.sum()
-            
-            # Switched to taxon abundance-based, so no more adjustments
+            # account for cell mass size difference of bacteria vs fungi
+            cum_abundance[self.fb[0:self.n_taxa]==1] *= self.max_size_b/self.max_size_f
+
+            # calculate probability 
             frequencies = cum_abundance/cum_abundance.sum()
             frequencies = frequencies.fillna(0)
-            probs       = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
-            # Randomly assign microbes to each grid box based on prior densities
+            #probs      = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
+
+            # assign microbes to each grid box randomly based on prior densities
             choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
             for i in range(self.n_taxa):
-                # Alternative 1
-                choose_taxa[i,:] = np.random.choice([1,0],self.gridsize,replace=True,p=probs.iloc[i,:])
-                        
-            # Note order='F'
-            self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0)
+                choose_taxa[i,:] = np.random.choice([1,0], self.gridsize, replace=True, p=[frequencies[i], 1-frequencies[i]])
+            
+            self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0) # NOTE order='F'
