@@ -223,7 +223,7 @@ class Microbe():
             taxon = np.random.choice(probability_list,n_genes,replace=False)
             return taxon
         
-        EnzGenes_list = [assign_gene(i) for i in range(self.n_taxa)]    # list of 1D array
+        EnzGenes_list = [assign_gene(i) for i in range(self.n_taxa)] # list of 1D array
         index         = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns       = ['Enz' + str(i) for i in range(1,n_genes+1)]
         EnzGenes      = pd.DataFrame(data=np.vstack(EnzGenes_list), index=index, columns=columns, dtype='int8')
@@ -464,7 +464,7 @@ def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
 
     Inducible production of osmolytes triggered when PSI declines to a **threshold** value,wp_fc,
     below which the production increases and reaches maxima at water potential of wp_th
-    ---------------------------------------------------------------------------
+    
     Parameters:
         wp:    scalar;water potential at a daiy step 
         alfa:  scalar;shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
