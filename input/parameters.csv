@@ -14,7 +14,6 @@ N_min,0.012
 P_min,0.002
 Uptake_C_cost_min,0.01
 Uptake_C_cost_max,0.1
-NormalizeUptake,0
 Uptake_Maint_cost,0.01
 Enz_per_taxon_min,0
 Enz_per_taxon_max,40
@@ -22,7 +21,6 @@ Enz_Prod_min,0.00001
 Enz_Prod_max,0.0001
 Constit_Prod_min,0.00001
 Constit_Prod_max,0.0001
-NormalizeProd,0
 Osmo_per_taxon_min,10
 Osmo_per_taxon_max,10
 Osmo_Consti_Prod_min,0.00001
