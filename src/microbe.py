@@ -38,15 +38,17 @@ class Microbe():
         """
         
         # system setup parameters
-        self.gridsize    = int(runtime.loc['gridsize',1])
-        self.n_taxa      = int(runtime.loc['n_taxa',1])
-        self.n_enzymes   = int(runtime.loc['n_enzymes',1])
-        self.n_substrates= int(runtime.loc['n_substrates',1])
-        self.n_monomers  = int(runtime.loc['n_substrates',1])+2  # +2 b/c of two inorganic monomers
-        self.n_uptake    = int(runtime.loc['n_uptake',1])        # number of transporters for each taxon
-        self.n_osmolyte  = int(runtime.loc['n_osmolytes',1])     # system-allowed number of osmotic compound
+        self.gridsize        = int(runtime.loc['gridsize',1])
+        self.n_taxa          = int(runtime.loc['n_taxa',1])
+        self.n_enzymes       = int(runtime.loc['n_enzymes',1])
+        self.n_substrates    = int(runtime.loc['n_substrates',1])
+        self.n_monomers      = int(runtime.loc['n_substrates',1])+2      # +2 b/c of two inorganic monomers
+        self.n_uptake        = int(runtime.loc['n_uptake',1])            # number of transporters for each taxon
+        self.n_osmolyte      = int(runtime.loc['n_osmolytes',1])         # system-allowed number of osmotic compound
+        self.taxa_per_box    = runtime.loc['taxa_per_box',1]             # Probability of each taxon entering a grid cell
+        self.NormalizeUptake = int(parameters.loc['NormalizeUptake',1])  # Normalize uptake investment for the number of uptake genes;default:0
+        self.NormalizeProd   = int(parameters.loc['NormalizeProd',1])    # Normalize enzyme production for the number of enzyme genes;default:0
         self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[runtime.loc['fb',1],(1-runtime.loc['fb',1])]).astype('int8') #index of fungal taxa in a microbial pool (1);1-d array
-        self.taxa_per_box= runtime.loc['taxa_per_box',1]         # Probability of each taxon entering a grid cell
         # microbial cell size
         self.Cfrac_b    = parameters.loc['Cfrac_b',1]     # Bacterial C fraction: 0.825 mg mg-1
         self.Nfrac_b    = parameters.loc['Nfrac_b',1]     # Bacterial N fraction: 0.16  mg mg-1
@@ -62,7 +64,6 @@ class Microbe():
         # transporter
         self.Uptake_C_cost_min = parameters.loc['Uptake_C_cost_min',1]      # Minimum C cost of one transporter gene being encoded 
         self.Uptake_C_cost_max = parameters.loc['Uptake_C_cost_max',1]      # Maximum C cost of one transporter gene being encoded
-        self.NormalizeUptake   = parameters.loc['NormalizeUptake',1]        # Normalize uptake investment for the number of uptake genes;default:0
         # enzyme
         self.Enz_per_taxon_min = int(parameters.loc['Enz_per_taxon_min',1]) # =0;Minimum number of enzyme genes a taxon can hold
         self.Enz_per_taxon_max = int(parameters.loc['Enz_per_taxon_max',1]) # =40;Maximum number of enzyme genes a taxon can hold
@@ -70,7 +71,6 @@ class Microbe():
         self.Constit_Prod_max  = parameters.loc['Constit_Prod_max',1]       # =0.0001; Maximum per enzyme production cost as a fraction of biomass
         self.Enz_Prod_min      = parameters.loc['Enz_Prod_min',1]           # =0.00001;Minimum per enzyme production cost as a fraction of C uptake rate
         self.Enz_Prod_max      = parameters.loc['Enz_Prod_max',1]           # =0.0001; Maximum ...
-        self.NormalizeProd     = parameters.loc['NormalizeProd',1]          # Normalize enzyme production for the number of enzyme genes;default:0
         # osmolyte
         self.Osmo_per_taxon_min = int(parameters.loc['Osmo_per_taxon_min',1]) # Minimum number of osmotic gene 
         self.Osmo_per_taxon_max = int(parameters.loc['Osmo_per_taxon_max',1]) # Max. of osmotic gene
@@ -318,9 +318,9 @@ class Microbe():
         
         Parameters:
             UptakeGenes:       dataframe; taxon-specific transporter genes; from the above method, microbe_uptake_gene()
-            NormalizeUptake:   normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
             Uptake_C_cost_min: 0.01	transporter mg-1 biomass C
-            Uptake_C_cost_max: 0.1	transporter mg-1 biomass C     
+            Uptake_C_cost_max: 0.1	transporter mg-1 biomass C
+            NormalizeUptake:   normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
         Returns:
             UptakeProd_series: series; taxon-specific transporter cost
             UptakeGenes_Cost:  dataframe; taxon- and gene-specific transporter cost
@@ -399,7 +399,7 @@ class Microbe():
             Osmo_Constit_Prod_max: max of constitutive osmolyte production efficiency
             Osmo_Induci_Prod_min:  min of inducible osmolyte production efficiency
             Osmo_Induci_Prod_max:  max of inducible osmolyte production efficiency
-            NormalizeProd:         0   
+            NormalizeProd:         0:No; 1:Yes   
         Returns:
             Tax_OsmoProd_Consti_series:
             Tax_OsmoProd_Induci_series:
