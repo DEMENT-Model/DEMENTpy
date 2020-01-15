@@ -1,9 +1,10 @@
 """
 This module, utility.py, contains three functions facilitating the calculation.
 
-    1) LHS():    perform 1-D latin hypercube sampling
-    2) expand(): put a community on the spatial grid
-    3) export(): export the output object to the local disk
+    1) LHS():               perform 1-D latin hypercube sampling
+    2) expand():            put a community on the spatial grid
+    3  random_assignment(): randomly assign different members in a pool to an individual
+    3) export():            export the output object to the local disk
 """
 
 import numpy as np
@@ -55,7 +56,26 @@ def expand(df,gridsize):
     df_expanded = pd.concat([df]*gridsize)
     
     return df_expanded
+
+
+def random_assignment(taxon_id,pool,genes_per_taxon):
+    """
+    Randomly assign a specific number of different genes to a taxon.
+
+    Parameters:
+      taxon:           integer; index the individual of taxon
+      pool:            integer; total number of available genes  
+      genes_per_taxon: 1D array;number of genes each taxon has
+    Return:
+      taxon: 1D array; values:0/1
+    """
+
+    probability_list = [0]*pool
+    probability_list[0:genes_per_taxon[taxon_id]] = [1] * genes_per_taxon[taxon_id]
+    taxon = np.random.choice(probability_list,pool,replace=False)
     
+    return taxon
+
 
 def export(output,name):
     """
