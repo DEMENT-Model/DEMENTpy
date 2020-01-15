@@ -13,3 +13,5 @@ n_osmolytes	20
 direct	0.95
 dist	1
 interval	1
+NormalizeUptake	1
+NormalizeProd	1
