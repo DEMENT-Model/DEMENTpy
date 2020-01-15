@@ -245,13 +245,13 @@ class Microbe():
             OsmoGenes: dataframe; row: taxon; col: genes
         """
 
-        # gene pools producing the system-required number of osmolytes
+        # pool of genes encoding the system-required number of osmolytes
         n_genes = self.n_osmolyte
 
         # derive the number of osmolyte genes each taxon can have randomly
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
         
-        # randomly determine different genes within a taxon
+        # randomly assign different genes in the gene pool to a taxon based on its number allowed
         def assign_gene(i_taxon):
             """Randomly assign a specific numberof different genes to a taxon"""
 
@@ -318,7 +318,7 @@ class Microbe():
         
         Parameters:
             UptakeGenes:       dataframe; taxon-specific transporter genes; from the above method, microbe_uptake_gene()
-            NormalizeUptake:   Normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
+            NormalizeUptake:   normalize uptake investment for the number of uptake genes (0: No, 1: Yes)
             Uptake_C_cost_min: 0.01	transporter mg-1 biomass C
             Uptake_C_cost_max: 0.1	transporter mg-1 biomass C     
         Returns:
@@ -331,7 +331,7 @@ class Microbe():
         UptakeProd_array  = LHS(self.n_taxa, self.Uptake_C_cost_min, self.Uptake_C_cost_max, 'uniform')
         UptakeProd_series = pd.Series(data=UptakeProd_array, index=index, dtype='float32')
 
-        # If true (== 1), then the uptake potential is normalized to the number of uptake genes (n_uptake)
+        # If true (== 1), then the uptake potential is normalized to the total number of uptake genes (n_uptake)
         if self.NormalizeUptake == 1:
             Normalize   = UptakeGenes.sum(axis=1)/self.n_uptake
             UptakeGenes = UptakeGenes.divide(Normalize,axis=0)
@@ -344,7 +344,7 @@ class Microbe():
     
     def microbe_enzproduction_rate(self,EnzGenes,EnzAttrib):
         """
-        Derive the taxon-specific fraction of 'available C' as enzymes: note that.
+        Derive the taxon-specific fraction of 'available C' as enzymes.
 
         This fraction only varies with taxon, which is independent of gene within a taxon
         
@@ -385,7 +385,7 @@ class Microbe():
         # Relative enzyme carbon cost for each enzyme gene of each taxon
         Tax_Consti_Enzyme_C = EnzProdConsti.mul(EnzAttrib["C_cost"], axis=1) #C_cost = 1; so it doesn't matter
         Tax_Induce_Enzyme_C = EnzProdInduce.mul(EnzAttrib["C_cost"], axis=1)  
-    
+
         return Tax_EnzProdConsti, Tax_EnzProdInduce, Tax_Consti_Enzyme_C, Tax_Induce_Enzyme_C 
     
     
@@ -406,6 +406,7 @@ class Microbe():
             Tax_Consti_Osmo_C: taxon-specific fraction of available C as osmolytes for each gene
             Tax_Induce_Osmo_C: taxon-specific fraction of available C as osmolytes for each gene
         """
+
         # LHS sampling of osmolyte production efficiency for every taxon
         Tax_OsmoProd_Consti = LHS(self.n_taxa, self.Osmo_Consti_Prod_min, self.Osmo_Consti_Prod_max, 'uniform')
         Tax_OsmoProd_Induci = LHS(self.n_taxa, self.Osmo_Induci_Prod_min, self.Osmo_Induci_Prod_max, 'uniform')
@@ -417,6 +418,14 @@ class Microbe():
         # Derive the production rate of every single gene of each taxon
         Tax_Consti_Osmo_C = OsmoGenes.mul(Tax_OsmoProd_Consti_series,axis=0)
         Tax_Induci_Osmo_C = OsmoGenes.mul(Tax_OsmoProd_Induci_series,axis=0)
+
+        # Normalize constituitive and inducible osmolyte production
+        if self.NormalizeProd == 1:
+            Normalize = OsmoGenes.sum(axis=1)/self.Osmo_per_taxon_max
+            Tax_Consti_Osmo_C = Tax_Consti_Osmo_C.divide(Normalize, axis=0)
+            Tax_Induci_Osmo_C = Tax_Induci_Osmo_C.divide(Normalize, axis=0)
+            Tax_Consti_Osmo_C[Normalize==0] = 0
+            Tax_Induci_Osmo_C[Normalize==0] = 0
         
         return Tax_OsmoProd_Consti_series, Tax_OsmoProd_Induci_series, Tax_Consti_Osmo_C, Tax_Induci_Osmo_C
     
@@ -430,7 +439,7 @@ class Microbe():
         Parameter:
             Tax_Induci_Osmo_C: dataframe
         Return:
-            Tax_tolerance: series;float32
+            Tax_tolerance:     series;float32
         """
 
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
@@ -446,14 +455,14 @@ class Microbe():
         Derive taxon-specific microbial mortality parameters.
         
         Parameters:
-            fb_grid: 1D array;index of bacteria (0) vs fungi (1) over the grid    
+            fb_grid:          1D array; index of bacteria (0) vs fungi (1) over the grid    
         Returns:
-            basal_death_prop: spatial taxon-specific basal death probability; 1D array
-            death_rate:       spatial death_rate; 1D array   
+            basal_death_prop: 1D array; spatial taxon-specific basal death probability 
+            death_rate:       1D array; spatial death_rate
         """
 
         basal_death_prob = ((1-fb_grid) * self.death_rate_bac + fb_grid * self.death_rate_fun).astype('float32')
-        death_rate       = ((1-fb_grid) * self.beta_bac + fb_grid * self.beta_fun).astype('float32')
+        death_rate       = ((1-fb_grid) * self.beta_bac       + fb_grid * self.beta_fun).astype('float32')
 
         return basal_death_prob, death_rate 
 
