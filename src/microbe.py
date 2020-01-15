@@ -8,7 +8,7 @@ This microbe.py module has one class and two functions.
 
 import numpy as np
 import pandas as pd
-from utility import LHS
+from utility import LHS, random_assignment
 
 class Microbe():
     """
@@ -93,8 +93,8 @@ class Microbe():
           - Firstly create a dataframe with only bacteria
           - Substitute part of bacteria with fungi
           - Randomly place this communtiy on the sptatial grid
-          - Perform stats to the initialized community and output them for record
-        -----------------------------------------------------------------------
+          - Perform stats on the initialized community and output them for record
+        
         Parameters:
             Cfrac_b: Bacterial C fraction:    0.825 mg mg-1
             Nfrac_b: Bacterial N fraction:    0.160 mg mg-1
@@ -210,20 +210,11 @@ class Microbe():
 
         # gene pool producing the number of enzymes that system requires 
         n_genes = self.n_enzymes
-
         # taxon-specific number of genes
         genes_per_taxon = np.random.choice(range(self.Enz_per_taxon_min,self.Enz_per_taxon_max+1),self.n_taxa,replace=True)
-        
-        # randomly assign genes from the gene pool to each individual taxon
-        def assign_gene(i_taxon):
-            """Randomly assign a specific number of different genes to a taxon."""
 
-            probability_list = [0]*n_genes
-            probability_list[0:genes_per_taxon[i_taxon]] = [1] * genes_per_taxon[i_taxon]
-            taxon = np.random.choice(probability_list,n_genes,replace=False)
-            return taxon
-        
-        EnzGenes_list = [assign_gene(i) for i in range(self.n_taxa)] # list of 1D array
+        # randomly assign genes from the gene pool to each individual taxon
+        EnzGenes_list = [random_assignment(i, n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
         index         = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns       = ['Enz' + str(i) for i in range(1,n_genes+1)]
         EnzGenes      = pd.DataFrame(data=np.vstack(EnzGenes_list), index=index, columns=columns, dtype='int8')
@@ -247,20 +238,10 @@ class Microbe():
 
         # pool of genes encoding the system-required number of osmolytes
         n_genes = self.n_osmolyte
-
         # derive the number of osmolyte genes each taxon can have randomly
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
-        
         # randomly assign different genes in the gene pool to a taxon based on its number allowed
-        def assign_gene(i_taxon):
-            """Randomly assign a specific numberof different genes to a taxon"""
-
-            probability_list = [0]*n_genes
-            probability_list[0:genes_per_taxon[i_taxon]] = [1] * genes_per_taxon[i_taxon]
-            taxon = np.random.choice(probability_list, n_genes, replace=False)
-            return taxon
-        
-        OsmoGenes_list = [assign_gene(i) for i in range(self.n_taxa)]
+        OsmoGenes_list = [random_assignment(i,n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
         index          = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns        = ['Osmo'+ str(i) for i in range(1,n_genes+1)]
         OsmoGenes      = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=index, columns=columns, dtype='int8')
