@@ -560,7 +560,9 @@ class Grid():
     
     def reproduction(self,day):           
         """
-        Calculate reproduction and dispersal, and update microbial composition/distrituion on the spatial grid.
+        Calculate reproduction and dispersal.
+        
+        Update microbial composition/distrituion on the spatial grid.
  
         Parameters:
             fb         : index of fungal taxa
