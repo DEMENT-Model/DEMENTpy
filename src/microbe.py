@@ -83,13 +83,15 @@ class Microbe():
         self.death_rate_fun = parameters.loc['death_rate_fun',1]              # Fungal basal mortality probability
         self.beta_bac       = parameters.loc['beta_bac',1]                    # Bacterial mortality coefficient
         self.beta_fun       = parameters.loc['beta_fun',1]                    # Fungal mortality coefficient
+
+        self.index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]         # Taxon index
         
     
     def microbial_community_initialization(self):
         """
         Initialize a microbial community on the grid with bacteria and/or fungi.
 
-        Calculation protocol:
+        Calculation procedure:
           - Firstly create a dataframe with only bacteria
           - Substitute part of bacteria with fungi
           - Randomly place this communtiy on the sptatial grid
@@ -116,8 +118,7 @@ class Microbe():
         BacN = BacC * self.Nfrac_b/self.Cfrac_b
         BacP = BacC * self.Pfrac_b/self.Cfrac_b
         microbes_array = np.tile([BacC,BacN,BacP],(self.n_taxa*self.gridsize,1))
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)] * self.gridsize
-        microbes_pp = pd.DataFrame(data=microbes_array, index=index, columns=["C","N","P"], dtype='float32')
+        microbes_pp = pd.DataFrame(data=microbes_array, index=self.index * self.gridsize, columns=["C","N","P"], dtype='float32')
         
         # Derive the Fungi index by expanding the fb to the spatial grid
         fb_grid = np.tile(self.fb,self.gridsize)
@@ -182,13 +183,12 @@ class Microbe():
 
         # First derive the optimal stoichiometry of bacterial taxa
         OptimalRatios_array = np.tile([self.Cfrac_b,self.Nfrac_b,self.Pfrac_b],(self.n_taxa,1))
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa + 1)]
-        OptimalRatios_df = pd.DataFrame(data=OptimalRatios_array,index=index,columns=["C","N","P"],dtype='float32')
+        OptimalRatios_df = pd.DataFrame(data=OptimalRatios_array,index=self.index,columns=["C","N","P"],dtype='float32')
         # Then substitute with fungal stoichiometry
         OptimalRatios_df[self.fb==1] = np.tile([self.Cfrac_f,self.Nfrac_f,self.Pfrac_f],(sum(self.fb),1)) 
         # Calcualte ratio range
         RangeRatios_array = np.tile([self.Crange,self.Nrange,self.Prange],(self.n_taxa,1))
-        RangeRatios_df    = pd.DataFrame(data=RangeRatios_array,index=index,columns=["C","N","P"],dtype='float32')
+        RangeRatios_df    = pd.DataFrame(data=RangeRatios_array,index=self.index,columns=["C","N","P"],dtype='float32')
         # Calculate minimum cell quotas regarding C, N, & P
         MinRatios = OptimalRatios_df - RangeRatios_df
         
@@ -213,11 +213,10 @@ class Microbe():
         # taxon-specific number of genes
         genes_per_taxon = np.random.choice(range(self.Enz_per_taxon_min,self.Enz_per_taxon_max+1),self.n_taxa,replace=True)
 
-        # randomly assign genes from the gene pool to each individual taxon
+        # randomly assign genes in the gene pool to each individual taxon
         EnzGenes_list = [random_assignment(i, n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
-        index         = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns       = ['Enz' + str(i) for i in range(1,n_genes+1)]
-        EnzGenes      = pd.DataFrame(data=np.vstack(EnzGenes_list), index=index, columns=columns, dtype='int8')
+        EnzGenes      = pd.DataFrame(data=np.vstack(EnzGenes_list), index=self.index, columns=columns, dtype='int8')
         
         return EnzGenes
     
@@ -240,11 +239,11 @@ class Microbe():
         n_genes = self.n_osmolyte
         # derive the number of osmolyte genes each taxon can have randomly
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
+
         # randomly assign different genes in the gene pool to a taxon based on its number allowed
         OsmoGenes_list = [random_assignment(i,n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
-        index          = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         columns        = ['Osmo'+ str(i) for i in range(1,n_genes+1)]
-        OsmoGenes      = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=index, columns=columns, dtype='int8')
+        OsmoGenes      = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=self.index, columns=columns, dtype='int8')
         
         return OsmoGenes
         
@@ -308,9 +307,8 @@ class Microbe():
         """                         
         
         # LHS sampling of transporter production efficiency for each taxon
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         UptakeProd_array  = LHS(self.n_taxa, self.Uptake_C_cost_min, self.Uptake_C_cost_max, 'uniform')
-        UptakeProd_series = pd.Series(data=UptakeProd_array, index=index, dtype='float32')
+        UptakeProd_series = pd.Series(data=UptakeProd_array, index=self.index, dtype='float32')
 
         # If true (== 1), then the uptake potential is normalized to the total number of uptake genes (n_uptake)
         if self.NormalizeUptake == 1:
@@ -338,18 +336,18 @@ class Microbe():
             Enz_Prod_max:     max of inducible enzyme production efficiency
             NormalizeProd:    scalar; normalize enzyme production for the number of enzyme genes (0: No, 1: Yes)  
         Returns:
-            Tax_EnzProdConsti:   series; taxon-specific fraction of available C as enzyme for each taxon
-            Tax_EnzProdInduce:   series; taxon-specific fraction of available C as enzyme for each taxon
+            Tax_EnzProdConsti:   series;    taxon-specific fraction of available C as enzyme for each taxon
+            Tax_EnzProdInduce:   series;    taxon-specific fraction of available C as enzyme for each taxon
             Tax_Induce_Enzyme_C: dataframe; taxon-specific fraction of available C as enzyme for each enzyme
             Tax_Consti_Enzyme_C: dataframe; taxon-specific fraction of available C as enzyme for each enzyme
         """
         
         # LHS sampling of constitutive and inducible enzyme production efficiency for each taxon
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
         Tax_EnzProdConsti_array = LHS(self.n_taxa, self.Constit_Prod_min, self.Constit_Prod_max, 'uniform')
         Tax_EnzProdInduce_array = LHS(self.n_taxa, self.Enz_Prod_min,     self.Enz_Prod_max,     'uniform')
-        Tax_EnzProdConsti       = pd.Series(data=Tax_EnzProdConsti_array, index=index, dtype='float32')
-        Tax_EnzProdInduce       = pd.Series(data=Tax_EnzProdInduce_array, index=index, dtype='float32')
+
+        Tax_EnzProdConsti = pd.Series(data=Tax_EnzProdConsti_array, index=self.index, dtype='float32')
+        Tax_EnzProdInduce = pd.Series(data=Tax_EnzProdInduce_array, index=self.index, dtype='float32')
         
         # Derive the production rate of every single gene of each taxon
         EnzProdConsti = EnzGenes.mul(Tax_EnzProdConsti, axis=0)
@@ -392,9 +390,8 @@ class Microbe():
         Tax_OsmoProd_Consti = LHS(self.n_taxa, self.Osmo_Consti_Prod_min, self.Osmo_Consti_Prod_max, 'uniform')
         Tax_OsmoProd_Induci = LHS(self.n_taxa, self.Osmo_Induci_Prod_min, self.Osmo_Induci_Prod_max, 'uniform')
         
-        index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]
-        Tax_OsmoProd_Consti_series = pd.Series(data=Tax_OsmoProd_Consti, index=index, dtype='float32')
-        Tax_OsmoProd_Induci_series = pd.Series(data=Tax_OsmoProd_Induci, index=index, dtype='float32')
+        Tax_OsmoProd_Consti_series = pd.Series(data=Tax_OsmoProd_Consti, index=self.index, dtype='float32')
+        Tax_OsmoProd_Induci_series = pd.Series(data=Tax_OsmoProd_Induci, index=self.index, dtype='float32')
                                               
         # Derive the production rate of every single gene of each taxon
         Tax_Consti_Osmo_C = OsmoGenes.mul(Tax_OsmoProd_Consti_series,axis=0)
@@ -424,9 +421,8 @@ class Microbe():
         """
 
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
-        #Tax_tolerance = Tax_Osmo_Alloc.rank(axis=0,method='min')/self.n_taxa
-        Tax_tolerance = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
-        Tax_tolerance = Tax_tolerance.fillna(0)
+        Tax_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
+        Tax_tolerance  = Tax_tolerance.fillna(0)
         
         return Tax_tolerance
     
