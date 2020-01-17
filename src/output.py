@@ -68,7 +68,7 @@ class Output():
         columns = ['F/B','C','N','P','Uptake_Gene','Enz_Gene','Osmo_Gene','Uptake_Cost',
                    'Enz_Consti_Cost','Enz_Induci_Cost','Osmo_Consti_Cost','Osmo_Induci_Cost',
                    'Drought_tolerance']
-        self.Microbial_traits = pd.DataFrame(data=data, index=Mic_index, columns=columns)
+        self.Microbial_traits = pd.DataFrame(data=data, index=Mic_index, columns=columns, dtype='float32')
         
         
         # Account for inputs in mass balance
