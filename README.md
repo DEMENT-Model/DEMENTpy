@@ -11,11 +11,11 @@
 ![GitHub forks](https://img.shields.io/github/forks/bioatmosphere/DEMENTpy?style=social)
 ![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)
 
-This model is spatially and mechanistically explicit in simulating microbial systems comprised of a large number of microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT which is R-based.
+This model is spatially and mechanistically explicit in simulating a microbial system comprised of a large number of microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT which is R-based.
 
 **Vision**
 
-DEMENTpy is devoted to longterm maintanence and development with inputs not only from ourselves but also, hopefully, from the communities that can be as broad as microbial ecology, systems biology, theoretical ecology, etc. Just because of community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy or applying it to your own research.
+DEMENTpy, as the first step of practicing real **Open Science** myself, is devoted to longterm maintanence and development with inputs not only from ourselves but also, hopefully, from the communities that can be as broad as microbial ecology, systems biology, theoretical ecology, etc. Just because of community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy or applying it to your own research.
 
 **Structure and Process**
 
@@ -38,7 +38,9 @@ Run DEMENTpy on HPC
 
 **Contributing Guide**
 
-Please follow these rules if you want to contribute to this open source model:
+Please follow these rules if you want to contribute to this open source project:
+
+It is coming soon!
 
 **License**
 
