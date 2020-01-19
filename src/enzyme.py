@@ -1,6 +1,7 @@
 # This module, enzyme.py, deals with exclusively only enzyme-related parameters, holding:
-# ............Enzyme():           class    
-# ............Boltzman_Arrhenius: function
+# ............Enzyme():    class    
+# ............Arrhenius(): function
+# ............Allison():   function
 # Bin Wang in Janunary, 2020 
 
 import pandas as pd
@@ -290,6 +291,8 @@ def Allison(rate, wp_fc, psi):
       psi:   scalar; daily water potential
     Return:
       f_psi: scalar
+    Reference:
+      Allison & Gouldon 2017 SBB
     """
 
     if psi >= wp_fc:
