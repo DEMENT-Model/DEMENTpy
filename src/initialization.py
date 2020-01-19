@@ -16,9 +16,10 @@ from utility   import expand
 
 def initialize_data(runtime_parameters):
     """
+    Initialize all data required.
+
     Parameters:
-        runtime_parameters: user-specified parameters setting up the system;
-                            all other paras loaded by reading the parameters.csv
+        runtime_parameters: user-specified parameters setting up the system; all other paras loaded by reading the parameters.csv
     Return:
         Data_Dictionary: a dictionary of all variables that feeds the grid.py module
     """
