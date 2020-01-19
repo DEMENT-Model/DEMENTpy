@@ -60,7 +60,7 @@ def expand(df,gridsize):
 
 def random_assignment(taxon_id,pool,genes_per_taxon):
     """
-    Randomly assign a specific number of different genes to a taxon.
+    Randomly assign a specific number of different genes to a taxon from a gene pool.
 
     Parameters:
       taxon:           integer; index the individual of taxon
