@@ -47,7 +47,7 @@ def main():
     pulse      = int(runtime.loc['pulse',1])         # number of pulses
     cycle      = int(runtime.loc['end_time',1])      # number of time steps in each pulse
     interval   = int(runtime.loc['interval',1])      # interval of time step to record outputs
-    mic_reinit = True    # indicate reinitialization of microbial community
+    mic_reinit = True    # indicate reinitialization of microbial community in a new pulse
     
     #...Initialize data by calling the Function: Initialize_Data()
     data_initialization = initialize_data(runtime)
