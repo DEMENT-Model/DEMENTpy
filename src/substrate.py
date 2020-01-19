@@ -1,5 +1,5 @@
 # substrate.py module holding a class, Substrate()
-# by Bin Wang on Dec. 26th, 2019ls
+# by Bin Wang on Dec. 26th, 2019
 
 import pandas as pd
 import numpy as np
