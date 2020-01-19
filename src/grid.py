@@ -290,7 +290,7 @@ class Grid():
         Enzyme_Loss_Rate = np.float32(0.04)  # enzyme turnover rate(=0.04; Allison 2006)
 
         # Scalar of water potential impact: call the function microbe_osmo_psi()
-        f_psi = microbe_osmo_psi(self.psi[day],self.alpha,self.wp_fc,self.wp_th)
+        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.wp_th,self.psi[day])
 
         #---------------------------------------------------------------------#
         #......................constitutive processes.........................#
@@ -299,7 +299,7 @@ class Grid():
         # taxon-specific uptake cost determined by total biomass C: 0.1 - 0.01
         # Taxon_Transporter_Cost  = (self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0)).sum(axis=1) #NOTE Microbes['C'] vs Microbes.sum(axis=1)
         # taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
-        Taxon_Transporter_Maint = (self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0)).sum(axis=1) * self.Uptake_Maint_Cost
+        Taxon_Transporter_Maint = self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0).sum(axis=1) * self.Uptake_Maint_Cost
         
         #...............................................
         # Variable Acronyms:
@@ -333,7 +333,7 @@ class Grid():
         #.....Inducible processes.............................................#
         #---------------------------------------------------------------------#
         # Assimilation efficiency constrained by temperature
-        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float(273))) * self.AE_temp  #scalar
+        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float32(273))) * self.AE_temp  #scalar
         # Taxon growth respiration
         Taxon_Growth_Respiration = self.Taxon_Uptake_C * (np.float32(1) - Taxon_AE)
         
@@ -452,8 +452,8 @@ class Grid():
         mic_index = self.Microbes['C'] > 0
         
         # Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
-        # call the function, MMP:microbe_mortality_psi() 
-        r_death             = MMP(self.psi[day],self.wp_fc,self.basal_death_prob,self.death_rate,self.tolerance)
+        # call the function MMP:microbe_mortality_psi() 
+        r_death             = MMP(self.basal_death_prob,self.death_rate,self.tolerance,self.wp_fc,self.psi[day])
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index)).astype('float32')
         # Index the dead, put them in Death, and set them to 0 in Microbes 
         Death.loc[kill]         = self.Microbes[kill]
