@@ -96,16 +96,16 @@ class Grid():
         #self.Growth_Yield = float('nan')
 
         #Mortality
-        self.MinRatios        = data_init['MinRatios']           # Minimal cell quotas
+        self.MinRatios        = data_init['MinRatios']           # minimal cell quotas
         self.C_min            = data_init['C_min']               # C threshold value of living cell
         self.N_min            = data_init['N_min']               # N threshold value of living cell
         self.P_min            = data_init['P_min']               # P threshold value of living cell
-        self.basal_death_prob = data_init['basal_death_prob']    # Basal death probability of microbes
-        self.death_rate       = data_init['death_rate']          # Change rate of mortality with water potential
+        self.basal_death_prob = data_init['basal_death_prob']    # basal death probability of microbes
+        self.death_rate       = data_init['death_rate']          # change rate of mortality with water potential
         self.tolerance        = data_init['TaxDroughtTol']       # taxon drought tolerance
-        self.wp_fc            = data_init['wp_fc']               # -1.0
-        self.wp_th            = data_init['wp_th']               # -6.0
-        self.alpha            = data_init['alpha']               # integer;1
+        self.wp_fc            = data_init['wp_fc']               # scalar; max threshold value of water potential; -1.0
+        self.wp_th            = data_init['wp_th']               # scalar; min threshold value of water potential; -6.0
+        self.alpha            = data_init['alpha']               # scalar; moisture sensitivity; 1
         self.Kill             = np.float32('nan')                # total number of cells stochastically killed
         
         # Reproduction
@@ -289,8 +289,8 @@ class Grid():
         Osmo_Maint_cost  = np.float32(5.0)   # C loss per unit of osmo-C production
         Enzyme_Loss_Rate = np.float32(0.04)  # enzyme turnover rate(=0.04; Allison 2006)
 
-        # Scalar of water potential impact: call the function microbe_osmo_psi()
-        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.wp_th,self.psi[day])
+        # derive the water potential modifier by calling the function microbe_osmo_psi()
+        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.psi[day])
 
         #---------------------------------------------------------------------#
         #......................constitutive processes.........................#
@@ -442,8 +442,8 @@ class Grid():
         # Create a series, kill, holding boolean value of False
         kill = pd.Series([False]*self.n_taxa*self.gridsize)
         
-        # Start of calcualtion of mortality first with THRESHOLD
-        # Kill microbes deterministically based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
+        # Start to calculate mortality
+        # --Kill microbes deterministically based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
         starve_index = (self.Microbes['C']>0) & ((self.Microbes['C']<self.C_min)|(self.Microbes['N']<self.N_min)|(self.Microbes['P']<self.P_min))
         # Index the dead, put them in Death, and set them to 0 in Microbes 
         Death.loc[starve_index]         = self.Microbes[starve_index]
@@ -451,7 +451,7 @@ class Grid():
         # Index the locations where microbial cells remain alive
         mic_index = self.Microbes['C'] > 0
         
-        # Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
+        # --Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
         # call the function MMP:microbe_mortality_psi() 
         r_death             = MMP(self.basal_death_prob,self.death_rate,self.tolerance,self.wp_fc,self.psi[day])
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index)).astype('float32')
