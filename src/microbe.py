@@ -46,9 +46,11 @@ class Microbe():
         self.n_uptake        = int(runtime.loc['n_uptake',1])            # number of transporters for each taxon
         self.n_osmolyte      = int(runtime.loc['n_osmolytes',1])         # system-allowed number of osmotic compound
         self.taxa_per_box    = runtime.loc['taxa_per_box',1]             # Probability of each taxon entering a grid cell
-        self.NormalizeUptake = int(parameters.loc['NormalizeUptake',1])  # Normalize uptake investment for the number of uptake genes;default:0
-        self.NormalizeProd   = int(parameters.loc['NormalizeProd',1])    # Normalize enzyme production for the number of enzyme genes;default:0
+        self.NormalizeUptake = int(runtime.loc['NormalizeUptake',1])     # Normalize uptake investment for the number of uptake genes;default:0
+        self.NormalizeProd   = int(runtime.loc['NormalizeProd',1])       # Normalize enzyme production for the number of enzyme genes;default:0
         self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[runtime.loc['fb',1],(1-runtime.loc['fb',1])]).astype('int8') #index of fungal taxa in a microbial pool (1);1-d array
+        self.index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]    # Taxon index
+
         # microbial cell size
         self.Cfrac_b    = parameters.loc['Cfrac_b',1]     # Bacterial C fraction: 0.825 mg mg-1
         self.Nfrac_b    = parameters.loc['Nfrac_b',1]     # Bacterial N fraction: 0.16  mg mg-1
@@ -84,8 +86,6 @@ class Microbe():
         self.beta_bac       = parameters.loc['beta_bac',1]                    # Bacterial mortality coefficient
         self.beta_fun       = parameters.loc['beta_fun',1]                    # Fungal mortality coefficient
 
-        self.index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]         # Taxon index
-        
     
     def microbial_community_initialization(self):
         """
@@ -107,8 +107,8 @@ class Microbe():
             max_size_b: C quota threshold for bacterial cell division
             max_size_f: C quota threshold for fungal cell division
         Returns:
-            microbes_pp: dataframe; microbial community preceding placement on the spatial grid
-            microbes_df: dataframe; microbial community on the spatial grid
+            microbes_pp: dataframe; pool of microbes
+            microbes_df: dataframe; microbial community initialized on the spatial grid
             fb_grid:     1D array; index of fungi taxa in the microbial community
             Bac_density: scalar; density of bacterial cells
             Fun_density: scalar; density of fungal cells  
@@ -138,6 +138,7 @@ class Microbe():
         Bac_taxa = int(sum(Bac_index)/self.gridsize)
         Fun_taxa = int(sum(Fun_index)/self.gridsize)
         print('Before placement--','Bac_taxa=',Bac_taxa,'Fun_taxa=',Fun_taxa)
+        
         
         # Export the microbial community preceding placement on the grid
         microbes_df = microbes_pp.copy(deep=True)
@@ -183,7 +184,7 @@ class Microbe():
 
         # First derive the optimal stoichiometry of bacterial taxa
         OptimalRatios_array = np.tile([self.Cfrac_b,self.Nfrac_b,self.Pfrac_b],(self.n_taxa,1))
-        OptimalRatios_df = pd.DataFrame(data=OptimalRatios_array,index=self.index,columns=["C","N","P"],dtype='float32')
+        OptimalRatios_df    = pd.DataFrame(data=OptimalRatios_array,index=self.index,columns=["C","N","P"],dtype='float32')
         # Then substitute with fungal stoichiometry
         OptimalRatios_df[self.fb==1] = np.tile([self.Cfrac_f,self.Nfrac_f,self.Pfrac_f],(sum(self.fb),1)) 
         # Calcualte ratio range
@@ -199,7 +200,7 @@ class Microbe():
         """ 
         Derive taxon-specific enzyme genes.
         
-        This method draws the number of genes per taxon from a uniform distribution; Not all taxa need to have an enzyme gene.
+        This method draws the number of genes per taxon from a uniform distribution; not all taxa need to have an enzyme gene.
 
         Parameters:
             Enz_per_taxon_min: minimum # genes a taxon can have (0)
@@ -257,9 +258,9 @@ class Microbe():
         Parameters:
             ReqEnz:           3D df (2 * n_substrates * n_enzymes); substrate-required enzymes; from the Substrate class
             EnzGenes:         2D df(taxon*gene); genes encoding enzymes degrading substrates; from the above 'microbe_enzyme_gene' method
-            MonomersProduced: dataframe; sub * monomers; from the Substrae class
+            MonomersProduced: dataframe (sub * monomers); from the Substrate class
         Return:
-            UptakeGenes: dataframe:Rows-taxa; Cols-genes; Values: 0 (no gene) or 1 (yes)
+            UptakeGenes: dataframe(Rows-taxa; Cols-genes); Values: 0 (no gene) or 1 (yes)
         """
         
         # substrate-required enzymes 
@@ -412,12 +413,13 @@ class Microbe():
         """
         Derive taxon-specific drought tolerance value.
         
-        Drought tolerance is postively correlated with taxon-specific inducible osmotic allocation efficiency.
+        This method determines tolerance by assuming a postive correlation with taxon-specific (inducible) osmolyte allocation efficiency.
         
         Parameter:
-            Tax_Induci_Osmo_C: dataframe
+            Tax_Consti_Osmo_C: dataframe; tax- and gene-specific allocation efficiency
+            Tax_Induci_Osmo_C: dataframe; tax- and gene-specific allocation efficiency
         Return:
-            Tax_tolerance:     series;float32
+            Tax_tolerance: series;float32; value: 0. ~ 1.
         """
 
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
@@ -432,7 +434,11 @@ class Microbe():
         Derive taxon-specific microbial mortality parameters.
         
         Parameters:
-            fb_grid:          1D array; index of bacteria (0) vs fungi (1) over the grid    
+            fb_grid:        1D array; index of bacteria (0) vs fungi (1) over the grid
+            death_rate_bac: scalar; basal death prob
+            death_rate_fun: scalar; basal death prob
+            beta_bac:       scalar; mortality prob change rate
+            beta_fun:       scalar; mortality prob change rate
         Returns:
             basal_death_prop: 1D array; spatial taxon-specific basal death probability 
             death_rate:       1D array; spatial death_rate
@@ -444,60 +450,70 @@ class Microbe():
         return basal_death_prob, death_rate 
 
 
-def microbe_osmo_psi(wp,alfa,wp_fc,wp_th):
+def microbe_mortality_prob(basal_death_prob,death_rate,Tax_tolerance,Psi_fc,Psi):
+    """
+    Derive taxon-specific mortality probability.
+    
+    This function as a function of water potential and drought tolerance.
+
+    Paramters:
+        basal_death_prob: 1D array; taxon-specific basal mortality prob
+        death_rate:       1D array; taxon-specific mortality change rate
+        Tax_tolerance:    series;   taxon-specific drought tolerance
+        Psi_fc:           scalar;   water potential at field capacity
+        Psi:              scalar;   daily water potential
+    Returns:
+        mortality_rate:   1D array; taxon-specific mortality probability
+    Reference:
+        Allison and Goulden, 2017, Soil Biology and Biochemistry
+    """
+    
+    if Psi >= Psi_fc:
+        mortality_rate = basal_death_prob
+    else:
+        tolerance = Tax_tolerance.to_numpy(copy=False)
+        # option 1
+        mortality_rate = basal_death_prob * (1 - (1-tolerance)*(Psi-Psi_fc)*death_rate)
+        # option 2
+        #mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance))*(Psi-Psi_fc)*death_rate)
+        # option 3
+        #mortality_rate = basal_death_prob * (1/np.exp(tolerance)) * (1 - death_rate*(Psi-Psi_fc))
+    
+    return mortality_rate.astype('float32')
+
+
+def microbe_osmo_psi(alfa,Psi_fc,Psi):
     """
     Derive water potential modifier of inducible osmolyte production.
 
-    Inducible production of osmolytes triggered when PSI declines to a **threshold** value,wp_fc,
+    Inducible production of osmolytes triggered when Psi declines to a "threshold" value,wp_fc,
     below which the production increases and reaches maxima at water potential of wp_th
     
-    Parameters:
-        wp:    scalar;water potential at a daiy step 
-        alfa:  scalar;shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
-        wp_fc: scalar;water potential at field capacity
-        wp_th: scalar;water potential threshold   
+    Parameters: 
+        alfa:   scalar; shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
+        Psi_fc: scalar; water potential at field capacity
+        Psi_th: scalar; water potential threshold
+        Psi:    scalar; water potential at a daiy step 
     Returns:
-        f_osmo:scalar; modifier of inducible production of osmoylte   
+        f_osmo: scalar; modifier of inducible production of osmoylte   
     References:
-        Based on Manzoni et al. 2012 Ecology, a synthesis study. 
+        Manzoni et al. 2012 Ecology, a synthesis study. 
     """
     
-    if wp >= wp_fc:
-        f_osmo = 0.0
-    #elif wp <= wp_th:
+    # option 1
+    #if Psi >= Psi_fc:
+    #    f_osmo = 0.0
+    #elif Psi <= Psi_th:
     #    f_osmo = 1.0
+    #else:
+    #    x = np.log(Psi/Psi_fc)
+    #    y = np.log(Psi_th/Psi_fc)   
+    #    f_osmo = (x/y)**alfa
+
+    # option 2
+    if Psi >= Psi_fc:
+        f_osmo = 0.0
     else:
-        x = np.log(wp/wp_fc)
-        y = np.log(wp_th/wp_fc)
-        
-        f_osmo = (x/y)**alfa
+        f_osmo = 1 - alfa * Psi_fc 
 
     return np.float32(f_osmo)
-
-
-def microbe_mortality_prob(wp,wp_fc,basal_death_prob,death_rate,Tax_tolerance):
-    """
-    Microbial mortality probability as a function of water potential and drought tolerance.
-
-    Paramters:
-        wp:               scalar; water potential
-        wp_fc:            scalar; field capacity
-        basal_death_prob: array; basal mortality prob. distinguished btw fungi and bacteria
-        death_rate:       array; mortality change rate with moisture
-        Tax_tolerance:    dataframe; taxon-specific drought tolerance   
-    Returns:
-        mortality_rate:   taxon-specific mortality probability
-    References:
-        Allison and Goulden,2017,Soil Biology and Biochemistry
-    """
-    
-    if wp >= wp_fc:
-        mortality_rate = basal_death_prob
-    else:
-        tolerance = Tax_tolerance.to_numpy()
-        # option 1
-        mortality_rate = basal_death_prob * (1 - (1-tolerance)*(wp-wp_fc)*death_rate)
-        # option 2
-        #mortality_rate = death_rate * (1/np.exp(tolerance)) * (1 - beta*(wp-wp_fc))
-    
-    return mortality_rate.astype('float32')
