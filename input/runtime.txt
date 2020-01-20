@@ -1,4 +1,4 @@
-pulse	2
+pulse	10
 end_time	365
 x	100
 y	100
@@ -9,9 +9,9 @@ taxa_per_box	0.01
 n_enzymes	50
 n_substrates	12
 n_uptake	14
-n_osmolytes	20
+n_osmolytes	50
 direct	0.95
 dist	1
 interval	1
-NormalizeUptake	1
-NormalizeProd	1
+NormalizeUptake	0
+NormalizeProd	0
