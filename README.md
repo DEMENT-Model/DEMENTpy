@@ -24,6 +24,10 @@ This model is built upon its predecessor--DEMENT, an R-based framework initially
 
 **Running DEMENTpy**
 
+```shell
+git clone https://github.com/bioatmosphere/DEMENTpy
+```
+
 File structure and run DEMENTpy
 
 - src/: all source code
