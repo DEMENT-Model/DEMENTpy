@@ -1,9 +1,8 @@
 # ------------------
 # this module, grid.py, deals with calculations of all microbe-related activites on a spatial grid with a class, Grid().
-# by Bin Wang on December 27th, 2019 
+# by Bin Wang
 # ------------------
 
-import sys
 import numpy  as np
 import pandas as pd
 
@@ -282,12 +281,12 @@ class Grid():
           4. update both Enzymes (with production & loss) and Substrates (with dead enzymes)
         """
         
-        # index of dead enzyme in Substrates
-        is_deadEnz = self.Substrates.index == "DeadEnz"
         # Constants
         Osmo_N_cost      = np.float32(0.3)   # N cost per unit of osmo-C production 
         Osmo_Maint_cost  = np.float32(5.0)   # C loss per unit of osmo-C production
         Enzyme_Loss_Rate = np.float32(0.04)  # enzyme turnover rate(=0.04; Allison 2006)
+        # index of dead enzyme in Substrates
+        is_deadEnz = self.Substrates.index == "DeadEnz"
 
         # derive the water potential modifier by calling the function microbe_osmo_psi()
         f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.psi[day])
@@ -345,10 +344,10 @@ class Grid():
         # MNAOEI: Min_N_Avail_Osmo_Enzyme_Induci
         #..................................................
         # Inducible Osmolyte production only when psi reaches below wp_fc
-        Taxon_Osmo_Induci          = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0) * f_psi
+        Taxon_Osmo_Induci          = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C*Taxon_AE, axis=0) * f_psi
         Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)            # Total osmotic N cost of each taxon (.sum(axis=1))
         # Inducible enzyme production
-        Taxon_Enzyme_Induci        = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C * Taxon_AE,axis=0)
+        Taxon_Enzyme_Induci        = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C*Taxon_AE, axis=0)
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
         # Adjust production based on N availabe
         OEICN  = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N                         # Total N cost of osmolyte and enzymes
@@ -417,7 +416,7 @@ class Grid():
     
     def mortality(self,day):       
         """
-        Calculate microbial mortality and update stoichiometry of the alive and microbial pools.
+        Calculate microbial mortality, and update stoichiometry of the alive and microbial pools.
         
         Kill microbes that are starving deterministically and microbes that are drought intolerant stochastically
         Also update Substrates with input from dead microbes, monomers(with leaching loss), and respiration
