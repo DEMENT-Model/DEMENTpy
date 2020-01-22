@@ -473,9 +473,9 @@ def microbe_mortality_prob(basal_death_prob,death_rate,Tax_tolerance,Psi_fc,Psi)
     else:
         tolerance = Tax_tolerance.to_numpy(copy=False)
         # option 1
-        mortality_rate = basal_death_prob * (1 - (1-tolerance)*(Psi-Psi_fc)*death_rate)
+        #mortality_rate = basal_death_prob * (1 - (1-tolerance)         * (Psi-Psi_fc)*death_rate)
         # option 2
-        #mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance))*(Psi-Psi_fc)*death_rate)
+        mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance)) * (Psi-Psi_fc)*death_rate)
         # option 3
         #mortality_rate = basal_death_prob * (1/np.exp(tolerance)) * (1 - death_rate*(Psi-Psi_fc))
     
@@ -484,7 +484,7 @@ def microbe_mortality_prob(basal_death_prob,death_rate,Tax_tolerance,Psi_fc,Psi)
 
 def microbe_osmo_psi(alfa,Psi_fc,Psi):
     """
-    Derive water potential modifier of inducible osmolyte production.
+    Derive water potential modifier of (inducible) osmolyte production.
 
     Inducible production of osmolytes triggered when Psi declines to a "threshold" value,wp_fc,
     below which the production increases and reaches maxima at water potential of wp_th
@@ -493,7 +493,7 @@ def microbe_osmo_psi(alfa,Psi_fc,Psi):
         alfa:   scalar; shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
         Psi_fc: scalar; water potential at field capacity
         Psi_th: scalar; water potential threshold
-        Psi:    scalar; water potential at a daiy step 
+        Psi:    scalar; water potential at a daily step 
     Returns:
         f_osmo: scalar; modifier of inducible production of osmoylte   
     References:
