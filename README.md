@@ -1,7 +1,7 @@
  <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
 
-![alt text](https://github.com/bioatmosphere/DEMENTpy/blob/master/documentation/animations/bacteria.gif "Bacterial Taxon Dynamics")
-![alt text](https://github.com/bioatmosphere/DEMENTpy/blob/master/documentation/animations/fungi.gif "Fungal Taxon Dynamics")
+![alt text](documentation/animations/bacteria.gif "Bacterial Taxon Dynamics")
+![alt text](documentation/animations/fungi.gif "Fungal Taxon Dynamics")
 
 # DEMENTpy
 ## A trait- and individual-based spatially explicit soil microbial systems modelling framework
