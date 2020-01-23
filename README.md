@@ -6,18 +6,16 @@
 <img src="documentation/animations/bacteria.gif" width="256" title="Bacterial Taxon Dynamics"> <img src="documentation/animations/fungi.gif" width="256" title="Fungal Taxon Dynamics"> <img src="documentation/animations/cellulose.gif" width="256" title="Cellulose Dynamics">
 </p>
 
-# DEMENTpy
-## A trait- and individual-based spatially explicit soil microbial systems modelling framework
-
-[**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]
-
-<p align="center">
 ![GitHub repo size](https://img.shields.io/github/repo-size/bioatmosphere/DEMENTpy)
 ![GitHub contributors](https://img.shields.io/github/contributors/bioatmosphere/DEMENTpy)
 ![GitHub stars](https://img.shields.io/github/stars/bioatmosphere/DEMENTpy?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/bioatmosphere/DEMENTpy?style=social)
 ![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)
-</p>
+
+# DEMENTpy
+## A trait- and individual-based spatially explicit soil microbial systems modelling framework
+
+[**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]
 
 This model is spatially and mechanistically explicit in simulating a microbial system comprised of a large number of microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT which is R-based.
 
