@@ -1,6 +1,6 @@
  <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
 
-![alt text](documentation/animations/bacteria.gif "Bacterial Taxon Dynamics"){ width=30% } ![alt text](documentation/animations/fungi.gif "Fungal Taxon Dynamics"){ width=30% } [alt text](documentation/animations/cellulose.gif "Cellulose Dynamics"){ width=30% }
+<!-- ![alt text](documentation/animations/bacteria.gif "Bacterial Taxon Dynamics"){ width=30% } ![alt text](documentation/animations/fungi.gif "Fungal Taxon Dynamics"){ width=30% } [alt text](documentation/animations/cellulose.gif "Cellulose Dynamics"){ width=30% } -->
 
 <p align="center">
 <img src="documentation/animations/bacteria.gif" width="256" title="Bacterial Taxon Dynamics"> <img src="documentation/animations/fungi.gif" width="256" title="Fungal Taxon Dynamics"> <img src="documentation/animations/cellulose.gif" width="256" title="Cellulose Dynamics">
