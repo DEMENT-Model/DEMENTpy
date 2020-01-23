@@ -11,6 +11,8 @@
 
 [**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]
 
+<span style="color:red">[**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]</span>
+
 ![GitHub repo size](https://img.shields.io/github/repo-size/bioatmosphere/DEMENTpy)
 ![GitHub contributors](https://img.shields.io/github/contributors/bioatmosphere/DEMENTpy)
 ![GitHub stars](https://img.shields.io/github/stars/bioatmosphere/DEMENTpy?style=social)
