@@ -1,4 +1,4 @@
- <!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
+<!-- <p align="center"> <font size="6"> <b> DEMENTpy </b> </font> </p> -->
 
 <!-- ![alt text](documentation/animations/bacteria.gif "Bacterial Taxon Dynamics"){ width=30% } ![alt text](documentation/animations/fungi.gif "Fungal Taxon Dynamics"){ width=30% } [alt text](documentation/animations/cellulose.gif "Cellulose Dynamics"){ width=30% } -->
 
@@ -10,8 +10,6 @@
 ## A trait- and individual-based spatially explicit soil microbial systems modelling framework
 
 [**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]
-
-<span style="color:red">[**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]</span>
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/bioatmosphere/DEMENTpy)
 ![GitHub contributors](https://img.shields.io/github/contributors/bioatmosphere/DEMENTpy)
