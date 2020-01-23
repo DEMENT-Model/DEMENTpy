@@ -2,7 +2,7 @@
 
 ![alt text](documentation/animations/bacteria.gif "Bacterial Taxon Dynamics") ![alt text](documentation/animations/fungi.gif "Fungal Taxon Dynamics")
 
-<img src="documentation/animations/bacteria.gif" width="256" height="256" title="Bacterial Taxon Dynamics"> <img src="documentation/animations/fungi.gif"    width="256" height="256" title="Fungal Taxon Dynamics">
+<img src="documentation/animations/bacteria.gif" width="256" height="256" title="Bacterial Taxon Dynamics"> <img src="documentation/animations/fungi.gif"    width="256" height="256" title="Fungal Taxon Dynamics"> <img src="documentation/animations/cellulose.gif"    width="256" height="256" title="Cellulose Dynamics">
 
 # DEMENTpy
 ## A trait- and individual-based spatially explicit soil microbial systems modelling framework
