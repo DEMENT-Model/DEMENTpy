@@ -9,15 +9,15 @@ do
     folder="mode$mode/input_$scenario output"
     sed -i -e "s%mode.*.output%$folder%" dementpy.sh
 
-    for count in 1 2 3
+    for count in 1 2 3 4 5
     do
 
       jobname="dm_$mode$scenario$count"
       sed -i -e "s/dm_.*/$jobname/" dementpy.sh
 
-      outname="20191126$count"_"$scenario"
+      outname="20200120$count"_"$scenario"
       echo "job name:" $outname
-      sed -i -e "s/20191126.*/$outname/" dementpy.sh
+      sed -i -e "s/20200120.*/$outname/" dementpy.sh
 
       qsub dementpy.sh
 
@@ -34,5 +34,5 @@ sed -i -e "s/dm_.*/$jobname/" dementpy.sh
 folder="mode/input_ output"
 sed -i -e "s%mode.*.output%$folder%" dementpy.sh
 
-outname="20191126"
-sed -i -e "s/20191126.*/$outname/" dementpy.sh
+outname="20200120"
+sed -i -e "s/20200120.*/$outname/" dementpy.sh
