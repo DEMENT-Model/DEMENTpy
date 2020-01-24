@@ -2,8 +2,8 @@
 This microbe.py module has one class and two functions.
     
     Microbe():                class
-    microbe_osmo_psi():       function; moisture modifier of inducible osmolyte production efficiency
     microbe_mortality_prob(): function; cell mortality probability
+    microbe_osmo_psi():       function; moisture modifier of (inducible) osmolyte production efficiency
 """
 
 import numpy as np
