@@ -7,10 +7,17 @@
 \usepackage{amssymb}                                            % TeX will automatically convert eps --> pdf in pdflatex	
 \usepackage[labelfont=bf]{caption}                           % make Figure x.x bold
 \usepackage{xcolor}
+\usepackage{listings}
 %\geometry{landscape}                		               % Activate for rotated page geometry
 %\usepackage[parfill]{parskip}    		               % Activate to begin paragraphs with an empty line rather than an indent
 %SetFonts
 %SetFonts
+\lstset{ 
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color}  
+  breaklines=true,                 % sets automatic line breaking 
+  language=Python,                 % the language of the code
+}
+
 
 
 \title{\textbf{Documentation of DEMENTpy v1.0}}
@@ -93,7 +100,16 @@ As regards enzyme, different taxa produce different enzymes that have differing 
 Similar to enzyme, ...
 
 \subsection{Mortality}
-Mortality is implemented in DEMENTpy as both a deterministic and a stochastic process. Firstly, a microbial cell dies when its mass reaches a threshold value. In the current version of DEMENTpy the threshold value is assumed to be a constant among taxa. In addition, microbial cells die from a stochastic process, which is, atop a basal mortality probability (differentiated between bacteria and fungi), constrained by drought intensity and drought tolerance, and functional group. These two processes are executed with the deterministic process preceding the stochastic one. The mortality probability is calculated following:
+Mortality is implemented in DEMENTpy as both a deterministic and a stochastic process. Firstly, a microbial cell dies when its mass reaches a threshold value. In the current version of DEMENTpy the threshold value is assumed to be a constant among taxa. In addition, microbial cells die from a stochastic process, which is, atop a basal mortality probability (differentiated between bacteria and fungi), constrained by drought intensity and drought tolerance, and functional group. These two processes are executed with the deterministic process preceding the stochastic one. 
+
+\begin{lstlisting}[frame=single]
+# option 1
+mortality_rate = basal_death_prob * (1 - (1-tolerance) * (Psi-Psi_fc)*death_rate)
+# option 2
+mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance)) * (Psi-Psi_fc)*death_rate)
+\end{lstlisting}
+
+The mortality probability is calculated as follows:
 
 Parameters involved in this mortality process include:
 
