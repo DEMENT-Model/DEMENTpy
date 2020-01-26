@@ -21,7 +21,7 @@ This model is spatially and mechanistically explicit in simulating a microbial s
 
 **Vision**
 
-DEMENTpy, as the first step of practicing **Real Open Science** myself, is devoted to 100% OPEN SOURCE and longterm maintanence and development, which, however,will not be limited myself but sincerely seek inputs from the communities that can be as broad as microbial ecology, systems biology, theoretical ecology, etc. Just because of community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy or applying it to your own research.
+DEMENTpy, initiated with in mind practicing **Real Open Science**, is devoted to 100% OPEN SOURCE and longterm maintanence and development, which, however,will not be limited myself but sincerely seek inputs from the communities that can be as broad as microbial ecology, systems biology, theoretical ecology, etc. Just because of community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy or applying it to your own research.
 
 **Structure and Process**
 
