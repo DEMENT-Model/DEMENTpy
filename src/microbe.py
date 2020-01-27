@@ -87,15 +87,13 @@ class Microbe():
         self.beta_fun       = parameters.loc['beta_fun',1]                    # Fungal mortality coefficient
 
     
-    def microbial_community_initialization(self):
+    def microbial_pool_initialization(self):
         """
-        Initialize a microbial community on the grid with bacteria and/or fungi.
+        Initialize a microbial pool of bacteria and/or fungi for the system.
 
         Calculation procedure:
           - Firstly create a dataframe with only bacteria
           - Substitute part of bacteria with fungi
-          - Randomly place this communtiy on the sptatial grid
-          - Perform stats on the initialized community and output them for record
         
         Parameters:
             Cfrac_b: Bacterial C fraction:    0.825 mg mg-1
@@ -107,11 +105,8 @@ class Microbe():
             max_size_b: C quota threshold for bacterial cell division
             max_size_f: C quota threshold for fungal cell division
         Returns:
-            microbes_pp: dataframe; pool of microbes
-            microbes_df: dataframe; microbial community initialized on the spatial grid
-            fb_grid:     1D array; index of fungi taxa in the microbial community
-            Bac_density: scalar; density of bacterial cells
-            Fun_density: scalar; density of fungal cells  
+            microbes_pp: dataframe; (taxa*gridsize)*3; pool of microbes
+            fb_grid:     1D array;  index of fungi taxa 
         """
         
         BacC = 0.5  * self.max_size_b
@@ -127,6 +122,7 @@ class Microbe():
         FunC = 0.5 * self.max_size_f
         FunN = FunC * self.Nfrac_f/self.Cfrac_f
         FunP = FunC * self.Pfrac_f/self.Cfrac_f
+
         # Substitute with fungal pools of elements: fb_grid == 1
         microbes_pp.loc[fb_grid == 1, "C"] = FunC
         microbes_pp.loc[fb_grid == 1, "N"] = FunN
@@ -139,31 +135,52 @@ class Microbe():
         Fun_taxa = int(sum(Fun_index)/self.gridsize)
         print('Before placement--','Bac_taxa=',Bac_taxa,'Fun_taxa=',Fun_taxa)
         
-        
+        return microbes_pp, fb_grid
+
+
+    def microbial_community_initialization(self,microbes_pp,fb_grid):
+        """
+        Initialize a spatially explicit microbial community based on microbial pool.
+
+        Randomly place the microbail pool on the sptatial grid and perform stats on the initialized community
+            and output them for record.
+
+        Parameters:
+            microbes_pp: microbial pool
+            fb_grid:     index of fungal taxa
+        Returns:
+            microbes_df: df;(taxa*gridsize)*3;initialized spatially explicit community
+            Bac_density: scalar; bacterial density over the grid
+            Fun_density: scalar; fungal density over the grid
+        """
+
         # Export the microbial community preceding placement on the grid
         microbes_df = microbes_pp.copy(deep=True)
-
+        
         # Randomly place the microbial community created above on the spatial grid to initialize a spatially explicit microbial community by
         pb = self.taxa_per_box
         choose_taxa = np.random.choice([1,0], self.n_taxa*self.gridsize,replace=True, p=[pb,(1-pb)])
         pf = pb * self.max_size_b/self.max_size_f
         choose_taxa[fb_grid==1] = np.random.choice([1,0], sum(fb_grid),replace=True, p=[pf,(1-pf)])
-        microbes_df.loc[choose_taxa==0] = 0
+        microbes_df.loc[choose_taxa==0] = np.float32(0)
         
+
+        BacC = 0.5  * self.max_size_b
+        FunC = 0.5  * self.max_size_f
         # Derive the number of fungi and bacteria taxa
         Bac_index = microbes_df['C'] == BacC
         Fun_index = microbes_df['C'] == FunC
-        Bac_taxa = microbes_df[Bac_index].groupby(level=0).sum().shape[0]
-        Fun_taxa = microbes_df[Fun_index].groupby(level=0).sum().shape[0]
+        Bac_taxa  = microbes_df[Bac_index].groupby(level=0).sum().shape[0]
+        Fun_taxa  = microbes_df[Fun_index].groupby(level=0).sum().shape[0]
         print('After placement--','Bac_taxa=',Bac_taxa,'Fun_taxa=',Fun_taxa)
 
         Bac_density = sum(Bac_index)*BacC/self.gridsize
         Fun_density = sum(Fun_index)*FunC/self.gridsize
         print('After placement--','Bac_density=',Bac_density,'Fun_density=',Fun_density)
-        
-        return microbes_pp,microbes_df,fb_grid,Bac_density,Fun_density
-    
-    
+
+        return microbes_df,Bac_density,Fun_density
+
+
     def minimum_cell_quota(self):
         """
         This will be used in the mortality calculation.
@@ -492,7 +509,6 @@ def microbe_osmo_psi(alfa,Psi_fc,Psi):
     Parameters: 
         alfa:   scalar; shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
         Psi_fc: scalar; water potential at field capacity
-        Psi_th: scalar; water potential threshold
         Psi:    scalar; water potential at a daily step 
     Returns:
         f_osmo: scalar; modifier of inducible production of osmoylte   
@@ -514,6 +530,6 @@ def microbe_osmo_psi(alfa,Psi_fc,Psi):
     if Psi >= Psi_fc:
         f_osmo = 0.0
     else:
-        f_osmo = 1 - alfa * Psi_fc 
+        f_osmo = 1 - alfa * Psi
 
     return np.float32(f_osmo)
