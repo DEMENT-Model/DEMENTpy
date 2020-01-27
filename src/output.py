@@ -52,23 +52,27 @@ class Output():
         self.Initialization = data_init
         
         # Pull out microbial traits data and put them in a dataframe:Microbial_traits
-        data = np.concatenate((data_init['fb'][0:n_taxa],
-                               data_init['Microbes_pp']['C'][0:n_taxa],
-                               data_init['Microbes_pp']['N'][0:n_taxa],
-                               data_init['Microbes_pp']['P'][0:n_taxa],
-                               data_init['UptakeGenes'].sum(axis=1)[0:n_taxa],
-                               data_init['EnzGenes'].sum(axis=1)[0:n_taxa],
-                               data_init['OsmoGenes'].sum(axis=1)[0:n_taxa],
-                               data_init['UptakeGenes_trait'][0:n_taxa],
-                               data_init['EnzProdConsti_trait'][0:n_taxa],
-                               data_init['EnzProdInduci_trait'][0:n_taxa],
-                               data_init['OsmoProdConsti_trait'][0:n_taxa],
-                               data_init['OsmoProdInduci_trait'][0:n_taxa],
-                               data_init['TaxDroughtTol'][0:n_taxa])).reshape(13,n_taxa).T
-        columns = ['F/B','C','N','P','Uptake_Gene','Enz_Gene','Osmo_Gene','Uptake_Cost',
-                   'Enz_Consti_Cost','Enz_Induci_Cost','Osmo_Consti_Cost','Osmo_Induci_Cost',
-                   'Drought_tolerance']
-        self.Microbial_traits = pd.DataFrame(data=data, index=Mic_index, columns=columns, dtype='float32')
+        data = np.concatenate(
+            (data_init['fb'][0:n_taxa],
+            data_init['Microbes_pp']['C'][0:n_taxa],
+            data_init['Microbes_pp']['N'][0:n_taxa],
+            data_init['Microbes_pp']['P'][0:n_taxa],
+            data_init['UptakeGenes'].sum(axis=1)[0:n_taxa],
+            data_init['EnzGenes'].sum(axis=1)[0:n_taxa],
+            data_init['OsmoGenes'].sum(axis=1)[0:n_taxa],
+            data_init['UptakeGenes_trait'][0:n_taxa],
+            data_init['EnzProdConsti_trait'][0:n_taxa],
+            data_init['EnzProdInduci_trait'][0:n_taxa],
+            data_init['OsmoProdConsti_trait'][0:n_taxa],
+            data_init['OsmoProdInduci_trait'][0:n_taxa],
+            data_init['TaxDroughtTol'][0:n_taxa]),
+            axis=0
+        )
+        columns = [
+            'F/B','C','N','P','Uptake_Gene','Enz_Gene','Osmo_Gene','Uptake_Cost','Enz_Consti_Cost',
+            'Enz_Induci_Cost','Osmo_Consti_Cost','Osmo_Induci_Cost','Drought_tolerance'
+        ]
+        self.Microbial_traits = pd.DataFrame(data=data.reshape(13,n_taxa).T, index=Mic_index, columns=columns, dtype='float32')
         
         
         # Account for inputs in mass balance
@@ -266,6 +270,7 @@ class Output():
             MicrobesSeries_repop: dataframe; tracking total biomass of differing taxa
             Taxon_count_repop:    dataframe; tracking abundances of differing taxa
         """
+        
         # Track biomass of every taxon
         Microbes_grid             = ecosystem.Microbes.groupby(level=0,sort=False).sum()
         Microbes_grid['C'].name   = day + 1
