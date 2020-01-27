@@ -668,16 +668,14 @@ class Grid():
             # microbial pool
             self.Microbes = self.Microbes_init.copy(deep=True) #NOTE copy()
             
-            # derive cumulative abundance; NOTE the column index
+            # derive cumulative abundance of each taxon over the prior year/pulse; NOTE the column index
             # option 1: mass-based
             cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
             # option 2: abundance-based
             #cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
-            
-            # account for cell mass size difference of bacteria vs fungi
+            # account for the cell mass size difference of bacteria vs fungi
             cum_abundance[self.fb[0:self.n_taxa]==1] *= self.max_size_b/self.max_size_f
-
-            # calculate probability 
+            # calculate frequency of every taxon 
             frequencies = cum_abundance/cum_abundance.sum()
             frequencies = frequencies.fillna(0)
             #probs      = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
