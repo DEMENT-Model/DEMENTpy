@@ -43,7 +43,7 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 
 - output/: folder where the output object in .pickle will be residing
 
-**Run DEMENTpy on HPC**
+**Run DEMENTpy on HPC**:
 
 - A simple example of bash script, dementpy.sh, submitting jobs to HPC is provided.
 
