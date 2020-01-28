@@ -35,7 +35,7 @@ class Monomer():
         
     def monomer_initialization(self,substrates_init):
         """
-        Derive the initial pool of Monomers.
+        Derive the initial pool of monomers.
         
         Parameters:
             substrates_init: dataframe; initial substrates pool; from the substrate module
