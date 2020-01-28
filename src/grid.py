@@ -102,8 +102,8 @@ class Grid():
         self.basal_death_prob = data_init['basal_death_prob']    # basal death probability of microbes
         self.death_rate       = data_init['death_rate']          # change rate of mortality with water potential
         self.tolerance        = data_init['TaxDroughtTol']       # taxon drought tolerance
-        self.wp_fc            = data_init['wp_fc']               # scalar; max threshold value of water potential; -1.0
-        self.wp_th            = data_init['wp_th']               # scalar; min threshold value of water potential; -6.0
+        self.wp_fc            = data_init['wp_fc']               # scalar; max threshold value of water potential
+        self.wp_th            = data_init['wp_th']               # scalar; min threshold value of water potential
         self.alpha            = data_init['alpha']               # scalar; moisture sensitivity; 1
         self.Kill             = np.float32('nan')                # total number of cells stochastically killed
         
@@ -294,10 +294,8 @@ class Grid():
         #---------------------------------------------------------------------#
         #......................constitutive processes.........................#
         #---------------------------------------------------------------------#
-        # Transporters' maintenence
-        # taxon-specific uptake cost determined by total biomass C: 0.1 - 0.01
-        # Taxon_Transporter_Cost  = (self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0)).sum(axis=1) #NOTE Microbes['C'] vs Microbes.sum(axis=1)
-        # taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
+        # Taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
+        # NOTE Microbes['C'],as opposed to Microbes.sum(axis=1) in DEMENT
         Taxon_Transporter_Maint = self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0).sum(axis=1) * self.Uptake_Maint_Cost
         
         #...............................................
@@ -394,7 +392,10 @@ class Grid():
             self.CUE_system = Microbe_C_Gain.sum()/Taxon_Uptake_C_grid
         
         # Respiration from Constitutive + Inducible(NOTE: missing sum(MicLoss[,"C"]) in the Mortality below)
-        self.Respiration = (Taxon_Transporter_Maint + Taxon_Growth_Respiration + Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint + Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint).sum(axis=0)
+        self.Respiration = (
+            Taxon_Transporter_Maint + Taxon_Growth_Respiration  + Taxon_Osmo_Consti_Maint +
+            Taxon_Osmo_Induci_Maint + Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint
+        ).sum(axis=0)
         
         # Derive Enzyme production
         Taxon_Enzyme_Production       = Taxon_Enzyme_Consti + Taxon_Enzyme_Induci  # gene-specific prod of enzyme of each taxon: (taxon*gridsize) * enzyme
