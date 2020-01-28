@@ -47,8 +47,10 @@ class Microbe():
         self.n_osmolyte      = int(runtime.loc['n_osmolytes',1])         # system-allowed number of osmotic compound
         self.taxa_per_box    = runtime.loc['taxa_per_box',1]             # Probability of each taxon entering a grid cell
         self.NormalizeUptake = int(runtime.loc['NormalizeUptake',1])     # Normalize uptake investment for the number of uptake genes;default:0
-        self.NormalizeProd   = int(runtime.loc['NormalizeProd',1])       # Normalize enzyme production for the number of enzyme genes;default:0
-        self.fb = np.random.choice([1,0], self.n_taxa, replace=True, p=[runtime.loc['fb',1],(1-runtime.loc['fb',1])]).astype('int8') #index of fungal taxa in a microbial pool (1);1-d array
+        self.NormalizeProd   = int(runtime.loc['NormalizeProd',1])       # Normalize enzyme&osmolyte production for the number of enzyme genes;default:0
+        self.fb = np.random.choice(                                      # index of fungal taxa in a microbial pool (1);1-d array
+            [1,0], self.n_taxa, replace=True, p=[runtime.loc['fb',1],(1-runtime.loc['fb',1])]
+        ).astype('int8')
         self.index = ["Tax" + str(i) for i in range(1,self.n_taxa+1)]    # Taxon index
 
         # microbial cell size
@@ -92,9 +94,8 @@ class Microbe():
         Initialize a microbial pool of bacteria and/or fungi for the system.
 
         Calculation procedure:
-          - Firstly create a dataframe with only bacteria
-          - Substitute part of bacteria with fungi
-        
+            Create a dataframe with only bacteria
+            Substitute part of bacteria with fungi
         Parameters:
             Cfrac_b: Bacterial C fraction:    0.825 mg mg-1
             Nfrac_b: Bacterial N fraction:    0.160 mg mg-1
@@ -149,7 +150,7 @@ class Microbe():
             microbes_pp: microbial pool
             fb_grid:     index of fungal taxa
         Returns:
-            microbes_df: df;(taxa*gridsize)*3;initialized spatially explicit community
+            microbes_df: df; (n_taxa*gridsize)*3; initialized spatially explicit community
             Bac_density: scalar; bacterial density over the grid
             Fun_density: scalar; fungal density over the grid
         """
@@ -157,7 +158,7 @@ class Microbe():
         # Export the microbial community preceding placement on the grid
         microbes_df = microbes_pp.copy(deep=True)
         
-        # Randomly place the microbial community created above on the spatial grid to initialize a spatially explicit microbial community by
+        # Randomly place the microbial community created above on the spatial grid to initialize a spatially explicit microbial community
         pb = self.taxa_per_box
         choose_taxa = np.random.choice([1,0], self.n_taxa*self.gridsize,replace=True, p=[pb,(1-pb)])
         pf = pb * self.max_size_b/self.max_size_f
@@ -259,7 +260,7 @@ class Microbe():
         genes_per_taxon = np.random.choice(range(self.Osmo_per_taxon_min,self.Osmo_per_taxon_max+1),self.n_taxa,replace=True)
 
         # randomly assign different genes in the gene pool to a taxon based on its number allowed
-        OsmoGenes_list = [random_assignment(i,n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
+        OsmoGenes_list = [random_assignment(i, n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
         columns        = ['Osmo'+ str(i) for i in range(1,n_genes+1)]
         OsmoGenes      = pd.DataFrame(data=np.vstack(OsmoGenes_list), index=self.index, columns=columns, dtype='int8')
         
@@ -490,9 +491,9 @@ def microbe_mortality_prob(basal_death_prob,death_rate,Tax_tolerance,Psi_fc,Psi)
     else:
         tolerance = Tax_tolerance.to_numpy(copy=False)
         # option 1
-        #mortality_rate = basal_death_prob * (1 - (1-tolerance)         * (Psi-Psi_fc)*death_rate)
+        #mortality_rate = basal_death_prob * (1 - (1-tolerance)       *(Psi-Psi_fc)*death_rate)
         # option 2
-        mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance)) * (Psi-Psi_fc)*death_rate)
+        mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance))*(Psi-Psi_fc)*death_rate)
         # option 3
         #mortality_rate = basal_death_prob * (1/np.exp(tolerance)) * (1 - death_rate*(Psi-Psi_fc))
     
@@ -503,8 +504,8 @@ def microbe_osmo_psi(alfa,Psi_fc,Psi):
     """
     Derive water potential modifier of (inducible) osmolyte production.
 
-    Inducible production of osmolytes triggered when Psi declines to a "threshold" value,wp_fc,
-    below which the production increases and reaches maxima at water potential of wp_th
+    Production of osmolytes triggered when Psi declines to a "threshold" value,Psi_fc,
+    below which the production increases linearly atop of basal rate.
     
     Parameters: 
         alfa:   scalar; shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
