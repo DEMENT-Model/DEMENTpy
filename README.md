@@ -30,12 +30,12 @@ This model is built upon its predecessor--DEMENT, an R-based framework initially
 
 ### Running DEMENTpy
 
-Get the code:
+**Get the code**:
 ```shell
 git clone https://github.com/bioatmosphere/DEMENTpy
 ```
 
-File structure and run DEMENTpy
+**Directory structure**:
 
 - src/: all source code
 
@@ -43,9 +43,9 @@ File structure and run DEMENTpy
 
 - output/: folder where the output object in .pickle will be residing
 
-Run DEMENTpy on HPC
+**Run DEMENTpy on HPC**
 
-- a simple example of bash script, dementpy.sh submitting jobs to HPC is provided.
+- A simple example of bash script, dementpy.sh, submitting jobs to HPC is provided.
 
 ### Contributing Guide
 
