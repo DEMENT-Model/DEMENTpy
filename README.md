@@ -9,7 +9,7 @@
 # DEMENTpy
 ## A trait- and individual-based spatially explicit soil microbial systems modelling framework
 
-[**NOTE: still under active development !!!**; if interested, feel free to reach out to me via any media]
+[**NOTE: still under active development without any formal release of any version !!!**; if interested, feel free to reach out to me via any media]
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/bioatmosphere/DEMENTpy)
 ![GitHub contributors](https://img.shields.io/github/contributors/bioatmosphere/DEMENTpy)
@@ -59,3 +59,8 @@ MIT LICENSE
 
 ### References
 
+Wang and Allison 2019 Soil Biology and Biochemistry
+
+Allison and Goulden 2017 Soil Biology and Biochemistry
+
+Allison 2012 Ecology Letters
