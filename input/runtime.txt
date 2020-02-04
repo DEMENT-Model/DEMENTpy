@@ -15,3 +15,9 @@ dist	1
 interval	1
 NormalizeUptake	0
 NormalizeProd	0
+Enzymes_per_sub	1
+Avg_extra_req_enz	0
+Uptake_per_monomer	1
+Monomer_Substrate_Ratio	0
+Enz_min	0
+Enz_max	0
