@@ -26,9 +26,9 @@ class Substrate():
         
         self.n_substrates      = int(runtime.loc['n_substrates',1])
         self.n_enzymes         = int(runtime.loc['n_enzymes',1])
-        self.gridsize          = int(runtime.loc['gridsize',1])
-        self.Enzymes_per_sub   = int(parameters.loc['Enzymes_per_sub',1])   # minimum # of enzymes degrading each substrate
-        self.Avg_extra_req_enz = int(parameters.loc['Avg_extra_req_enz',1]) # average # of additional enzymes required for substrate degradation
+        self.gridsize          = int(runtime.loc['gridsize',1])             
+        self.Enzymes_per_sub   = int(runtime.loc['Enzymes_per_sub',1])      # minimum # of enzymes degrading each substrate
+        self.Avg_extra_req_enz = int(runtime.loc['Avg_extra_req_enz',1])    # average # of additional enzymes required for substrate degradation
         self.Substrates_start  = substrates_init.astype('float32')          # initial substrate concentrations
     
     
