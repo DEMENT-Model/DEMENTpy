@@ -14,8 +14,8 @@ class Microbe():
     """
     This class holds all variables related to microbes.
 
-    Methods involving composition,stoichiometry, enzyme and gene production, as well as responses to environmental factors.
     These methods include:
+        0) microbial_pool_initialization():      create a microbial pool of bacteria and/or fungi
         1) microbial_community_initialization(): initialize microbial community on the spatial grid
         2) minimum_cell_quota():          get minimum ratios
         3) microbe_enzyme_gene():         derive taxon-specific genes for enzyme
@@ -91,7 +91,7 @@ class Microbe():
     
     def microbial_pool_initialization(self):
         """
-        Initialize a microbial pool of bacteria and/or fungi for the system.
+        Initialize a microbial pool of bacteria and/or fungi.
 
         Calculation procedure:
             Create a dataframe with only bacteria
@@ -440,7 +440,8 @@ class Microbe():
             Tax_tolerance: series;float32; value: 0. ~ 1.
         """
 
-        Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
+        #Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
+        Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1)
         Tax_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
         Tax_tolerance  = Tax_tolerance.fillna(0)
         
@@ -491,9 +492,9 @@ def microbe_mortality_prob(basal_death_prob,death_rate,Tax_tolerance,Psi_fc,Psi)
     else:
         tolerance = Tax_tolerance.to_numpy(copy=False)
         # option 1
-        #mortality_rate = basal_death_prob * (1 - (1-tolerance)       *(Psi-Psi_fc)*death_rate)
+        mortality_rate = basal_death_prob * (1 - (1-tolerance)*(Psi-Psi_fc)*death_rate)
         # option 2
-        mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance))*(Psi-Psi_fc)*death_rate)
+        #mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance))*(Psi-Psi_fc)*death_rate)
         # option 3
         #mortality_rate = basal_death_prob * (1/np.exp(tolerance)) * (1 - death_rate*(Psi-Psi_fc))
     
