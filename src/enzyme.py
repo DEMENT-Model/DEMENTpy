@@ -36,10 +36,9 @@ class Enzyme():
         self.n_substrates       = int(runtime.loc['n_substrates',1])
         self.n_monomers         = self.n_substrates + 2
         self.n_uptake           = int(runtime.loc['n_uptake',1])
-        self.substrate_index    = substrate_index                           # index of substrates in their actual names
+        self.Enz_min            = runtime.loc['Enz_min',1]               # Initial min. enzyme present in terms of carbon
+        self.Enz_max            = runtime.loc['Enz_max',1]               # Initial max. enzyme present in terms of carbon
 
-        self.Enz_min            = parameters.loc['Enz_min',1]               # Initial min. enzyme present in terms of carbon
-        self.Enz_max            = parameters.loc['Enz_max',1]               # Initial max. enzyme present in terms of carbon
         self.Enz_C_cost         = parameters.loc['Enz_C_cost',1]            # Per enzyme C cost as a fraction of uptake:1
         self.Enz_N_cost         = parameters.loc['Enz_N_cost',1]            # Per enzyme N cost as a fraction of C cost:0.3
         self.Enz_P_cost         = parameters.loc['Enz_P_cost',1]            # Per enzyme P cost as a fraction of C cost:0
@@ -50,7 +49,7 @@ class Enzyme():
         self.Vmax0_max          = parameters.loc['Vmax0_max',1]             # Maximum Vmax for enzyme
         self.Uptake_Vmax0_min   = parameters.loc['Uptake_Vmax0_min',1]      # Minimum uptake Vmax
         self.Uptake_Vmax0_max   = parameters.loc['Uptake_Vmax0_max',1]      # Maximum uptake Vmax
-        self.Specif_factor      = int(parameters.loc['Specif_factor',1])    # Efficiency-specificity
+        self.Specif_factor      = int(parameters.loc['Specif_factor',1])    # Efficiency-specificity tradeoff
         self.Vmax_Km            = parameters.loc['Vmax_Km',1]               # slope for Km-Vmax relationship:1
         self.Vmax_Km_int        = parameters.loc['Vmax_Km_int',1]           # intercept for Km-Vmax relationship:0
         self.Km_min             = parameters.loc['Km_min',1]                # Minimum Km: default = 0.01
@@ -58,6 +57,8 @@ class Enzyme():
         self.Uptake_Vmax_Km_int = parameters.loc['Uptake_Vmax_Km_int',1]    # intercept for Uptake Km-Vmax relationship:0
         self.Uptake_Km_min      = parameters.loc['Uptake_Km_min',1]         # Minimum uptake Km: 0.001
         self.Km_error           = parameters.loc['Km_error',1]              # Error term: default = 0
+
+        self.substrate_index    = substrate_index                           # index of substrates in their actual names
 
 
     def enzyme_pool_initialization(self):
@@ -94,7 +95,7 @@ class Enzyme():
         EnzAttrib_array = np.tile([self.Enz_C_cost,self.Enz_N_cost,self.Enz_P_cost,self.Enz_Maint_cost],(self.n_enzymes,1))
         index           = ["Enz" + str(i) for i in range(1,self.n_enzymes+1)]
         columns         = ["C_cost","N_cost","P_cost","Maint_cost"]
-        EnzAttrib_df    = pd.DataFrame(data=EnzAttrib_array,index=index, columns=columns, dtype='float32')
+        EnzAttrib_df    = pd.DataFrame(data=EnzAttrib_array, index=index, columns=columns, dtype='float32')
         
         return EnzAttrib_df
     
