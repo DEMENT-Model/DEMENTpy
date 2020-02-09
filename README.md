@@ -28,7 +28,7 @@ DEMENTpy, initiated with in mind practicing **Real Open Science**, is devoted to
 This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Allison back in 2012. Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessible to the research and teaching communities as broad as microbial ecology, theoretical ecology, and ecosystem ecology, as well as biology. This model simulates processes ranging from degradation of substrates through microbial processes encompassing uptake, metabolism, mortality, reproduction, and dispersal in a spatially explicit, mechanistically explicit fashion. Here is the underlying conceptual structure of DEMENTpy. For more detailed information about DEMENTpy, we refer readers/users to the **Documentation**(in pdf) archived in the documentation/ folder. 
 
 
-### Running DEMENTpy
+### Run DEMENTpy
 
 **Get the code**:
 ```shell
@@ -43,9 +43,13 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 
 - output/: folder where the output object in .pickle will be residing
 
-**Run DEMENTpy on HPC**:
+**Run DEMENTpy**:
 
-- A simple example of bash script, dementpy.sh, submitting jobs to HPC is provided.
+- Configure Environment
+
+- Run on HPC
+
+A simple example of bash script, dementpy.sh, submitting jobs to HPC is provided.
 
 ### Contributing Guide
 
