@@ -1,5 +1,5 @@
 # output.py module dealing with outputs of DEMENTpy.
-# Bin Wang in January, 2020
+# Bin Wang, January, 2020
 
 import numpy as np
 import pandas as pd
