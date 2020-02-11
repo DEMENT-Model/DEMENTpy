@@ -46,6 +46,11 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 **Run DEMENTpy**:
 
 - Configure Environment
+Python version:
+
+Numpy version:
+
+Pandas version:
 
 - Run on HPC
 
