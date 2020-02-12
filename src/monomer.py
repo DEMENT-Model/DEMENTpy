@@ -1,4 +1,5 @@
 #This module, monomer.py, handles monomer-related properties in a class, Monomer().
+# and leaching of monomers with a function, monomer_leaching()
 
 import pandas as pd
 import numpy as np
@@ -116,3 +117,22 @@ class Monomer():
                 Uptake_ReqEnz_df.iloc[:,i] = np.random.choice(probability_list,self.n_monomers,replace=False).astype('int8')
                 
         return Uptake_ReqEnz_df
+
+
+def monomer_leaching(Psi):
+    """
+    Quantify leaching of monomers.
+
+    Parameters:
+        Psi:  scalar; water potential
+    Return:
+        rate: scalar; leaching rate of monomers
+    """
+
+    # Constants
+    Leaching        = np.float32(0.1)  # Abiotic monomer loss rate
+    Psi_slope_leach = np.float32(0.1)  # Mositure sensivity of abiotic monomer loss rate
+
+    rate = Leaching * np.exp(Psi_slope_leach * Psi)
+
+    return rate
