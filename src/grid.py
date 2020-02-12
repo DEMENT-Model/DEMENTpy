@@ -9,6 +9,7 @@ import pandas as pd
 from microbe import microbe_osmo_psi
 from microbe import microbe_mortality_prob as MMP
 from enzyme  import Arrhenius, Allison
+from monomer import monomer_leaching
 from utility import expand
 
 class Grid():
@@ -288,9 +289,6 @@ class Grid():
         # index of dead enzyme in Substrates
         is_deadEnz = self.Substrates.index == "DeadEnz"
 
-        # derive the water potential modifier by calling the function microbe_osmo_psi()
-        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.psi[day])
-
         #---------------------------------------------------------------------#
         #......................constitutive processes.........................#
         #---------------------------------------------------------------------#
@@ -340,6 +338,10 @@ class Grid():
 
         # Taxon growth respiration
         Taxon_Growth_Respiration = self.Taxon_Uptake_C * (np.float32(1) - Taxon_AE)
+
+        # derive the water potential modifier by calling the function microbe_osmo_psi()
+        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.psi[day])
+        
         # Inducible Osmolyte production only when psi reaches below wp_fc
         Taxon_Osmo_Induci          = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C*Taxon_AE, axis=0) * f_psi
         Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)            # Total osmotic N cost of each taxon (.sum(axis=1))
@@ -427,9 +429,6 @@ class Grid():
         Also update Substrates with input from dead microbes, monomers(with leaching loss), and respiration
         """
 
-        # Constants
-        Leaching        = np.float32(0.1)  # Abiotic monomer loss rate
-        Psi_slope_leach = np.float32(0.1)  # Mositure sensivity of abiotic monomer loss rate
         # Indices
         Mic_index  = self.Microbes.index
         is_DeadMic = self.Substrates.index == 'DeadMic'
@@ -548,12 +547,10 @@ class Grid():
             self.Substrates.loc[is_DeadMic] += Death_gridcell.values
         # End of if else clause
         
-        # Leaching of monomers
-        Leaching_N = self.Monomers.loc[is_NH4,"N"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
-        Leaching_P = self.Monomers.loc[is_PO4,"P"] * Leaching * np.exp(Psi_slope_leach * (self.psi[day]-self.wp_fc))
-        # Update Monomers
-        self.Monomers.loc[is_NH4,"N"] -= Leaching_N
-        self.Monomers.loc[is_PO4,"P"] -= Leaching_P
+        # Calculate monomers' leaching and update Monomers 
+        leaching_rate = monomer_leaching(self.psi[day])
+        self.Monomers.loc[is_NH4,"N"] -= self.Monomers.loc[is_NH4,"N"] * leaching_rate
+        self.Monomers.loc[is_PO4,"P"] -= self.Monomers.loc[is_PO4,"P"] * leaching_rate
         
         # Restore the index to taxa series
         self.Microbes.index = Mic_index
