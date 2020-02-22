@@ -34,12 +34,12 @@ def main():
     #...Obtain the command line arguments
     input_folder  = sys.argv[1]   # input folder name
     output_folder = sys.argv[2]   # output folder name
-    outname       = sys.argv[3]   # output file name
+    outname       = sys.argv[3]   # output file name and seed of Pseudo-RNG
     
     #...Set up the working directory
     os.chdir('../'+input_folder)
 
-    #...grow a seed of random number generator
+    #...seed the pseudorandom number generator
     np.random.seed(int(outname[:-4]))
 
     #...a few system constants
