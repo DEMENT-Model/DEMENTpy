@@ -68,8 +68,8 @@ MIT LICENSE
 
 ### References
 
-Wang and Allison 2019 Soil Biology and Biochemistry
+Wang and Allison 2019 Soil Biology and Biochemistry https://doi.org/10.1016/j.soilbio.2019.107522
 
-Allison and Goulden 2017 Soil Biology and Biochemistry
+Allison and Goulden 2017 Soil Biology and Biochemistry https://doi.org/10.1016/j.soilbio.2017.01.001
 
-Allison 2012 Ecology Letters
+Allison 2012 Ecology Letters https://doi.org/10.1111/j.1461-0248.2012.01807.x
