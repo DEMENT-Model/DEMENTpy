@@ -124,6 +124,11 @@ class Grid():
         # Global constants
         self.Km_Ea = np.float32(20)         # kj mol-1;activation energy for both enzyme and transporter
         self.Tref  = np.float32(293)        # reference temperature of 20 celcius
+
+        # tradeoff
+        self.Taxon_Enzyme_Induci_Cost_C = np.float32('nan')
+        self.Taxon_Osmo_Induci_Cost_C   = np.float32('nan')
+        self.Microbe_C_Gain             = np.float32('nan')
     
 
     def degradation(self,day):
@@ -368,7 +373,10 @@ class Grid():
         Microbe_C_Gain = self.Taxon_Uptake_C - Taxon_Growth_Respiration   - Taxon_Enzyme_Induci_Cost_C - Taxon_Osmo_Induci_Cost_C
         Microbe_N_Gain = self.Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N
         Microbe_P_Gain = self.Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
-
+        
+        self.Taxon_Enzyme_Induci_Cost_C = Taxon_Enzyme_Induci_Cost_C
+        self.Taxon_Osmo_Induci_Cost_C   = Taxon_Osmo_Induci_Cost_C
+        self.Microbe_C_Gain             = Microbe_C_Gain
         #------------------------------------------------#
         #...............Integration......................#
         #------------------------------------------------#
