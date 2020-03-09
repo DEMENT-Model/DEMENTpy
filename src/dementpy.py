@@ -91,6 +91,10 @@ def main():
             # output microbial mass of every iteration using the "microbes_df" method in the Output class
             Output_init.microbes_abundance(Ecosystem,i)
             
+            # output microibal tradeoff data
+            if p >= 2:
+                Output_init.microbes_tradeoff(Ecosystem, i)
+
             # re-initialize microbial community in each new pulse
             if i == (p+1)*cycle-1:
                 Ecosystem.repopulation(Output_init,i,mic_reinit)
