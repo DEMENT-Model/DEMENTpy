@@ -116,22 +116,6 @@ class Output():
         self.Taxon_count       = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
         self.Taxon_count_repop = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
         
-        # Transporters: taxon-specific production summed over the grid by taxon
-        #self.TransporterSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        
-        # Enyzmes: taxon-specific production summed over the grid by taxon
-        #self.EnzymeConSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        #self.EnzymeIndSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        #self.Enzyme_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        
-        # Osmolytes: taxon-specific production summed over the grid by taxon
-        #self.OsmolyteConSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        #self.OsmolyteIndSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        #self.Osmolyte_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
-        
-        # Growth yield
-        #self.Growth_Yield = pd.Series(data=[0]*n_taxa,index=Mic_index)
-
         # Taxon-specific CUE
         #self.CUE_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
         
@@ -146,6 +130,22 @@ class Output():
         self.CUE_system = pd.Series([0],index=[0], dtype='float32')  # emergent CUE   
         self.Kill       = pd.Series([0],index=[0], dtype='uint32')   # stochastic death toll
         
+        # Transporters: taxon-specific production summed over the grid by taxon
+        #self.TransporterSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
+        
+        # Enyzmes: taxon-specific production summed over the grid by taxon
+        #self.EnzymeConSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
+        #self.EnzymeIndSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
+        self.Enzyme_TaxonSeries = pd.Series(data=[0]*n_taxa, index=Mic_index, dtype='float32')
+        
+        # Osmolytes: taxon-specific production summed over the grid by taxon
+        #self.OsmolyteConSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
+        #self.OsmolyteIndSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
+        self.Osmolyte_TaxonSeries = pd.Series(data=[0]*n_taxa, index=Mic_index, dtype='float32')
+        
+        # Growth yield
+        self.Growth_yield = pd.Series(data=[0]*n_taxa, index=Mic_index, dtype='float32')
+
        
     def output(self,ecosystem,day):
         """
@@ -199,40 +199,6 @@ class Output():
         self.MicrobesSeries     = pd.concat([self.MicrobesSeries, Microbes_grid['C']], axis=1, sort=False)
         #self.Microbes_Sum   = pd.concat([self.Microbes_Sum,pd.Series([Microbes_grid['C'].sum()],index=[day+1])],axis=0,sort=False)
         
-        # Microbe-Transporters
-        #Transporter_grid = ecosystem.Transporters.groupby(level=0,sort=False).sum() #taxon-specific transpotors summed over the grid by taxon
-        #Transporter_grid.name = day + 1
-        #self.TransporterSeries = pd.concat([self.TransporterSeries,Transporter_grid],axis=1,sort=False)
-        
-        # Microbe-Enzymes
-        # Constitutive
-        #Enzyme_Con_grid = ecosystem.Enzyme_Con.groupby(level=0,sort=False).sum() # Taxon-specific osmolytes summed over the grid by taxon
-        #Enzyme_Con_grid.name = day + 1
-        #self.EnzymeConSeries = pd.concat([self.EnzymeConSeries,Enzyme_Con_grid],axis=1,sort=False)
-        # Inducible
-        #Enzyme_Ind_grid = ecosystem.Enzyme_Ind.groupby(level=0,sort=False).sum()
-        #Enzyme_Ind_grid.name = day + 1
-        #self.EnzymeIndSeries = pd.concat([self.EnzymeIndSeries,Enzyme_Ind_grid],axis=1,sort=False)
-        # Total
-        #self.Enzyme_TaxonSeries = pd.concat([self.Enzyme_TaxonSeries,Enzyme_Con_grid+Enzyme_Ind_grid],axis=1,sort=False)
-        
-        # Microbe-Osmolytes
-        # Constitutive
-        #Osmolyte_Con_grid = ecosystem.Osmolyte_Con.groupby(level=0,sort=False).sum()
-        #Osmolyte_Con_grid.name = day + 1
-        #self.OsmolyteConSeries = pd.concat([self.OsmolyteConSeries,Osmolyte_Con_grid],axis=1,sort=False)
-        # Inducible
-        #Osmolyte_Ind_grid = ecosystem.Osmolyte_Ind.groupby(level=0,sort=False).sum()
-        #Osmolyte_Ind_grid.name = day + 1
-        #self.OsmolyteIndSeries = pd.concat([self.OsmolyteIndSeries,Osmolyte_Ind_grid],axis=1,sort=False)
-        # Total
-        #self.Osmolyte_TaxonSeries = pd.concat([self.Osmolyte_TaxonSeries,Osmolyte_Con_grid+Osmolyte_Ind_grid],axis=1,sort=False)
-        
-        # Growth yield by Taxon
-        #GY_grid = ecosystem.Growth_Yield.groupby(level=0,sort=False).sum()
-        #GY_grid.name = day + 1
-        #self.Growth_Yield = pd.concat([self.Growth_Yield,GY_grid],axis=1,sort=False)
-        
         # Microbe-Taxon-specific CUE
         #CUE_Taxon_grid = ecosystem.CUE_Taxon.groupby(level=0,sort=False).sum()
         #CUE_Taxon_grid = CUE_Taxon_grid/taxon_count
@@ -281,3 +247,44 @@ class Output():
         #Taxon_index.name = day + 1
         #taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('uint32')
         #self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count], axis=1, sort=False)
+
+    def microbes_tradeoff(self, ecosystem, day):
+        """
+        Track allocation of C uptake to different components.
+
+        These components include: osmolytes, enzymes, and carbon gain
+        """
+
+        # Microbe-Transporters
+        #Transporter_grid = ecosystem.Transporters.groupby(level=0,sort=False).sum() #taxon-specific transpotors summed over the grid by taxon
+        #Transporter_grid.name = day + 1
+        #self.TransporterSeries = pd.concat([self.TransporterSeries,Transporter_grid],axis=1,sort=False)
+        
+        # Microbe-Enzymes
+        # Constitutive
+        #Enzyme_Con_grid = ecosystem.Enzyme_Con.groupby(level=0,sort=False).sum() # Taxon-specific osmolytes summed over the grid by taxon
+        #Enzyme_Con_grid.name = day + 1
+        #self.EnzymeConSeries = pd.concat([self.EnzymeConSeries,Enzyme_Con_grid],axis=1,sort=False)
+        # Inducible
+        Enzyme_Ind_grid = ecosystem.Taxon_Enzyme_Induci_Cost_C.groupby(level=0,sort=False).sum()
+        Enzyme_Ind_grid.name = day + 1
+        #self.EnzymeIndSeries = pd.concat([self.EnzymeIndSeries,Enzyme_Ind_grid],axis=1,sort=False)
+        # Total
+        self.Enzyme_TaxonSeries = pd.concat([self.Enzyme_TaxonSeries, Enzyme_Ind_grid],axis=1,sort=False)
+        
+        # Microbe-Osmolytes
+        # Constitutive
+        #Osmolyte_Con_grid = ecosystem.Osmolyte_Con.groupby(level=0,sort=False).sum()
+        #Osmolyte_Con_grid.name = day + 1
+        #self.OsmolyteConSeries = pd.concat([self.OsmolyteConSeries,Osmolyte_Con_grid],axis=1,sort=False)
+        # Inducible
+        Osmolyte_Ind_grid = ecosystem.Taxon_Osmo_Induci_Cost_C.groupby(level=0,sort=False).sum()
+        Osmolyte_Ind_grid.name = day + 1
+        #self.OsmolyteIndSeries = pd.concat([self.OsmolyteIndSeries,Osmolyte_Ind_grid],axis=1,sort=False)
+        # Total
+        self.Osmolyte_TaxonSeries = pd.concat([self.Osmolyte_TaxonSeries, Osmolyte_Ind_grid],axis=1,sort=False)
+        
+        # Growth yield by Taxon
+        GY_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
+        GY_grid.name = day + 1
+        self.Growth_yield = pd.concat([self.Growth_yield,GY_grid],axis=1,sort=False)
