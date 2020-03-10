@@ -18,11 +18,13 @@
 #      The reserve option allows your job to get a foot in the door on a node,
 #      and prevents the node from being constantly loaded by single-core jobs.
 # mem_free: 
-#          This should be set to be the what you think your job will need (or a little more).
+#          This should be set to what you think your job will need (or a little more).
 #          This will reserve memory for your job on the node that it is run on.
 # h_vmem:
 #        This is the “high water mark” for memory for your job.  This should be set to be equal to,
 #        your mem_free request.
+# Refs:
+#        Memory usage and good citizenship: https://jhpce.jhu.edu/2017/05/17/memory_usage_analysis/
 #==============================================
 #$ -q mic
 #$ -pe smp 8
@@ -30,6 +32,7 @@
 #$ -l mem_free=3G,h_vmem=3G
 #$ -l h_rt=30:00:00
 #$ -l s_rt=35:00:00
+
 
 ########################
 # Merge the standard error into the standard output stream
