@@ -266,7 +266,7 @@ class Output():
         #Enzyme_Con_grid.name = day + 1
         #self.EnzymeConSeries = pd.concat([self.EnzymeConSeries,Enzyme_Con_grid],axis=1,sort=False)
         # Inducible
-        Enzyme_Ind_grid = ecosystem.Taxon_Enzyme_Induci_Cost_C.groupby(level=0,sort=False).sum()
+        Enzyme_Ind_grid = ecosystem.Taxon_Enzyme_Cost_C.groupby(level=0,sort=False).sum()
         Enzyme_Ind_grid.name = day + 1
         #self.EnzymeIndSeries = pd.concat([self.EnzymeIndSeries,Enzyme_Ind_grid],axis=1,sort=False)
         # Total

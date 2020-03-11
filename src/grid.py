@@ -126,7 +126,7 @@ class Grid():
         self.Tref  = np.float32(293)        # reference temperature of 20 celcius
 
         # tradeoff
-        self.Taxon_Enzyme_Induci_Cost_C = np.float32('nan')
+        self.Taxon_Enzyme_Cost_C        = np.float32('nan')
         self.Taxon_Osmo_Induci_Cost_C   = np.float32('nan')
         self.Microbe_C_Gain             = np.float32('nan')
     
@@ -374,9 +374,12 @@ class Grid():
         Microbe_N_Gain = self.Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N
         Microbe_P_Gain = self.Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
         
-        self.Taxon_Enzyme_Induci_Cost_C = Taxon_Enzyme_Induci_Cost_C
-        self.Taxon_Osmo_Induci_Cost_C   = Taxon_Osmo_Induci_Cost_C
-        self.Microbe_C_Gain             = Microbe_C_Gain
+        #self.Taxon_Enzyme_Cost_C = Taxon_Enzyme_Induci_Cost_C
+        self.Taxon_Enzyme_Cost_C  = Taxon_Enzyme_Induci_Cost_C + Taxon_Enzyme_Consti_Cost_C
+        self.Taxon_Osmo_Induci_Cost_C = Taxon_Osmo_Induci_Cost_C
+        #self.Microbe_C_Gain = Microbe_C_Gain
+        self.Microbe_C_Gain  = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
+
         #------------------------------------------------#
         #...............Integration......................#
         #------------------------------------------------#
@@ -385,7 +388,6 @@ class Grid():
         self.Microbes.loc[:,'N'] += Microbe_N_Gain - Taxon_Enzyme_Consti_Cost_N - Taxon_Osmo_Consti_Cost_N 
         self.Microbes.loc[:,'P'] += Microbe_P_Gain - Taxon_Enzyme_Consti_Cost_P
         self.Microbes[self.Microbes<0] = np.float32(0)  # avoid negative values
-        # Growth_yield = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
 
         # Taxon-specific emergent CUE
         #CUE_taxon = Microbes['C'].copy() # create a dataframe and set all vals to 0
