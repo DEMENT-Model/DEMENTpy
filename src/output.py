@@ -278,7 +278,7 @@ class Output():
         #Osmolyte_Con_grid.name = day + 1
         #self.OsmolyteConSeries = pd.concat([self.OsmolyteConSeries,Osmolyte_Con_grid],axis=1,sort=False)
         # Inducible
-        Osmolyte_Ind_grid = ecosystem.Taxon_Osmo_Induci_Cost_C.groupby(level=0,sort=False).sum()
+        Osmolyte_Ind_grid = ecosystem.Taxon_Osmo_Cost_C.groupby(level=0,sort=False).sum()
         Osmolyte_Ind_grid.name = day + 1
         #self.OsmolyteIndSeries = pd.concat([self.OsmolyteIndSeries,Osmolyte_Ind_grid],axis=1,sort=False)
         # Total

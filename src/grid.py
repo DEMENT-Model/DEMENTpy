@@ -126,9 +126,9 @@ class Grid():
         self.Tref  = np.float32(293)        # reference temperature of 20 celcius
 
         # tradeoff
-        self.Taxon_Enzyme_Cost_C        = np.float32('nan')
-        self.Taxon_Osmo_Induci_Cost_C   = np.float32('nan')
-        self.Microbe_C_Gain             = np.float32('nan')
+        self.Taxon_Enzyme_Cost_C = np.float32('nan')
+        self.Taxon_Osmo_Cost_C   = np.float32('nan')
+        self.Microbe_C_Gain      = np.float32('nan')
     
 
     def degradation(self,day):
@@ -376,7 +376,8 @@ class Grid():
         
         #self.Taxon_Enzyme_Cost_C = Taxon_Enzyme_Induci_Cost_C
         self.Taxon_Enzyme_Cost_C  = Taxon_Enzyme_Induci_Cost_C + Taxon_Enzyme_Consti_Cost_C
-        self.Taxon_Osmo_Induci_Cost_C = Taxon_Osmo_Induci_Cost_C
+        #self.Taxon_Osmo_Induci_Cost_C = Taxon_Osmo_Induci_Cost_C
+        self.Taxon_Osmo_Cost_C  = Taxon_Osmo_Induci_Cost_C + Taxon_Osmo_Consti_Cost_C
         #self.Microbe_C_Gain = Microbe_C_Gain
         self.Microbe_C_Gain  = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
 
