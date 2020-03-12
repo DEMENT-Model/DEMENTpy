@@ -1,9 +1,16 @@
 .vscode/
 
 # bash
-bashscripts/*.sh
+bashscripts/
 
 
 # documentation
 documentation/Manuscript_DEMENTpy.docx
-documentation/DEMENTpy_Documentation.tex
+documentation/DEMENTpy_Documentation.*
+documentation/DEMENTpy_Documentation.pdf
+documentation/~$nuscript_DEMENTpy.docx
+
+
+
+# DEMENTpy notebooks
+DEMENTpy_notebooks/
