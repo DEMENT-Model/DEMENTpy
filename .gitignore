@@ -3,13 +3,14 @@
 # bash
 bashscripts/
 
+# output
+output/
 
 # documentation
 documentation/Manuscript_DEMENTpy.docx
 documentation/DEMENTpy_Documentation.*
 documentation/DEMENTpy_Documentation.pdf
 documentation/~$nuscript_DEMENTpy.docx
-
 
 
 # DEMENTpy notebooks
