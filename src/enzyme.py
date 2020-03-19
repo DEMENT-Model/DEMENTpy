@@ -295,7 +295,7 @@ def Allison(rate, wp_fc, psi):
     Reference:
       Allison & Gouldon 2017 SBB
     """
-
+    wp_fc = np.int8(0)
     if psi >= wp_fc:
         f_psi = np.float32(1)
     else:
