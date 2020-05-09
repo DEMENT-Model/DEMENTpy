@@ -50,15 +50,11 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 **Run DEMENTpy**:
 
 - Configure Environment
-Python version:
+- - Python >= 3.7
+- - Numpy >= 1.16.4
+- - Pandas >= 0.24.2
 
-Numpy version:
-
-Pandas version:
-
-- Run on HPC
-
-A simple example of bash script, dementpy.sh, submitting jobs to HPC is provided.
+A simple example of bash script, dementpy.sh, for running jobs on HPC is provided.
 
 ### Contributing Guide
 
@@ -76,4 +72,4 @@ It is coming soon!
 
 2. Allison, S. D., & Goulden, M. L. (2017). [Consequences of drought tolerance traits for microbial decomposition in the DEMENT model](https://doi.org/10.1016/j.soilbio.2017.01.001). Soil Biology and Biochemistry, 107, 104-113.
 
-3. Allison, S. D. (2012). [A trait‐based approach for modelling microbial litter decomposition](https://doi.org/10.1016/j.soilbio.2017.01.001). Ecology letters, 15(9), 1058-1070. 
+3. Allison, S. D. (2012). [A trait‐based approach for modelling microbial litter decomposition](https://doi.org/10.1016/j.soilbio.2017.01.001). Ecology letters, 15, 1058-1070. 
