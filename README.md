@@ -74,4 +74,4 @@ It is coming soon!
 
 2. Allison, S. D., & Goulden, M. L. (2017). [Consequences of drought tolerance traits for microbial decomposition in the DEMENT model](https://doi.org/10.1016/j.soilbio.2017.01.001). Soil Biology and Biochemistry, 107, 104-113.
 
-3. Allison, S. D. (2012). [A trait‐based approach for modelling microbial litter decomposition](https://doi.org/10.1016/j.soilbio.2017.01.001). Ecology letters, 15, 1058-1070. 
+3. Allison, S. D. (2012). [A trait‐based approach for modelling microbial litter decomposition](https://doi.org/10.1111/j.1461-0248.2012.01807.x). Ecology letters, 15, 1058-1070. 
