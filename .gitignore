@@ -13,10 +13,11 @@ output/
 
 # documentation
 documentation/Manuscript_DEMENTpy.docx
-documentation/DEMENTpy_Documentation.*
+documentation/DEMENTpy_Documentation.tex
+documentation/DEMENTpy_Documentation.docx
 documentation/DEMENTpy_Documentation.pdf
-documentation/~$nuscript_DEMENTpy.docx
+documentation/computation_statistics.csv
 
 
-# DEMENTpy notebooks
+# DEMENTpy_notebooks
 DEMENTpy_notebooks/
