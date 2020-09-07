@@ -29,7 +29,7 @@ This model is spatially and mechanistically explicit in simulating a microbial s
 
 DEMENTpy, initiated with in mind practicing **Real Open Science**, is devoted to 100% OPEN SOURCE and longterm maintanence and development, which, however, will not be limited to ourselves but sincerely seek inputs from the communities that could be as broad as microbial ecology, systems biology, theoretical ecology, etc. Just because of community inputs, please read closely our statement on **policies and rules** of making contributions to DEMENTpy or applying it to your own research.
 
-<p align='center'> <img src="documentation/figures/DEMENTpy_programming_structure.pdf"> </p>
+<p align='center'> <img src="documentation/figures/DEMENTpy_programming_structure.png"> </p>
 
 ### Structure and Process
 
