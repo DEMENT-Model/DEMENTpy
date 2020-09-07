@@ -25,7 +25,7 @@
 
 This model is spatially and mechanistically explicit in simulating a microbial system comprised of a large number of hypothetical microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT that is R-based instead.
 
-<p align='center'> <img src="documentation/figures/DEMENTpy_conceptual_structure.png"> </p>
+<p align='center'> <img src="documentation/figures/DEMENTpy_conceptual_structure.jpg"> </p>
 
 ### Vision
 
