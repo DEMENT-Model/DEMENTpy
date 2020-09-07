@@ -374,11 +374,8 @@ class Grid():
         Microbe_N_Gain = self.Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N
         Microbe_P_Gain = self.Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
         
-        #self.Taxon_Enzyme_Cost_C = Taxon_Enzyme_Induci_Cost_C
         self.Taxon_Enzyme_Cost_C  = Taxon_Enzyme_Induci_Cost_C + Taxon_Enzyme_Consti_Cost_C
-        #self.Taxon_Osmo_Induci_Cost_C = Taxon_Osmo_Induci_Cost_C
         self.Taxon_Osmo_Cost_C  = Taxon_Osmo_Induci_Cost_C + Taxon_Osmo_Consti_Cost_C
-        #self.Microbe_C_Gain = Microbe_C_Gain
         self.Microbe_C_Gain  = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
 
         #------------------------------------------------#
