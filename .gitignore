@@ -1,7 +1,8 @@
+# vscode workspace
 .vscode/
 
 
-#
+# Jupyter Notebook
 */.ipynb_checkpoints
 
 
@@ -12,10 +13,7 @@ bashscripts/
 output/
 
 # documentation
-documentation/Manuscript_DEMENTpy.docx
-documentation/DEMENTpy_Documentation.tex
-documentation/DEMENTpy_Documentation.docx
-documentation/DEMENTpy_Documentation.pdf
+documentation/DEMENTpy_Documentation.*
 
 # DEMENTpy_notebooks
 DEMENTpy_notebooks/
