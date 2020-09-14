@@ -248,6 +248,7 @@ class Output():
         #taxon_count      = Taxon_index.groupby(level=0, sort=False).sum().astype('uint32')
         #self.Taxon_count_repop = pd.concat([self.Taxon_count_repop,taxon_count], axis=1, sort=False)
 
+
     def microbes_tradeoff(self, ecosystem, day):
         """
         Track allocation of C uptake to different components.
