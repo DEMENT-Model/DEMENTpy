@@ -78,19 +78,14 @@ def main():
             # microbial reproduction and dispersal
             Ecosystem.reproduction(i)
         
-            # output data using the "output" method in the Output class
+            # output basic data using the "output" method in the Output class
             if i == 0:
                 Output_init.output(Ecosystem,i)  # day 1
             elif i%interval==interval-1:
                 Output_init.output(Ecosystem,i)  # interval
-            
-            # if only 1 pusle, skip all following lines within this loop
-            #if pulse == 1:
-            #    continue
-            # output microibal tradeoff data
-            #if p >= 2:
+            # output microibal allocation data using the "microbes_tradeoff" method
             Output_init.microbes_tradeoff(Ecosystem, i)
-            # output microbial mass of every iteration using the "microbes_df" method in the Output class
+            # output microbial mass of every iteration using the "microbes_abundance" method
             Output_init.microbes_abundance(Ecosystem,i)
             
             # re-initialize microbial community in each new pulse
