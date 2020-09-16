@@ -11,6 +11,7 @@ class Output():
     Accepts data derived from the initialization.py and grid.py modules, and have two methods:
         output():             stores all time series
         microbes_abundance(): a special method
+        microbes_tradeoff():  another special method tracking intracellular carbon allocation
     """
     
     def __init__(self,runtime,data_init):
