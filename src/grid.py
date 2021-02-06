@@ -48,10 +48,10 @@ class Grid():
         self.n_monomers     = self.n_substrates + 2
         
         #Degradation
-        self.Substrates_init = data_init['Substrates']                    # Substrates initialized
+        #self.Substrates_init = data_init['Substrates']                    # Substrates initialized
         self.Substrates      = data_init['Substrates'].copy(deep=True)    # Substrates;df; w/ .copy() avoiding mutation
         self.SubInput        = data_init['SubInput']                      # Substrate inputs
-        self.Enzymes_init    = data_init['Enzymes']                       # Initial pool of Enzymes
+        #self.Enzymes_init    = data_init['Enzymes']                       # Initial pool of Enzymes
         self.Enzymes         = data_init['Enzymes'].copy(deep=True)       # Enzymes
         self.ReqEnz          = data_init['ReqEnz']                        # Enzymes required by each substrate
         self.Ea              = data_init['Ea']                            # Enzyme activatin energy
@@ -61,9 +61,9 @@ class Grid():
         self.DecayRates      = np.float32('nan')                          # Substrate decay rate
 
         #Uptake
-        self.Microbes_init   = data_init['Microbes_pp']                   # microbial community before placement
+        #self.Microbes_init   = data_init['Microbes_pp']                   # microbial community before placement
         self.Microbes        = data_init['Microbes'].copy(deep=True)      # microbial community after placement
-        self.Monomers_init   = data_init['Monomers']                      # Monomers initialized
+        #self.Monomers_init   = data_init['Monomers']                      # Monomers initialized
         self.Monomers        = data_init['Monomers'].copy(deep=True)      # Monomers
         self.MonInput        = data_init['MonInput']                      # Inputs of monomers
         self.Uptake_Ea       = data_init['Uptake_Ea']                     # transporter enzyme Ea
@@ -473,7 +473,7 @@ class Grid():
         mic_index = self.Microbes['C']>0
 
         # Calculate the total dead mass (threshold & drought) across taxa in each grid cell
-        Death_gridcell = Death.groupby(Death.index//self.n_taxa).sum(axis=0)
+        Death_gridcell = Death.groupby(Death.index//self.n_taxa).sum()
         
         # Distinguish between conditions of complete death VS partial death
         # All cells die
@@ -652,53 +652,57 @@ class Grid():
         self.Microbes += Colonization.values
 
     
-    def repopulation(self,output,day,mic_reinit):
+    def reinitialization(self,initialization,microbes_pp,output,mode,pulse):
         """
-        Reinitialize a microbial community on the spatial grid in a new pulse.
+        Reinitialize the system in a new pulse.
         
-        Meanwhile, start with new Subsrates, Monomers, and Enzymes on the grid that are initialized from the very beginning
+        Initialize Subsrates, Monomers, and Enzymes on the grid that are initialized from the very beginning
 
         Parameters:
-            output:     an instance of the Output class, from which the var, MicrobesSeries_repop,
-                        referring to taxon-specific total mass over the grid is retrieved
-            day:        the day index
-            mic_reinit: 0/1; 1 means reinitialization
+            initialization: dictionary; site-specific initialization
+            microbes_pp: dataframe;taxon-specific mass in C, N, &P
+            output: an instance of the Output class, from which the var, MicrobesSeries_repop,
+                    referring to taxon-specific total mass over the grid is retrieved
+            mode:  string; 'defaul' or 'dispersal'
+            pulse: integer; the pulse index
         Returns:
-            update Substrates, Monomers, and Microbes, as well as Enzymes
+            update temp, psi, Substrates, Monomers, Enzymes, and Microbes
         """
 
-        # reinitialize substrates, monomers, and enzymes in a new pulse
-        self.Substrates = self.Substrates_init.copy(deep=True)
-        self.Monomers   = self.Monomers_init.copy(deep=True)
-        self.Enzymes    = self.Enzymes_init.copy(deep=True)
+        # reinitialize temperature and water potential
+        self.temp = initialization['Temp'].copy(deep=True)
+        self.psi  = initialization['Psi'].copy(deep=True)
 
-        # reinitialize microbial community in a new pulse if True
-        if mic_reinit == True:
-            
-            # microbial pool
-            self.Microbes = self.Microbes_init.copy(deep=True) #NOTE copy()
-            
-            # derive cumulative abundance of each taxon over the prior year/pulse; NOTE the column index
-            # option 1: mass-based
-            #cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
-            
-            # option 1_1: only the last 2 day
-            cum_abundance = output.MicrobesSeries_repop.iloc[:,(day+2-2):(day+2)].sum(axis=1)
+        # reinitialize site-based substrates, monomers, and enzymes in a new pulse
+        self.Substrates = initialization['Substrates'].copy(deep=True)
+        self.Monomers   = initialization['Monomers'].copy(deep=True)
+        self.Enzymes    = initialization['Enzymes'].copy(deep=True)
 
-            # option 2: abundance-based
-            #cum_abundance = output.Taxon_count_repop.iloc[:,(day+2-self.cycle):(day+2)].sum(axis=1)
-            # account for the cell mass size difference of bacteria vs fungi
-            cum_abundance[self.fb[0:self.n_taxa]==1] *= self.max_size_b/self.max_size_f
-
-
-            # calculate frequency of every taxon 
-            frequencies = cum_abundance/cum_abundance.sum()
-            frequencies = frequencies.fillna(0)
-            #probs      = pd.concat([frequencies,1-frequencies],axis=1,sort=False)
-
-            # assign microbes to each grid box randomly based on prior densities
-            choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
-            for i in range(self.n_taxa):
-                choose_taxa[i,:] = np.random.choice([1,0], self.gridsize, replace=True, p=[frequencies[i], 1-frequencies[i]])
-            
-            self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0) # NOTE order='F'
+        # reinitialize microbial community in a new pulse as per the mode in three steps
+        # first: retrieve the microbial pool; NOTE: copy()
+        #self.Microbes = self.Microbes_init.copy(deep=True)
+        #self.Microbes = initialization['Microbes_pp'].copy(deep=True)
+        self.Microbes = microbes_pp.copy(deep=True)
+        
+        # then: derive cumulative abundance of each taxon over "a certain period" in the prior year/pulse
+        # default(mode==0): last day; dispersal(mode==1): whole previous year (NOTE: the column index)
+        if mode == 0:
+            index_l = (pulse+1)*self.cycle - 1
+            index_u = (pulse+1)*self.cycle + 1
+            cum_abundance = output.MicrobesSeries_repop.iloc[:,index_l:index_u].sum(axis=1)
+        else:
+            index_l = pulse*self.cycle + 1
+            index_u = (pulse+1)*self.cycle + 1
+            cum_abundance = output.MicrobesSeries_repop.iloc[:,index_l:index_u].sum(axis=1)
+        
+        # account for the cell mass size difference of bacteria vs fungi
+        cum_abundance[self.fb[0:self.n_taxa]==1] *= self.max_size_b/self.max_size_f
+        # calculate frequency of every taxon 
+        frequencies = cum_abundance/cum_abundance.sum()
+        frequencies = frequencies.fillna(0)
+        
+        # last: assign microbes to each grid box randomly based on prior densities
+        choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
+        for i in range(self.n_taxa):
+            choose_taxa[i,:] = np.random.choice([1,0], self.gridsize, replace=True, p=[frequencies[i], 1-frequencies[i]])
+        self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0) # NOTE order='F'
