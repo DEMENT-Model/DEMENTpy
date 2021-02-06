@@ -21,7 +21,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/bioatmosphere/DEMENTpy)
 ![GitHub stars](https://img.shields.io/github/stars/bioatmosphere/DEMENTpy?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/bioatmosphere/DEMENTpy?style=social)
-![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)
+<!--![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)-->
 
 This model is spatially and mechanistically explicit in simulating a microbial system comprised of a large number of hypothetical microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor DEMENT that is R-based instead.
 
