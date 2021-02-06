@@ -13,23 +13,25 @@ from microbe   import Microbe
 from utility   import expand
 
 
-def initialize_data(runtime_parameters):
+def initialize_data(runtime_parameters, site):
     """
     Initialize all data required.
 
     Parameters:
-        runtime_parameters: user-specified parameters setting up the system; all other paras loaded by reading the parameters.csv
+        runtime_parameters: user-specified parameters setting up the system;
+                            all other paras loaded by reading the parameters.csv
+        site: where the inputs reside
     Return:
         Data_Dictionary: a dictionary of all variables that feeds the grid.py module
     """
     
     # Load all input files
-    parameters      = pd.read_csv('parameters.csv',         header=None, index_col=0).astype('float32')   # parameters
-    substrates_init = pd.read_csv('initial_substrates.csv', header=0,    index_col=0).astype('float32')   # initial substrates
-    sub_mon_input   = pd.read_csv('sub_mon_inputs.csv',     header=0,    index_col=0).astype('float32')   # inputs of substrates and monomers
-    Ea_input        = pd.read_csv("enzyme_ea.csv",          header=0,    index_col=0).astype('float32')   # enzyme activation energy
-    climate         = pd.read_csv('climate.csv',            header=0,    index_col=0)                     # climate forcings
-
+    parameters      = pd.read_csv(site+'/'+'parameters.csv',         header=None, index_col=0).astype('float32')   # parameters
+    substrates_init = pd.read_csv(site+'/'+'initial_substrates.csv', header=0,    index_col=0).astype('float32')   # initial substrates
+    sub_mon_input   = pd.read_csv(site+'/'+'sub_mon_inputs.csv',     header=0,    index_col=0).astype('float32')   # inputs of substrates and monomers
+    Ea_input        = pd.read_csv(site+'/'+"enzyme_ea.csv",          header=0,    index_col=0).astype('float32')   # enzyme activation energy
+    # climate forcings
+    climate = pd.read_csv(site+'/'+'climate.csv', header=0, index_col=0)
     # daily temperature and water potential
     daily_temp = climate['Temp'].astype('float32')  # temperaure series
     daily_psi  = climate['Psi'].astype('float32')   # water potential series
