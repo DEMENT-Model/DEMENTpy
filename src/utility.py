@@ -77,7 +77,7 @@ def random_assignment(taxon_id,pool,genes_per_taxon):
     return taxon
 
 
-def export(output,name):
+def export(output,site,name):
     """
     Save the output object as a .pickle file.
     
@@ -86,5 +86,5 @@ def export(output,name):
         name:   naming output file
     """
     
-    with open(str(name) + ".pickle", "wb") as f:
+    with open(site + "_" + str(name) + ".pickle", "wb") as f:
         pickle.dump(output, f, pickle.HIGHEST_PROTOCOL)
