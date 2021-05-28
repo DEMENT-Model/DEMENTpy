@@ -74,8 +74,10 @@ It is coming soon!
 
 ### References
 
-1. Wang, B., & Allison, S. D. (2019).[Emergent properties of organic matter decomposition by soil enzymes](https://doi.org/10.1016/j.soilbio.2019.107522). Soil Biology and Biochemistry, 136, 107522.
+1. Wang, B., & Steven D. Allison. [Drought Legacies Mediated by Trait Tradeoffs in Soil Microbiomes]( https://doi.org/10.1002/ecs2.3562). Ecosphere (in press)
 
-2. Allison, S. D., & Goulden, M. L. (2017). [Consequences of drought tolerance traits for microbial decomposition in the DEMENT model](https://doi.org/10.1016/j.soilbio.2017.01.001). Soil Biology and Biochemistry, 107, 104-113.
+2. Wang, B., & Allison, S. D. (2019).[Emergent properties of organic matter decomposition by soil enzymes](https://doi.org/10.1016/j.soilbio.2019.107522). Soil Biology and Biochemistry, 136, 107522.
 
-3. Allison, S. D. (2012). [A trait‐based approach for modelling microbial litter decomposition](https://doi.org/10.1111/j.1461-0248.2012.01807.x). Ecology Letters, 15, 1058-1070. 
+3. Allison, S. D., & Goulden, M. L. (2017). [Consequences of drought tolerance traits for microbial decomposition in the DEMENT model](https://doi.org/10.1016/j.soilbio.2017.01.001). Soil Biology and Biochemistry, 107, 104-113.
+
+4. Allison, S. D. (2012). [A trait‐based approach for modelling microbial litter decomposition](https://doi.org/10.1111/j.1461-0248.2012.01807.x). Ecology Letters, 15, 1058-1070. 
