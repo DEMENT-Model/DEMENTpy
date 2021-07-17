@@ -74,7 +74,7 @@ It is coming soon!
 
 ### References
 
-1. Wang, B., & Steven D. Allison. [Drought Legacies Mediated by Trait Tradeoffs in Soil Microbiomes]( https://doi.org/10.1002/ecs2.3562). Ecosphere (in press)
+1. Wang, B., & Steven D. Allison. [Drought Legacies Mediated by Trait Tradeoffs in Soil Microbiomes]( https://doi.org/10.1002/ecs2.3562). Ecosphere 12, e03562
 
 2. Wang, B., & Allison, S. D. (2019).[Emergent properties of organic matter decomposition by soil enzymes](https://doi.org/10.1016/j.soilbio.2019.107522). Soil Biology and Biochemistry, 136, 107522.
 
