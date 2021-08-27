@@ -110,12 +110,14 @@ class Output():
         Microbes_grid['C'].name   = 0                   # rename the series name to 0
         self.MicrobesSeries       = Microbes_grid['C']  # taxon-specific total biomass summed over the grid
         self.MicrobesSeries_repop = Microbes_grid['C']  # created for reinitialization
+        # define a new var placing biomass (in C) by taxon grid-specifically
+        self.microbes_grid_taxa   = data_init['Microbes']['C']
 
         # Number of individuals of Taxon count
         Taxon_index            = data_init['Microbes']['C'] > 0
         Taxon_index.name       = 0
         self.Taxon_count       = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
-        self.Taxon_count_repop = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
+        #self.Taxon_count_repop = Taxon_index.groupby(level=0,sort=False).sum().astype('uint32')
         
         # Taxon-specific CUE
         #self.CUE_TaxonSeries = pd.Series(data=[0]*n_taxa,index=Mic_index)
@@ -199,6 +201,7 @@ class Output():
         Microbes_grid['C'].name = self.cycle*year + (day+1)
         self.MicrobesSeries     = pd.concat([self.MicrobesSeries, Microbes_grid['C']], axis=1, sort=False)
         #self.Microbes_Sum   = pd.concat([self.Microbes_Sum,pd.Series([Microbes_grid['C'].sum()],index=[day+1])],axis=0,sort=False)
+        self.microbes_grid_taxa  = pd.concat([self.microbes_grid_taxa,ecosystem.Microbes['C']],axis=1,sort=False)
         
         # Microbe-Taxon-specific CUE
         #CUE_Taxon_grid = ecosystem.CUE_Taxon.groupby(level=0,sort=False).sum()
