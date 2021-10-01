@@ -94,10 +94,10 @@ def main():
         # re-initialize microbial community in each new pulse
         if p < switch - 1:
             # stick to the starting site
-            Ecosystem.reinitialization(data_initialization, data_initialization['Microbes_pp'], Output_init, mode, p)
+            Ecosystem.reinitialization(data_initialization, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
         else:
             # switch to data of another site
-            Ecosystem.reinitialization(data_switch, data_initialization['Microbes_pp'], Output_init, mode, p)
+            Ecosystem.reinitialization(data_switch, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
     
     #...export the Output_init object to the output_folder using the export() funtion in the utility module 
     os.chdir('../'+output_folder)

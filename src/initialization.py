@@ -33,8 +33,8 @@ def initialize_data(runtime_parameters, site):
     # climate forcings
     climate = pd.read_csv(site+'/'+'climate.csv', header=0, index_col=0)
     # daily temperature and water potential
-    daily_temp = climate['Temp'].astype('float32')  # temperaure series
-    daily_psi  = climate['Psi'].astype('float32')   # water potential series
+    daily_temp = climate['Temp'].to_numpy(dtype='float32')  # temperaure series
+    daily_psi  =  climate['Psi'].to_numpy(dtype='float32')  # water potential series
 
 
     #...an instance of Substrate class 

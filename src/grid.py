@@ -652,7 +652,7 @@ class Grid():
         self.Microbes += Colonization.values
 
     
-    def reinitialization(self,initialization,microbes_pp,output,mode,pulse):
+    def reinitialization(self,initialization,microbes_pp,output,mode,pulse,switch):
         """
         Reinitialize the system in a new pulse.
         
@@ -670,8 +670,12 @@ class Grid():
         """
 
         # reinitialize temperature and water potential
-        self.temp = initialization['Temp'].copy(deep=True)
-        self.psi  = initialization['Psi'].copy(deep=True)
+        if (pulse < switch-1):
+          self.temp = initialization['Temp'].copy(deep=True)
+          self.psi  = initialization['Psi'].copy(deep=True)
+        else:
+           self.temp = initialization['Temp'][(pulse-(switch-1))*365:(pulse-(switch-2))*365]
+           self.psi  =  initialization['Psi'][(pulse-(switch-1))*365:(pulse-(switch-2))*365] 
 
         # reinitialize site-based substrates, monomers, and enzymes in a new pulse
         self.Substrates = initialization['Substrates'].copy(deep=True)
