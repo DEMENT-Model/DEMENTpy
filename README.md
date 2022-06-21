@@ -23,7 +23,7 @@
 ![GitHub forks](https://img.shields.io/github/forks/bioatmosphere/DEMENTpy?style=social)
 <!--![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)-->
 
-This model is spatially and mechanistically explicit in simulating a microbial system comprised of a large number of hypothetical microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor [DEMENT](https://github.com/stevenallison/DEMENT) developed by Steven Allison (promgrammed in R).
+This model is spatially and mechanistically explicit in simulating a microbial system comprising a large number of hypothetical microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor [DEMENT](https://github.com/stevenallison/DEMENT) developed by Steven Allison (promgrammed in R).
 
 <p align='center'> <img src="documentation/figures/DEMENTpy_conceptual_structure.jpg"> </p>
 
@@ -67,7 +67,7 @@ A simple example of bash script, dementpy.sh, for running jobs on HPC is provide
 The space for contribution is HUGE and OPEN! For instance:
 
 - New processes/algorithms are more than welcome. 
-- Programming improvment is absolutely needed.
+- Programming improvement is absolutely needed.
 - Any bugs are possible.
 - ...
 
