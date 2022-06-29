@@ -23,7 +23,7 @@
 ![GitHub forks](https://img.shields.io/github/forks/bioatmosphere/DEMENTpy?style=social)
 <!--![Twitter Follow](https://img.shields.io/twitter/follow/bioatmo_sphere?style=social)-->
 
-This model is spatially and mechanistically explicit in simulating a microbial system comprised of a large number of hypothetical microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor [DEMENT](https://github.com/stevenallison/DEMENT) developed by Steven Allison (promgrammed in R).
+This model is spatially and mechanistically explicit in simulating a microbial system comprising a large number of hypothetical microbial taxa in terrestial environments. As indicated by the 'py' in its name, DEMENTpy is developed and programmed in Python, based on its predecesor [DEMENT](https://github.com/stevenallison/DEMENT) developed by Steven Allison (promgrammed in R).
 
 <p align='center'> <img src="documentation/figures/DEMENTpy_conceptual_structure.jpg"> </p>
 
@@ -35,7 +35,7 @@ DEMENTpy, initiated with in mind practicing **Real Open Science**, is devoted to
 
 ### Structure and Process
 
-This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Steven Allison back in 2012. Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessible to the research and teaching communities as broad as microbial ecology, theoretical ecology, and ecosystem ecology, as well as biology. This model simulates processes ranging from degradation of substrates through microbial processes encompassing uptake, metabolism, mortality, reproduction, and dispersal in a spatially explicit, mechanistically explicit fashion. For more detailed information about DEMENTpy, we refer readers/users temporarily to an [Appendix](https://github.com/bioatmosphere/microbiome-drought-legacy/tree/master/writing) of the 1st manuscript applying this model. An actual documentation is under conceving.
+This model is built upon its predecessor--DEMENT, an R-based framework initially developed by Steven Allison back in 2012. Except for the programming language change, a series of changes have been made with an overarching goal of making it more readily accessible to the research and teaching communities as broad as microbial ecology, theoretical ecology, and ecosystem ecology, as well as biology. This model simulates processes ranging from degradation of substrates through microbial processes encompassing uptake, metabolism, mortality, reproduction, and dispersal in a spatially explicit, mechanistically explicit fashion. For more detailed information about DEMENTpy, we refer readers/users temporarily to an [Appendix](https://github.com/bioatmosphere/microbiome-drought-legacy/tree/master/writing) of the 1st manuscript applying this model. An actual documentation is under conceiving.
 
 
 ### Run DEMENTpy
@@ -69,7 +69,7 @@ A simple example of bash script, dementpy.sh, for running jobs on HPC is provide
 The space for contribution is HUGE and OPEN! For instance:
 
 - New processes/algorithms are more than welcome. 
-- Programming improvment are absolutely needed.
+- Programming improvement is absolutely needed.
 - Any bugs are possible.
 - ...
 
@@ -81,7 +81,7 @@ Feel free to reach out, or directly fork, change, and create pull requests, or c
 
 ### References
 
-1. Wang, B., & Steven D. Allison. (2022) [Climate-driven legacies in simulated microbial communities alter litter decomposition rates](https://www.frontiersin.org/articles/10.3389/fevo.2022.841824). Frontiers in Ecology and Evolution (in press)
+1. Wang, B., & Steven D. Allison. (2022) [Climate-driven legacies in simulated microbial communities alter litter decomposition rates](https://www.frontiersin.org/articles/10.3389/fevo.2022.841824). Frontiers in Ecology and Evolution 10,841824
 
 2. Wang, B., & Steven D. Allison. (2021) [Drought Legacies Mediated by Trait Tradeoffs in Soil Microbiomes]( https://doi.org/10.1002/ecs2.3562). Ecosphere 12, e03562
 
