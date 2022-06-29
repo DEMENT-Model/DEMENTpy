@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#SBATCH --job-name=dmg_data       ## Name of the job.
+#SBATCH -A ALLISONS_LAB      ## account to charge 
+#SBATCH -p standard          ## partition/queue name
+#SBATCH --nodes=1            ## (-N) number of nodes to use
+#SBATCH --ntasks=1           ## (-n) number of tasks to launch
+#SBATCH --cpus-per-task=1    ## number of cores the job needs
+#SBATCH --mail-type=end               ## send email when the job ends
+#SBATCH --mail-user=bwang7@uci.edu    ## use this email address
+#SBATCH --output=std_oe/%x_%A_%a.txt     ## https://unix.stackexchange.com/questions/285690/slurm-custom-standard-output-name
+##SBATCH --array=1-10                  ## number of array tasks
+
+module purge
+module load anaconda
+
+python3 tradeoff.py base_site site

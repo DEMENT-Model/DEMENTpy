@@ -53,6 +53,8 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 
 - output/: folder where the output object in .pickle will be residing
 
+- SPA/: Scripts of Processing and Analyzing (SPA) outputs
+
 **Run DEMENTpy**:
 
 - Configure Environment
