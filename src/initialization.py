@@ -93,6 +93,8 @@ def initialize_data(runtime_parameters, site):
     microbial_enzyme_gene = Microbes.microbe_enzyme_gene()
     #...Microbial osmolyte genes
     microbial_osmolyte_gene = Microbes.microbe_osmolyte_gene()
+    #...Microbial hsp genes
+    microbial_hsp_gene = Microbes.microbe_hsp_gene()
     #...Microbial uptake genes
     microbial_uptake_gene = Microbes.microbe_uptake_gene(substrates_req_enzyme,microbial_enzyme_gene,substrates_produced_monomers)
     #...Microbial uptake cost
@@ -101,8 +103,12 @@ def initialize_data(runtime_parameters, site):
     microbial_enzyme_prod_rate = Microbes.microbe_enzproduction_rate(microbial_enzyme_gene,enzymes_attributes)
     #...Microbial osmolyte productoin rate
     microbial_osmolyte_prod_rate = Microbes.microbe_osmoproduction_rate(microbial_osmolyte_gene)
+    #...Microbial HSP production rate
+    microbial_hsp_prod_rate = Microbes.microbe_hspproduction_rate(microbial_hsp_gene)
     #...Microbial drought tolerance
     microbial_drought_tol = Microbes.microbe_drought_tol(microbial_osmolyte_prod_rate[2],microbial_osmolyte_prod_rate[3])
+    #...Microbial thermal tolerance
+    microbial_thermal_tol = Microbes.microbe_thermal_tol(microbial_hsp_prod_rate[3])
     #...Microbial mortality
     microbial_mortality = Microbes.microbe_mortality(microbial_pool[1])
     
@@ -146,8 +152,10 @@ def initialize_data(runtime_parameters, site):
         "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),   # distribution of consti. enzyme gene cost across taxa
         "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),   # distribution of induci. enzyme gene cost across taxa
         "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),           # distribution of taxon-specific drought tol.
-        'basal_death_prob':  microbial_mortality[0],                # basal death probability
-        'death_rate':        microbial_mortality[1],                # change rate of death prob. agaist mositure
+        "TaxDrougtTol":        expand(microbial_thermal_tol,gridsize),
+        'basal_death_prob':     microbial_mortality[0],                # basal death probability
+        'drought_death_rate':   microbial_mortality[1],                # change rate of death prob. agaist mositure
+        'thermal_death_rate':   microbial_mortality[2],                # change rate of death pro. against temp.
         "AE_ref":            parameters.loc["CUE_ref",1],           # Reference assimilation efficiency: 0.5
         "AE_temp":           parameters.loc["CUE_temp",1],          # AE temperature sensitivity; default: -0.016
         'Uptake_Maint_cost': parameters.loc['Uptake_Maint_cost',1], # constant of transporter maintenence cost
@@ -158,6 +166,7 @@ def initialize_data(runtime_parameters, site):
         'max_size_f':        parameters.loc['max_size_f',1],        # C quota threshold for fungal cell division
         'wp_fc':             parameters.loc['wp_fc',1],             # threshold below which microbes start to respond to drought
         'wp_th':             parameters.loc['wp_th',1],             # threshold below which microbes in full swing to respond to drought
+        'temp_ref':          parameters.loc['temp_ref',1]
         'alpha':             parameters.loc['alpha',1],             # factor delineating curve concavity of microbial response to drought
         'Temp': daily_temp,                                         # temperature
         'Psi':  daily_psi                                           # water potential

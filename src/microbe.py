@@ -44,6 +44,7 @@ class Microbe():
         self.n_substrates    = int(runtime.loc['n_substrates',1])
         self.n_monomers      = int(runtime.loc['n_substrates',1])+2      # +2 b/c of two inorganic monomers
         self.n_uptake        = int(runtime.loc['n_uptake',1])            # number of transporters for each taxon
+        self.n_hsp           = int(runtime.loc['n_hsp',1])               # number of hsp for each taxon
         self.n_osmolyte      = int(runtime.loc['n_osmolytes',1])         # system-allowed number of osmotic compound
         self.taxa_per_box    = runtime.loc['taxa_per_box',1]             # Probability of each taxon entering a grid cell
         self.NormalizeUptake = int(runtime.loc['NormalizeUptake',1])     # Normalize uptake investment for the number of uptake genes;default:0
@@ -75,6 +76,13 @@ class Microbe():
         self.Constit_Prod_max  = parameters.loc['Constit_Prod_max',1]       # =0.0001; Maximum per enzyme production cost as a fraction of biomass
         self.Enz_Prod_min      = parameters.loc['Enz_Prod_min',1]           # =0.00001;Minimum per enzyme production cost as a fraction of C uptake rate
         self.Enz_Prod_max      = parameters.loc['Enz_Prod_max',1]           # =0.0001; Maximum ...
+        # HSP
+        self.hsp_per_taxon_min   = int(parameters.loc['Hsp_per_taxon_min',1]) # Minimum number of HSP gene 
+        self.hsp_per_taxon_max   = int(parameters.loc['Hsp_per_taxon_max',1]) # Max. # of HSP gene
+        self.hsp_consti_prod_min = parameters.loc['Hsp_Consti_Prod_min',1]    # constitutive cost min
+        self.hsp_consti_prod_max = parameters.loc['Hsp_Consti_Prod_max',1]    # constitutive cost max
+        self.hsp_induci_prod_min = parameters.loc['Hsp_Induci_Prod_min',1]    # inducible cost min
+        self.hsp_induci_prod_max = parameters.loc['Hsp_Induci_Prod_max',1]    # inducible cost max
         # osmolyte
         self.Osmo_per_taxon_min = int(parameters.loc['Osmo_per_taxon_min',1]) # Minimum number of osmotic gene 
         self.Osmo_per_taxon_max = int(parameters.loc['Osmo_per_taxon_max',1]) # Max. of osmotic gene
@@ -239,7 +247,34 @@ class Microbe():
         
         return EnzGenes
     
-    
+
+    def microbe_hsp_gene(self):
+        """
+        Derive taxon-specific hsp genes.
+
+        This method draws the number of genes per taxon from a uniform distribution; every taxon must have a HSP gene.
+
+        Parameters:
+            n_hsp:             gene pool encoding the number of HSP
+            hsp_per_taxon_min: 
+            hsp_per_taxon_max:
+        Returns:
+            hsp_genes: dataframe; dataframe; row: taxon; col: genes
+        """
+
+        # pool of genes encoding the system-required number of HSPs
+        n_genes = self.n_hsp
+        # derive the number of HSP genes each taxon can have randomly
+        genes_per_taxon = np.random.choice(range(self.hsp_per_taxon_min,self.hsp_per_taxon_max+1),self.n_taxa,replace=True)
+
+        # randomly assign different genes in the gene pool to a taxon based on its number allowed
+        hsp_genes_list = [random_assignment(i, n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
+        columns        = ['Hsp'+ str(i) for i in range(1,n_genes+1)]
+        hsp_genes      = pd.DataFrame(data=np.vstack(hsp_genes_list), index=self.index, columns=columns, dtype='int8')
+        
+        return hsp_genes
+        
+
     def microbe_osmolyte_gene(self):
         """
         Derive the taxon-specific number of genes encoding osmolytes.
@@ -386,7 +421,38 @@ class Microbe():
 
         return Tax_EnzProdConsti, Tax_EnzProdInduce, Tax_Consti_Enzyme_C, Tax_Induce_Enzyme_C 
     
+
+    def microbe_hspproduction_rate(self,hsp_genes):
+        """
+        Distribution of HSP production rate(i.e., proportion of available C as HSPs).
+
+        Parameters:
+            hsp_genes: 
+        Returns:
+        """
+
+        #LHS sampling
+        tax_hspprod_consti = LHS(self.n_taxa, self.hsp_consti_prod_min, self.hsp_consti_prod_max, 'uniform')
+        tax_hspprod_induci = LHS(self.n_taxa, self.hsp_induci_prod_min, self.hsp_induci_prod_max, 'uniform')
+        
+        tax_hspprod_consti_series = pd.Series(data=tax_hspprod_consti, index=self.index, dtype='float32')
+        tax_hspprod_induci_series = pd.Series(data=tax_hspprod_induci, index=self.index, dtype='float32')
+                                              
+        # Derive the production rate of every single gene of each taxon
+        tax_consti_hsp_c = hsp_genes.mul(tax_hspprod_consti_series,axis=0)
+        tax_induci_hsp_c = hsp_genes.mul(tax_hspprod_induci_series,axis=0)
+
+        # Normalize constituitive and inducible osmolyte production
+        if self.NormalizeProd == 1:
+            Normalize = hsp_genes.sum(axis=1)/self.hsp_per_taxon_max
+            tax_consti_hsp_c = tax_consti_hsp_c.divide(Normalize, axis=0)
+            tax_induci_hsp_c = tax_induci_hsp_c.divide(Normalize, axis=0)
+            tax_consti_hsp_c[Normalize==0] = 0
+            tax_induci_hsp_c[Normalize==0] = 0
+        
+        return tax_hspprod_consti_series, tax_hspprod_induci_series, tax_consti_hsp_c, tax_induci_hsp_c
     
+
     def microbe_osmoproduction_rate(self,OsmoGenes):
         """
         Distribution of osmolyte production rate (i.e.,proportion of available C as osmolytes).
@@ -431,77 +497,115 @@ class Microbe():
         """
         Derive taxon-specific drought tolerance value.
         
-        This method determines tolerance by assuming a postive correlation with taxon-specific (inducible) osmolyte allocation efficiency.
+        This method determines tolerance by assuming a postive correlation with taxon-specific (inducible)
+        osmolyte allocation efficiency.
         
         Parameter:
             Tax_Consti_Osmo_C: dataframe; tax- and gene-specific allocation efficiency
             Tax_Induci_Osmo_C: dataframe; tax- and gene-specific allocation efficiency
         Return:
-            Tax_tolerance: series;float32; value: 0. ~ 1.
+            stress_tolerance: series;float32; value: 0. ~ 1; no unit
         """
 
         #Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1)
-        Tax_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
-        Tax_tolerance  = Tax_tolerance.fillna(0)
+        stress_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
+        stress_tolerance  = stress_tolerance.fillna(0)
         
-        return Tax_tolerance
+        return stress_tolerance
     
-     
+
+    def microbe_thermal_tol(self,tax_induci_hsp_c):
+        """
+        Derive taxon-specific Stress Tolerance value.
+
+        This is a compound tolerance parameter integrating drought and thermal tolerance.
+
+        Parameter:
+            Tax_Induci_Osmo_C:
+            tax_induci_hsp_c:
+        
+        Return:
+            stress_tolerance:
+        """
+
+        # drought tolerance
+        #Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1)
+        #drought_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
+        #drought_tolerance  = drought_tolerance.fillna(0)
+        # thermal tolerance
+        tax_hsp_alloc = tax_induci_hsp_c.sum(axis=1)
+        thermal_tolerance  = (tax_hsp_alloc - tax_hsp_alloc.min())/(tax_hsp_alloc.max() - tax_hsp_alloc.min())
+        thermal_tolerance  = thermal_tolerance.fillna(0)
+        # componund tolerance
+        #stress_tolerance = drought_tolerance * thermal_tolerance
+
+        return thermal_tolerance
+
+    
     def microbe_mortality(self,fb_grid):
         """
         Derive taxon-specific microbial mortality parameters.
         
         Parameters:
             fb_grid:        1D array; index of bacteria (0) vs fungi (1) over the grid
-            death_rate_bac: scalar; basal death prob
-            death_rate_fun: scalar; basal death prob
-            beta_bac:       scalar; mortality prob change rate
-            beta_fun:       scalar; mortality prob change rate
+            death_rate_bac: scalar; basal death prob; no unit
+            death_rate_fun: scalar; basal death prob; no unit
+            beta_bac:       scalar; mortality prob change rate with psi; unit: 1/KPa
+            beta_fun:       scalar; mortality prob change rate with psi; unit: 1/KPa
+            beta_bac_temp:  scalar; bacterial mortality prob change rate with temp;unit: 1/'C
+            beta_fun_temp:  scalar; fungal mortality prob change rate with temp;unit: 1/'C
         Returns:
             basal_death_prop: 1D array; spatial taxon-specific basal death probability 
             death_rate:       1D array; spatial death_rate
         """
 
         basal_death_prob = ((1-fb_grid) * self.death_rate_bac + fb_grid * self.death_rate_fun).astype('float32')
-        death_rate       = ((1-fb_grid) * self.beta_bac       + fb_grid * self.beta_fun).astype('float32')
+        death_rate_psi   = ((1-fb_grid) * self.beta_bac       + fb_grid * self.beta_fun).astype('float32')
+        death_rate_temp  = ((1-fb_grid) * self.beta_bac_temp  + fb_grid * self.beta_fun_temp).astype('float32')
 
-        return basal_death_prob, death_rate 
+        return basal_death_prob, death_rate_psi, death_rate_temp 
 
 
-def microbe_mortality_prob(basal_death_prob,death_rate,Tax_tolerance,Psi_fc,Psi):
+def microbe_mortality_prob(basal_death_prob,drought_death_rate,drought_tolerance,psi_th,psi,
+                            thermal_death_rate,thermal_tolerance,temp_ref,temp):
     """
     Derive taxon-specific mortality probability.
     
     This function as a function of water potential and drought tolerance.
 
     Paramters:
-        basal_death_prob: 1D array; taxon-specific basal mortality prob
-        death_rate:       1D array; taxon-specific mortality change rate
-        Tax_tolerance:    series;   taxon-specific drought tolerance
-        Psi_fc:           scalar;   water potential at field capacity
-        Psi:              scalar;   daily water potential
+        basal_death_prob:   1D array; taxon-specific basal mortality prob
+        drought_death_rate: 1D array; taxon-specific drought mortality change rate
+        thermal_death_rate: 1D array; taxon-specific thermal mortality change rate
+        drought_tolerance: series; taxon-specific drought tolerance
+        thermal_tolerance: series; taxon-specific drought tolerance
+        psi_th: scalar;   water potential at field capacity
+        psi: scalar;   daily water potential
+        temp: scalar; daily temperature
+        temp_ref: scalar; temperature reference
     Returns:
-        mortality_rate:   1D array; taxon-specific mortality probability
+        mortality_prob:   1D array; taxon-specific mortality probability
     Reference:
         Allison and Goulden, 2017, Soil Biology and Biochemistry
     """
-    
-    if Psi >= Psi_fc:
-        mortality_rate = basal_death_prob
+    drought_tolerance = drought_tolerance.to_numpy(copy=False)
+    thermal_tolerance = thermal_tolerance.to_numpy(copy=False)
+
+    if psi >= psi_th and temp <= temp_ref:
+        mortality_prob = basal_death_prob
+    elif psi >= psi_th and temp > temp_ref:
+        mortality_prob = basal_death_prob * (1 + thermal_death_rate*(temp-temp_ref)*(1-thermal_tolerance)) 
+    elif psi < psi_th and temp <= temp_ref:
+        mortality_prob = basal_death_prob * (1 + drought_death_rate*abs(psi+psi_th)*(1-drought_tolerance))
     else:
-        tolerance = Tax_tolerance.to_numpy(copy=False)
-        # option 1
-        mortality_rate = basal_death_prob * (1 - (1-tolerance)*(Psi-Psi_fc)*death_rate)
-        # option 2
-        #mortality_rate = basal_death_prob * (1 - (1/np.exp(tolerance))*(Psi-Psi_fc)*death_rate)
-        # option 3
-        #mortality_rate = basal_death_prob * (1/np.exp(tolerance)) * (1 - death_rate*(Psi-Psi_fc))
-    
-    return mortality_rate.astype('float32')
+        mortality_prob = basal_death_prob * (1 + drought_death_rate*abs(psi+psi_th)*(1-drought_tolerance) +
+                                             hermal_death_rate*(temp-temp_ref)*(1-thermal_tolerance))
+
+    return mortality_prob.astype('float32')
 
 
-def microbe_osmo_psi(alfa,Psi_fc,Psi):
+def microbe_osmo_psi(alfa,psi_fc,psi):
     """
     Derive water potential modifier of (inducible) osmolyte production.
 
@@ -510,8 +614,8 @@ def microbe_osmo_psi(alfa,Psi_fc,Psi):
     
     Parameters: 
         alfa:   scalar; shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
-        Psi_fc: scalar; water potential at field capacity
-        Psi:    scalar; water potential at a daily step 
+        psi_fc: scalar; water potential at field capacity
+        psi:    scalar; water potential at a daily step 
     Returns:
         f_osmo: scalar; modifier of inducible production of osmoylte   
     References:
@@ -529,9 +633,30 @@ def microbe_osmo_psi(alfa,Psi_fc,Psi):
     #    f_osmo = (x/y)**alfa
 
     # option 2
-    if Psi >= Psi_fc:
+    if psi >= psi_fc:
         f_osmo = 0.0
     else:
-        f_osmo = 1 - alfa * Psi
+        f_osmo = 1 - alfa * psi
 
     return np.float32(f_osmo)
+
+
+def microbe_hsp_temp(ea, temp):
+    """
+    Derive temperature modifier of (inducible) HSPs production.
+
+    Standard HSP rate at 20 C is modified.
+
+    Parameters:
+        ea:       activation energy of HSP synthesis
+        temp:     daily temp
+
+    Returns:
+        f_hsp: scalar; modifier of inducible HSP production
+    """
+    temp_ref = 20             # reference temperature (20 C)
+    k = np.float32(8.617e-5)  # ev/K; https://en.wikipedia.org/wiki/Boltzmann_constant
+
+    f_hsp = np.exp((-ea/k) * np.float32(1/(temp+273) - 1/temp_ref+273))
+
+    return f_hsp

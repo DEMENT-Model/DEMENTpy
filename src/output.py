@@ -146,6 +146,7 @@ class Output():
         #self.OsmolyteIndSeries    = pd.Series(data=[0]*n_taxa,index=Mic_index)
         self.Osmolyte_TaxonSeries = pd.Series(data=[0]*n_taxa, index=Mic_index, dtype='float32')
         
+        self.Hsp_TaxonSeries      = pd.Series(data=[0]*n_taxa, index=Mic_index, dtype='float32')
         # Growth yield
         self.Growth_yield = pd.Series(data=[0]*n_taxa, index=Mic_index, dtype='float32')
 
@@ -289,6 +290,14 @@ class Output():
         # Total
         self.Osmolyte_TaxonSeries = pd.concat([self.Osmolyte_TaxonSeries, Osmolyte_Ind_grid],axis=1,sort=False)
         
+         # Inducible
+        Hsp_Ind_grid = ecosystem.Taxon_Hsp_Cost_C.groupby(level=0,sort=False).sum()
+        Hsp_Ind_grid.name = self.cycle*year + (day+1)
+        #self.OsmolyteIndSeries = pd.concat([self.OsmolyteIndSeries,Osmolyte_Ind_grid],axis=1,sort=False)
+        # Total
+        self.Hsp_TaxonSeries = pd.concat([self.Hsp_TaxonSeries, Hsp_Ind_grid],axis=1,sort=False)
+
+
         # Growth yield by Taxon
         GY_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
         GY_grid.name = self.cycle*year + (day+1)

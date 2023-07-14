@@ -101,10 +101,13 @@ class Grid():
         self.N_min            = data_init['N_min']               # N threshold value of living cell
         self.P_min            = data_init['P_min']               # P threshold value of living cell
         self.basal_death_prob = data_init['basal_death_prob']    # basal death probability of microbes
-        self.death_rate       = data_init['death_rate']          # change rate of mortality with water potential
-        self.tolerance        = data_init['TaxDroughtTol']       # taxon drought tolerance
+        self.drought_death_rate = data_init['drought_death_rate']          # change rate of mortality with water potential
+        self.drought_tolerance  = data_init['TaxDroughtTol']       # taxon drought tolerance
+        self.thermal_death_rate= data_init['thermal_death_rate']
+        self.thermal_tolerance = data_init['TaxThermalTol']
         self.wp_fc            = data_init['wp_fc']               # scalar; max threshold value of water potential
-        self.wp_th            = data_init['wp_th']               # scalar; min threshold value of water potential
+        self.temp_ref         = data_init['temp_ref']
+        #self.wp_th            = data_init['wp_th']               # scalar; min threshold value of water potential
         self.alpha            = data_init['alpha']               # scalar; moisture sensitivity; 1
         self.Kill             = np.float32('nan')                # total number of cells stochastically killed
         
@@ -281,8 +284,8 @@ class Grid():
         Explicitly calculate intra-cellular production of metabolites.
         
         Handles both constitutive (standing biomass) and inducible (immediate monomers uptake) pathways following:
-          1. constitutive enzyme and osmolyte production
-          2. inducible enzyme and osmolyte production
+          1. constitutive enzyme and osmolyte production, as well as HSP
+          2. inducible enzyme and osmolyte production, as well as HSP
           3. emergent CUE & Respiration
           4. update both Enzymes (with production & loss) and Substrates (with dead enzymes)
         """
@@ -290,12 +293,14 @@ class Grid():
         # Constants
         Osmo_N_cost      = np.float32(0.3)   # N cost per unit of osmo-C production 
         Osmo_Maint_cost  = np.float32(5.0)   # C loss per unit of osmo-C production
+        Hsp_N_cost       = np.float32(0.28)  #
+        Hsp_Maint_cost   = np.float32(5.0)   #
         Enzyme_Loss_Rate = np.float32(0.04)  # enzyme turnover rate(=0.04; Allison 2006)
         # index of dead enzyme in Substrates
         is_deadEnz = self.Substrates.index == "DeadEnz"
 
         #---------------------------------------------------------------------#
-        #......................constitutive processes.........................#
+        #......................Constitutive processes.........................#
         #---------------------------------------------------------------------#
         # Variable Acronyms:
         #   OECCN : Osmo_Enzyme_Consti_Cost_N
@@ -306,6 +311,9 @@ class Grid():
         # Taxon-specific respiration cost of producing transporters: self.uptake_maint_cost = 0.01
         # NOTE Microbes['C'],as opposed to Microbes.sum(axis=1) in DEMENT
         Taxon_Transporter_Maint = self.Uptake_Enz_Cost.mul(self.Microbes['C'],axis=0).sum(axis=1) * self.Uptake_Maint_Cost
+        # HSP before adjustment
+        Taxon_Hsp_Consti          = self.Consti_Hsp_C.mul(self.Microbes['C'],axis=0)
+        Taxon_Hsp_Consti_Cost_N   = (Taxon_Hsp_Consti * Hsp_N_cost).sum(axis=1)
         # Osmolyte before adjustment
         Taxon_Osmo_Consti          = self.Consti_Osmo_C.mul(self.Microbes['C'],axis=0)
         Taxon_Osmo_Consti_Cost_N   = (Taxon_Osmo_Consti * Osmo_N_cost).sum(axis=1)
@@ -316,6 +324,11 @@ class Grid():
         OECCN  = Taxon_Osmo_Consti_Cost_N + Taxon_Enzyme_Consti_Cost_N                                    # Total N cost
         MNAOEC = (pd.concat([OECCN[OECCN>0],self.Microbes['N'][OECCN>0]],axis=1)).min(axis=1,skipna=True) # get the minimum value
         ARROEC = (MNAOEC/OECCN[OECCN>0]).fillna(0)                                                        # Derive ratio of availabe N to required N
+        # HSP adjusted
+        Taxon_Hsp_Consti[OECCN>0] = Taxon_Hsp_Consti[OECCN>0].mul(ARROEC,axis=0)           # adjusted HSPs
+        Taxon_Hsp_Consti_Maint    = (Taxon_Hsp_Consti * Hsp_Maint_cost).sum(axis=1)        # maintenece
+        Taxon_Hsp_Consti_Cost_N   = (Taxon_Hsp_Consti * Hsp_N_cost).sum(axis=1)            # N cost (no P)
+        Taxon_Hsp_Consti_Cost_C   = Taxon_Hsp_Consti.sum(axis=1) + Taxon_Hsp_Consti_Maint  # total C consumption
         # Osmolyte adjusted
         Taxon_Osmo_Consti[OECCN>0] = Taxon_Osmo_Consti[OECCN>0].mul(ARROEC,axis=0)            # adjusted osmolyte
         Taxon_Osmo_Consti_Maint    = (Taxon_Osmo_Consti * Osmo_Maint_cost).sum(axis=1)        # maintenece
@@ -338,45 +351,58 @@ class Grid():
         #   MNAOEI: Min_N_Avail_Osmo_Enzyme_Induci
         #..................................................
 
-        # Assimilation efficiency constrained by temperature
-        Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float32(273))) * self.AE_temp  #scalar
+        # Assimilation efficiency
+        #Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float32(273))) * self.AE_temp  #scalar
+        Taxon_AE = self.AE_ref
 
-        # Taxon growth respiration
-        Taxon_Growth_Respiration = self.Taxon_Uptake_C * (np.float32(1) - Taxon_AE)
+        # Taxon respiration from uptake includes any respiratory cost of transporting substrate
+        # into the cell and the minimum cost for catabolism (e.g.dissimilation).
+        Taxon_Uptake_Respiration = self.Taxon_Uptake_C * (np.float32(1) - Taxon_AE)
 
         # derive the water potential modifier by calling the function microbe_osmo_psi()
         f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.psi[day])
+        # derive the thermal modifier by calling the function microbe_hsp_temp()
+        f_temp = microbe_hsp_temp(self.ea, self.temp[day])
         
-        # Inducible Osmolyte production only when psi reaches below wp_fc
+        # Inducible HSP production
+        Taxon_Hsp_Induci           = self.Induci_Hsp_C.mul(self.Taxon_Uptake_C*Taxon_AE,axis=0) * f_temp
+        Taxon_Hsp_Induci_Cost_N    = (Taxon_Hsp_Induci * Hsp_N_Cost).sum(axis=1)
+        # Inducible Osmolyte production (only when psi reaches below wp_fc)
         Taxon_Osmo_Induci          = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C*Taxon_AE, axis=0) * f_psi
         Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)            # Total osmotic N cost of each taxon (.sum(axis=1))
         # Inducible enzyme production
         Taxon_Enzyme_Induci        = self.Induci_Enzyme_C.mul(self.Taxon_Uptake_C*Taxon_AE, axis=0)
         Taxon_Enzyme_Induci_Cost_N = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib['N_cost'],axis=1)).sum(axis=1) # Total enzyme N cost of each taxon (.sum(axis=1))
         # Adjust production based on N availabe
-        OEICN  = Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N                         # Total N cost of osmolyte and enzymes
+        OEICN  = Taxon_Hsp_Induci_Cost_N + Taxon_Osmo_Induci_Cost_N + Taxon_Enzyme_Induci_Cost_N # Total N cost of osmolyte and enzymes
         OEIAN  = pd.Series(data=self.Taxon_Uptake_N, index=self.Microbes.index)                # N available
         MNAOEI = (pd.concat([OEICN[OEICN>0],OEIAN[OEICN>0]],axis=1)).min(axis=1,skipna=True)   # Get the minimum value by comparing N cost to N available
         ARROEI = (MNAOEI/OEICN[OEICN>0]).fillna(0)                                             # Ratio of Available to Required
+        # HSP adjusted:
+        Taxon_Hsp_Induci[OEICN>0] = Taxon_Hsp_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
+        Taxon_Hsp_Induci_Maint    = (Taxon_Hsp_Induci * Hsp_Maint_cost).sum(axis=1) 
+        Taxon_Hsp_Induci_Cost_N   = (Taxon_Hsp_Induci * Hsp_N_cost).sum(axis=1)
+        Taxon_Hsp_Induci_Cost_C   = Taxon_Hsp_Induci.sum(axis=1) + Taxon_Hsp_Induci_Maint
         # Osmolyte adjusted: accompanying maintenence and N cost
         Taxon_Osmo_Induci[OEICN>0] = Taxon_Osmo_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
         Taxon_Osmo_Induci_Maint    = (Taxon_Osmo_Induci * Osmo_Maint_cost).sum(axis=1) 
         Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)
         Taxon_Osmo_Induci_Cost_C   = Taxon_Osmo_Induci.sum(axis=1) + Taxon_Osmo_Induci_Maint
-        # Enzyme adjusted: Total enzyme carbon cost (+ CO2 loss), N cost, and P cost for each taxon
+        # Enzyme adjusted: total enzyme carbon cost (+ CO2 loss), N cost, and P cost for each taxon
         Taxon_Enzyme_Induci[OEICN>0] = Taxon_Enzyme_Induci.loc[OEICN>0].mul(ARROEI,axis=0)
         Taxon_Enzyme_Induci_Maint    = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["Maint_cost"],axis=1)).sum(axis=1)
         Taxon_Enzyme_Induci_Cost_N   = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["N_cost"],    axis=1)).sum(axis=1)
         Taxon_Enzyme_Induci_Cost_P   = (Taxon_Enzyme_Induci.mul(self.Enz_Attrib["P_cost"],    axis=1)).sum(axis=1)
         Taxon_Enzyme_Induci_Cost_C   = Taxon_Enzyme_Induci.sum(axis=1) + Taxon_Enzyme_Induci_Maint
         # Derive C, N, & P deposited as biomass from Uptake; ensure no negative values
-        Microbe_C_Gain = self.Taxon_Uptake_C - Taxon_Growth_Respiration   - Taxon_Enzyme_Induci_Cost_C - Taxon_Osmo_Induci_Cost_C
-        Microbe_N_Gain = self.Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N
+        Microbe_C_Gain = self.Taxon_Uptake_C - Taxon_Uptake_Respiration   - Taxon_Enzyme_Induci_Cost_C - Taxon_Osmo_Induci_Cost_C - Taxon_Hsp_Induci_Cost_C
+        Microbe_N_Gain = self.Taxon_Uptake_N - Taxon_Enzyme_Induci_Cost_N - Taxon_Osmo_Induci_Cost_N - Taxon_Hsp_Induci_Cost_N
         Microbe_P_Gain = self.Taxon_Uptake_P - Taxon_Enzyme_Induci_Cost_P
         
         self.Taxon_Enzyme_Cost_C  = Taxon_Enzyme_Induci_Cost_C + Taxon_Enzyme_Consti_Cost_C
         self.Taxon_Osmo_Cost_C  = Taxon_Osmo_Induci_Cost_C + Taxon_Osmo_Consti_Cost_C
-        self.Microbe_C_Gain  = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Transporter_Maint
+        self.Taxon_Hsp_Cost_C = Taxon_Hsp_Induci_Cost_C + Taxon_Hsp_Consti_Cost_C
+        self.Microbe_C_Gain  = Microbe_C_Gain - Taxon_Enzyme_Consti_Cost_C - Taxon_Osmo_Consti_Cost_C - Taxon_Hsp_Consti_Cost_C - Taxon_Transporter_Maint
 
         #------------------------------------------------#
         #...............Integration......................#
@@ -402,8 +428,10 @@ class Grid():
         
         # Respiration from Constitutive + Inducible(NOTE: missing sum(MicLoss[,"C"]) in the Mortality below)
         self.Respiration = (
-            Taxon_Transporter_Maint + Taxon_Growth_Respiration  + Taxon_Osmo_Consti_Maint +
-            Taxon_Osmo_Induci_Maint + Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint
+            Taxon_Transporter_Maint + Taxon_Uptake_Respiration +
+            Taxon_Osmo_Consti_Maint + Taxon_Osmo_Induci_Maint +
+            Taxon_Enzyme_Consti_Maint + Taxon_Enzyme_Induci_Maint +
+            Taxon_Hsp_Consti_Maint + Taxon_Hsp_Induci_Maint
         ).sum(axis=0)
         
         # Derive Enzyme production
@@ -463,8 +491,9 @@ class Grid():
         mic_index = self.Microbes['C'] > 0
         
         # --Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
-        # call the function MMP:microbe_mortality_psi() 
-        r_death             = MMP(self.basal_death_prob,self.death_rate,self.tolerance,self.wp_fc,self.psi[day])
+        # call the function MMP:microbe_mortality_prob() 
+        r_death = MMP(self.basal_death_prob,self.drought_death_rate,self.drought_tolerance,self.wp_fc,self.psi[day],
+                                            self.thermal_death_rate,self.thermal_tolerance,self.temp_ref,self.temp[day])
         kill.loc[mic_index] = r_death[mic_index] > np.random.uniform(0,1,sum(mic_index)).astype('float32')
         # Index the dead, put them in Death, and set them to 0 in Microbes 
         Death.loc[kill]         = self.Microbes[kill]
@@ -569,7 +598,7 @@ class Grid():
     
     def reproduction(self,day):           
         """
-        Calculate reproduction and dispersal.
+        Calculate reproduction and local dispersal.
         
         Update microbial composition/distrituion on the spatial grid.
  
