@@ -81,11 +81,11 @@ Feel free to reach out, or directly fork, change, and create pull requests, or c
 
 ### References
 
-1. Wang, B., & Steven D. Allison. (2022) [Climate-driven legacies in simulated microbial communities alter litter decomposition rates](https://www.frontiersin.org/articles/10.3389/fevo.2022.841824). Frontiers in Ecology and Evolution 10,841824
+1. Wang, B., & Steven D. Allison. (2022) [Climate-driven legacies in simulated microbial communities alter litter decomposition rates](https://www.frontiersin.org/articles/10.3389/fevo.2022.841824). Frontiers in Ecology and Evolution 10,841824 [[GitHub Repo](https://github.com/bioatmosphere/microbiome-climate-gradient)]
 
-2. Wang, B., & Steven D. Allison. (2021) [Drought Legacies Mediated by Trait Tradeoffs in Soil Microbiomes]( https://doi.org/10.1002/ecs2.3562). Ecosphere 12, e03562
+2. Wang, B., & Steven D. Allison. (2021) [Drought Legacies Mediated by Trait Tradeoffs in Soil Microbiomes]( https://doi.org/10.1002/ecs2.3562). Ecosphere 12, e03562 [[GitHub Repo](https://github.com/bioatmosphere/microbiome-drought-legacy)]
 
-3. Wang, B., & Allison, S. D. (2019).[Emergent properties of organic matter decomposition by soil enzymes](https://doi.org/10.1016/j.soilbio.2019.107522). Soil Biology and Biochemistry, 136, 107522
+3. Wang, B., & Allison, S. D. (2019).[Emergent properties of organic matter decomposition by soil enzymes](https://doi.org/10.1016/j.soilbio.2019.107522). Soil Biology and Biochemistry, 136, 107522 [[GitHub Repo](https://github.com/bioatmosphere/An_emergent_soil_enzyme_decomposition_model)]
 
 4. Allison, S. D., & Goulden, M. L. (2017). [Consequences of drought tolerance traits for microbial decomposition in the DEMENT model](https://doi.org/10.1016/j.soilbio.2017.01.001). Soil Biology and Biochemistry, 107, 104-113.
 
