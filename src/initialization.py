@@ -26,15 +26,15 @@ def initialize_data(runtime_parameters, site):
     """
     
     # Load all input files
-    parameters      = pd.read_csv(site+'/'+'parameters.csv',         header=None, index_col=0).astype('float32')   # parameters
-    substrates_init = pd.read_csv(site+'/'+'initial_substrates.csv', header=0,    index_col=0).astype('float32')   # initial substrates
-    sub_mon_input   = pd.read_csv(site+'/'+'sub_mon_inputs.csv',     header=0,    index_col=0).astype('float32')   # inputs of substrates and monomers
-    Ea_input        = pd.read_csv(site+'/'+"enzyme_ea.csv",          header=0,    index_col=0).astype('float32')   # enzyme activation energy
+    parameters      = pd.read_csv(site+'/'+'parameters.csv',         header=None, index_col=0).astype('float16')   # parameters
+    substrates_init = pd.read_csv(site+'/'+'initial_substrates.csv', header=0,    index_col=0).astype('float16')   # initial substrates
+    sub_mon_input   = pd.read_csv(site+'/'+'sub_mon_inputs.csv',     header=0,    index_col=0).astype('float16')   # inputs of substrates and monomers
+    Ea_input        = pd.read_csv(site+'/'+"enzyme_ea.csv",          header=0,    index_col=0).astype('float16')   # enzyme activation energy
     # climate forcings
     climate = pd.read_csv(site+'/'+'climate.csv', header=0, index_col=0)
     # daily temperature and water potential
-    daily_temp = climate['Temp'].to_numpy(dtype='float32')  # temperaure series
-    daily_psi  =  climate['Psi'].to_numpy(dtype='float32')  # water potential series
+    daily_temp = climate['Temp'].to_numpy(dtype='float16')  # temperaure series
+    daily_psi  =  climate['Psi'].to_numpy(dtype='float16')  # water potential series
 
 
     #...an instance of Substrate class 
@@ -112,6 +112,9 @@ def initialize_data(runtime_parameters, site):
     #...Microbial mortality
     microbial_mortality = Microbes.microbe_mortality(microbial_pool[1])
     
+    #...Microbial HSP Ea
+    microbial_hsp_ea = Microbes.microbe_hsp_ea(microbial_pool[1])
+
     #...Dump all initialized data into a dictionary; NOTE: variables with expand() put on the spatial grid
     gridsize = int(runtime_parameters.loc['gridsize',1])
     
@@ -149,10 +152,12 @@ def initialize_data(runtime_parameters, site):
         "UptakeGenesCost":     expand(microbial_uptake_cost[1],gridsize),        # distribution of transporter gene cost across taxa
         "OsmoProdConsti":      expand(microbial_osmolyte_prod_rate[2],gridsize), # distribution of consti. osmolyte gene cost across taxa
         "OsmoProdInduci":      expand(microbial_osmolyte_prod_rate[3],gridsize), # distribution of induci. osmolyte gene cost across taxa
+        "HspProdConsti":       expand(microbial_hsp_prod_rate[2],gridsize),
+        "HspProdInduci":       expand(microbial_hsp_prod_rate[3],gridsize),
         "EnzProdConstit":      expand(microbial_enzyme_prod_rate[2],gridsize),   # distribution of consti. enzyme gene cost across taxa
         "EnzProdInduce":       expand(microbial_enzyme_prod_rate[3],gridsize),   # distribution of induci. enzyme gene cost across taxa
         "TaxDroughtTol":       expand(microbial_drought_tol,gridsize),           # distribution of taxon-specific drought tol.
-        "TaxDrougtTol":        expand(microbial_thermal_tol,gridsize),
+        "TaxThermalTol":       expand(microbial_thermal_tol,gridsize),           # distribution of taxon-specific thermal tol.
         'basal_death_prob':     microbial_mortality[0],                # basal death probability
         'drought_death_rate':   microbial_mortality[1],                # change rate of death prob. agaist mositure
         'thermal_death_rate':   microbial_mortality[2],                # change rate of death pro. against temp.
@@ -166,8 +171,9 @@ def initialize_data(runtime_parameters, site):
         'max_size_f':        parameters.loc['max_size_f',1],        # C quota threshold for fungal cell division
         'wp_fc':             parameters.loc['wp_fc',1],             # threshold below which microbes start to respond to drought
         'wp_th':             parameters.loc['wp_th',1],             # threshold below which microbes in full swing to respond to drought
-        'temp_ref':          parameters.loc['temp_ref',1]
+        'temp_ref':          parameters.loc['temp_ref',1],          #
         'alpha':             parameters.loc['alpha',1],             # factor delineating curve concavity of microbial response to drought
+        'microbial_hsp_ea':  microbial_hsp_ea,                      # factor delineating thermal sensitivity of hsp production
         'Temp': daily_temp,                                         # temperature
         'Psi':  daily_psi                                           # water potential
     }

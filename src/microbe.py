@@ -93,8 +93,10 @@ class Microbe():
         # mortality
         self.death_rate_bac = parameters.loc['death_rate_bac',1]              # Bacterial basal mortality prob.
         self.death_rate_fun = parameters.loc['death_rate_fun',1]              # Fungal basal mortality probability
-        self.beta_bac       = parameters.loc['beta_bac',1]                    # Bacterial mortality coefficient
-        self.beta_fun       = parameters.loc['beta_fun',1]                    # Fungal mortality coefficient
+        self.beta_bac_psi   = parameters.loc['beta_bac',1]                    # Bacterial mortality coefficient
+        self.beta_fun_psi   = parameters.loc['beta_fun',1]                    # Fungal mortality coefficient
+        self.beta_bac_temp  = parameters.loc['beta_bac_temp',1]               # Bacterial death-temp coefficient
+        self.beta_fun_temp  = parameters.loc['beta_fun_temp',1]               # Fungal death-temp coefficient
 
     
     def microbial_pool_initialization(self):
@@ -270,7 +272,7 @@ class Microbe():
         # randomly assign different genes in the gene pool to a taxon based on its number allowed
         hsp_genes_list = [random_assignment(i, n_genes, genes_per_taxon) for i in range(self.n_taxa)] # list of 1D array
         columns        = ['Hsp'+ str(i) for i in range(1,n_genes+1)]
-        hsp_genes      = pd.DataFrame(data=np.vstack(hsp_genes_list), index=self.index, columns=columns, dtype='int8')
+        hsp_genes      = pd.DataFrame(data=np.vstack(hsp_genes_list), index=self.index, columns=columns, dtype='uint8')
         
         return hsp_genes
         
@@ -509,10 +511,10 @@ class Microbe():
 
         #Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1) + Tax_Consti_Osmo_C.sum(axis=1)
         Tax_Osmo_Alloc = Tax_Induci_Osmo_C.sum(axis=1)
-        stress_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
-        stress_tolerance  = stress_tolerance.fillna(0)
+        drought_tolerance  = (Tax_Osmo_Alloc - Tax_Osmo_Alloc.min())/(Tax_Osmo_Alloc.max()-Tax_Osmo_Alloc.min())
+        drought_tolerance  = drought_tolerance.fillna(0)
         
-        return stress_tolerance
+        return drought_tolerance
     
 
     def microbe_thermal_tol(self,tax_induci_hsp_c):
@@ -551,8 +553,8 @@ class Microbe():
             fb_grid:        1D array; index of bacteria (0) vs fungi (1) over the grid
             death_rate_bac: scalar; basal death prob; no unit
             death_rate_fun: scalar; basal death prob; no unit
-            beta_bac:       scalar; mortality prob change rate with psi; unit: 1/KPa
-            beta_fun:       scalar; mortality prob change rate with psi; unit: 1/KPa
+            beta_bac_psi:   scalar; mortality prob change rate with psi; unit: 1/KPa
+            beta_fun_psi:   scalar; mortality prob change rate with psi; unit: 1/KPa
             beta_bac_temp:  scalar; bacterial mortality prob change rate with temp;unit: 1/'C
             beta_fun_temp:  scalar; fungal mortality prob change rate with temp;unit: 1/'C
         Returns:
@@ -561,10 +563,31 @@ class Microbe():
         """
 
         basal_death_prob = ((1-fb_grid) * self.death_rate_bac + fb_grid * self.death_rate_fun).astype('float32')
-        death_rate_psi   = ((1-fb_grid) * self.beta_bac       + fb_grid * self.beta_fun).astype('float32')
+        death_rate_psi   = ((1-fb_grid) * self.beta_bac_psi   + fb_grid * self.beta_fun_psi).astype('float32')
         death_rate_temp  = ((1-fb_grid) * self.beta_bac_temp  + fb_grid * self.beta_fun_temp).astype('float32')
 
         return basal_death_prob, death_rate_psi, death_rate_temp 
+
+
+    def microbe_hsp_ea(self, fb_grid):
+        """
+        Derive taxon-specific activation energy of HSP synthesis.
+
+        Parameters:
+            fb_grid: 1D array; index of bacteria (0) vs fungi (1) over the grid
+
+
+        Reference:
+            Dell, A. I., Pawar, S., & Savage, V. M. (2011). Systematic variation in the temperature dependence
+            of physiological and ecological traits.PNAS, 108(26), 10591-10596.https://doi.org/10.1073/pnas.1015178108
+        """
+        
+        bac_hsp_ea = 0.5
+        fun_hsp_ea = 0.9
+
+        microbe_hsp_ea = ((1-fb_grid) * bac_hsp_ea + fb_grid * fun_hsp_ea).astype('float32')
+
+        return microbe_hsp_ea
 
 
 def microbe_mortality_prob(basal_death_prob,drought_death_rate,drought_tolerance,psi_th,psi,
@@ -572,23 +595,26 @@ def microbe_mortality_prob(basal_death_prob,drought_death_rate,drought_tolerance
     """
     Derive taxon-specific mortality probability.
     
-    This function as a function of water potential and drought tolerance.
+    This function is a function of water potential and drought tolerance
+    and thermal stress and thermal tolerance.
 
     Paramters:
         basal_death_prob:   1D array; taxon-specific basal mortality prob
         drought_death_rate: 1D array; taxon-specific drought mortality change rate
         thermal_death_rate: 1D array; taxon-specific thermal mortality change rate
-        drought_tolerance: series; taxon-specific drought tolerance
-        thermal_tolerance: series; taxon-specific drought tolerance
-        psi_th: scalar;   water potential at field capacity
-        psi: scalar;   daily water potential
-        temp: scalar; daily temperature
-        temp_ref: scalar; temperature reference
+        drought_tolerance:  series;   taxon-specific drought tolerance
+        thermal_tolerance:  series;   taxon-specific drought tolerance
+        psi_th:             scalar;   water potential threshold
+        psi:                scalar;   daily water potential
+        temp:               scalar;   daily temperature
+        temp_ref:           scalar;   temperature reference
     Returns:
         mortality_prob:   1D array; taxon-specific mortality probability
+    
     Reference:
         Allison and Goulden, 2017, Soil Biology and Biochemistry
     """
+    
     drought_tolerance = drought_tolerance.to_numpy(copy=False)
     thermal_tolerance = thermal_tolerance.to_numpy(copy=False)
 
@@ -600,7 +626,7 @@ def microbe_mortality_prob(basal_death_prob,drought_death_rate,drought_tolerance
         mortality_prob = basal_death_prob * (1 + drought_death_rate*abs(psi+psi_th)*(1-drought_tolerance))
     else:
         mortality_prob = basal_death_prob * (1 + drought_death_rate*abs(psi+psi_th)*(1-drought_tolerance) +
-                                             hermal_death_rate*(temp-temp_ref)*(1-thermal_tolerance))
+                                             thermal_death_rate*(temp-temp_ref)*(1-thermal_tolerance))
 
     return mortality_prob.astype('float32')
 
@@ -614,7 +640,7 @@ def microbe_osmo_psi(alfa,psi_fc,psi):
     
     Parameters: 
         alfa:   scalar; shape factor quantifying curve concavity; could be distinguished btw bacteria and fungi
-        psi_fc: scalar; water potential at field capacity
+        psi_fc: scalar; water potential threshold at which 
         psi:    scalar; water potential at a daily step 
     Returns:
         f_osmo: scalar; modifier of inducible production of osmoylte   
@@ -645,15 +671,19 @@ def microbe_hsp_temp(ea, temp):
     """
     Derive temperature modifier of (inducible) HSPs production.
 
-    Standard HSP rate at 20 C is modified.
+    Standard taxon-specific HSP production rate at 20 C is modified by this function.
 
     Parameters:
-        ea:       activation energy of HSP synthesis
+        ea:       activation energy of HSP synthesis;
+                  Dell, A. I., Pawar, S., & Savage, V. M. (2011). Systematic variation in the temperature dependence
+                  of physiological and ecological traits.PNAS, 108(26), 10591-10596.
+                  https://doi.org/10.1073/pnas.1015178108
         temp:     daily temp
 
     Returns:
         f_hsp: scalar; modifier of inducible HSP production
     """
+    
     temp_ref = 20             # reference temperature (20 C)
     k = np.float32(8.617e-5)  # ev/K; https://en.wikipedia.org/wiki/Boltzmann_constant
 

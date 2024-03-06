@@ -2,8 +2,7 @@
 -------------------------------------------------------------------------------
       DEMENTpy--Decomposition Model of Enzymatic Traits in Python
                                  Bin Wang
-                        Oak Ridge National Laboratory              
-                          Email: wbwenwu@gmail.com or wangb@ornl.gov
+                          Email: wbwenwu@gmail.com
                           Twitter: @bioatmo_sphere
 -------------------------------------------------------------------------------
 """
@@ -49,14 +48,13 @@ def main():
     mode       = int(runtime.loc['dispersal',1])     # 0:'default' or 1:'dispersal'
 
     #...Initialize data by calling the Function: Initialize_Data()
-    data_initialization = initialize_data(runtime,'.') # starting site
-    data_switch = initialize_data(runtime, site)       # switching site
+    data_start = initialize_data(runtime,'.') # starting site
 
     #...Prepare for output by creating an instance of the Output class
-    Output_init = Output(runtime,data_initialization)
+    output_init = Output(runtime,data_start)
 
     #...Create an instance of the Grid class
-    Ecosystem = Grid(runtime,data_initialization)
+    ecosystem = Grid(runtime,data_start)
 
     #...Run the model
     for p in range(pulse):
@@ -64,40 +62,42 @@ def main():
         for i in range(cycle):
         
             # substrates degradation
-            Ecosystem.degradation(i)
+            ecosystem.degradation(i)
         
             # monomers uptake
-            Ecosystem.uptake(i)
+            ecosystem.uptake(i)
         
             # microbial metabolism
-            Ecosystem.metabolism(i)
+            ecosystem.metabolism(i)
         
             # microbial death
-            Ecosystem.mortality(i)
+            ecosystem.mortality(i)
         
             # microbial reproduction and dispersal
-            Ecosystem.reproduction(i)
+            ecosystem.reproduction(i)
         
             # output basic data using the "output" method in the Output class
             if i == 0:
-                Output_init.output(Ecosystem, p, i)  # day 1
+                output_init.output(ecosystem, p, i)  # day 1
             elif i%interval==interval-1:
-                Output_init.output(Ecosystem, p, i)  # interval
+                output_init.output(ecosystem, p, i)  # interval
             # output microibal allocation data using the "microbes_tradeoff" method
-            Output_init.microbes_tradeoff(Ecosystem, p, i)
+            output_init.microbes_tradeoff(ecosystem, p, i)
             # output microbial mass of every iteration using the "microbes_abundance" method
-            Output_init.microbes_abundance(Ecosystem, p, i)
+            #output_init.microbes_abundance(ecosystem, p, i)
 
         # re-initialize microbial community in each new pulse
-        if p < switch - 1:
+        # e.g., if switch=3 (i.e., switch after a 3-year run)
+        if p < switch - 1 or p > switch - 1:
             # stick to the starting site
-            Ecosystem.reinitialization(data_initialization, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
+            ecosystem.reinitialization(data_start, data_start['Microbes_pp'], output_init, mode, p, switch)
         else:
             # switch to data of another site
-            Ecosystem.reinitialization(data_switch, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
+            data_switch = initialize_data(runtime, site) # switching site
+            ecosystem.reinitialization(data_switch,data_start['Microbes_pp'], output_init, mode, p, switch)
     
     #...export the Output_init object to the output_folder using the export() funtion in the utility module 
     os.chdir('../'+output_folder)
-    export(Output_init, site, outname)
+    export(output_init, site, outname)
     
 main()

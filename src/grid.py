@@ -6,7 +6,7 @@
 import numpy  as np
 import pandas as pd
 
-from microbe import microbe_osmo_psi
+from microbe import microbe_osmo_psi, microbe_hsp_temp
 from microbe import microbe_mortality_prob as MMP
 from enzyme  import Arrhenius, Allison
 from monomer import monomer_leaching
@@ -80,13 +80,16 @@ class Grid():
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
         self.Induci_Enzyme_C   = data_init["EnzProdInduce"]     # C Cost of encoding inducible enzyme 
         self.Consti_Osmo_C     = data_init['OsmoProdConsti']    # C Cost of encoding constitutive osmolyte
-        self.Induci_Osmo_C     = data_init['OsmoProdInduci']    # C Cost of encoding inducible osmolyte 
+        self.Induci_Osmo_C     = data_init['OsmoProdInduci']    # C Cost of encoding inducible osmolyte
+        self.Consti_Hsp_C      = data_init['HspProdConsti']
+        self.Induci_Hsp_C      = data_init['HspProdInduci'] 
         self.Uptake_Maint_Cost = data_init['Uptake_Maint_cost'] # Respiration cost of uptake transporters: 0.01	mg C transporter-1 day-1     
         self.Enz_Attrib        = data_init['EnzAttrib']         # Enzyme attributes; dataframe
         self.AE_ref            = data_init['AE_ref']            # Reference AE:constant of 0.5;scalar
         self.AE_temp           = data_init['AE_temp']           # AE sensitivity to temperature;scalar
         self.Respiration       = np.float32('nan')              # Respiration
         self.CUE_system        = np.float32('nan')              # emergent CUE
+        self.microbial_hsp_ea  = data_init['microbial_hsp_ea']  #
         #self.Transporters = float('nan')
         #self.Osmolyte_Con = float('nan')
         #self.Osmolyte_Ind = float('nan')
@@ -125,8 +128,8 @@ class Grid():
         self.psi  = data_init['Psi']        # series; water potential
         
         # Global constants
-        self.Km_Ea = np.float32(20)         # kj mol-1;activation energy for both enzyme and transporter
-        self.Tref  = np.float32(293)        # reference temperature of 20 celcius
+        self.Km_Ea = 20         # kj mol-1;activation energy for both enzyme and transporter
+        self.Tref  = 293        # reference temperature of 20 celcius
 
         # tradeoff
         self.Taxon_Enzyme_Cost_C = np.float32('nan')
@@ -207,7 +210,6 @@ class Grid():
         # Every monomer averaged over the grid in each time step
         self.Monomers = expand(self.Monomers.groupby(level=0,sort=False).sum()/self.gridsize,self.gridsize)
         
-
         # Indices
         is_org = (self.Monomers.index != "NH4") & (self.Monomers.index != "PO4") # organic monomers
         #is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
@@ -232,7 +234,7 @@ class Grid():
         self.Monomer_ratios             = self.Monomer_ratios.fillna(0)
 
 
-        # Start calculating monomer uptake
+        #.............> Start calculating monomer uptake
         # Caculate uptake enzyme kinetic parameters, multiplied by moisture multiplier accounting for the diffusivity implications
         Uptake_Vmax = Arrhenius(self.Uptake_Vmax0, self.Uptake_Ea, self.temp[day]) * Allison(0.1, self.wp_fc, self.psi[day])
         Uptake_Km   = Arrhenius(self.Uptake_Km0,   self.Km_Ea,     self.temp[day])
@@ -256,7 +258,7 @@ class Grid():
         csmu                = Max_Uptake.sum(axis=1)  # total potential uptake of each monomer
         Uptake              = Max_Uptake.mul(pd.concat([csmu,rsm],axis=1).min(axis=1,skipna=True)/csmu,axis=0) #(Monomer*gridsize) * Taxon
         Uptake.loc[csmu==0] = np.float32(0)
-        # End computing monomer uptake
+        #<-------------- End computing monomer uptake
         
 
         # Update Monomers
@@ -355,18 +357,18 @@ class Grid():
         #Taxon_AE  = self.AE_ref + (self.temp[day] - (self.Tref - np.float32(273))) * self.AE_temp  #scalar
         Taxon_AE = self.AE_ref
 
-        # Taxon respiration from uptake includes any respiratory cost of transporting substrate
+        # Taxon-specific respiration from uptake includes any respiratory cost of transporting substrate
         # into the cell and the minimum cost for catabolism (e.g.dissimilation).
-        Taxon_Uptake_Respiration = self.Taxon_Uptake_C * (np.float32(1) - Taxon_AE)
+        Taxon_Uptake_Respiration = self.Taxon_Uptake_C * (1 - Taxon_AE)
 
         # derive the water potential modifier by calling the function microbe_osmo_psi()
-        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc,self.psi[day])
+        f_psi = microbe_osmo_psi(self.alpha,self.wp_fc, self.psi[day])
         # derive the thermal modifier by calling the function microbe_hsp_temp()
-        f_temp = microbe_hsp_temp(self.ea, self.temp[day])
+        f_temp= microbe_hsp_temp(self.microbial_hsp_ea, self.temp[day])
         
         # Inducible HSP production
-        Taxon_Hsp_Induci           = self.Induci_Hsp_C.mul(self.Taxon_Uptake_C*Taxon_AE,axis=0) * f_temp
-        Taxon_Hsp_Induci_Cost_N    = (Taxon_Hsp_Induci * Hsp_N_Cost).sum(axis=1)
+        Taxon_Hsp_Induci           = self.Induci_Hsp_C.mul(self.Taxon_Uptake_C * f_temp * Taxon_AE, axis=0) 
+        Taxon_Hsp_Induci_Cost_N    = (Taxon_Hsp_Induci * Hsp_N_cost).sum(axis=1)
         # Inducible Osmolyte production (only when psi reaches below wp_fc)
         Taxon_Osmo_Induci          = self.Induci_Osmo_C.mul(self.Taxon_Uptake_C*Taxon_AE, axis=0) * f_psi
         Taxon_Osmo_Induci_Cost_N   = (Taxon_Osmo_Induci * Osmo_N_cost).sum(axis=1)            # Total osmotic N cost of each taxon (.sum(axis=1))
@@ -481,7 +483,7 @@ class Grid():
         # Create a series, kill, holding boolean value of False
         kill = pd.Series([False]*self.n_taxa*self.gridsize)
         
-        # Start to calculate mortality
+        #### Start to calculate mortality
         # --Kill microbes deterministically based on threshold values: C_min: 0.086; N_min:0.012; P_min: 0.002
         starve_index = (self.Microbes['C']>0) & ((self.Microbes['C']<self.C_min)|(self.Microbes['N']<self.N_min)|(self.Microbes['P']<self.P_min))
         # Index the dead, put them in Death, and set them to 0 in Microbes 
@@ -490,7 +492,8 @@ class Grid():
         # Index the locations where microbial cells remain alive
         mic_index = self.Microbes['C'] > 0
         
-        # --Kill microbes stochastically based on mortality prob as a function of water potential and drought tolerance
+        # --Kill microbes stochastically based on mortality prob as a function of
+        # water potential and temperature and drought and thermal tolerance
         # call the function MMP:microbe_mortality_prob() 
         r_death = MMP(self.basal_death_prob,self.drought_death_rate,self.drought_tolerance,self.wp_fc,self.psi[day],
                                             self.thermal_death_rate,self.thermal_tolerance,self.temp_ref,self.temp[day])
@@ -593,7 +596,7 @@ class Grid():
         self.Microbes.index = Mic_index
 
         # Update the death toll of cells
-        self.Kill = kill.sum().astype('uint32')
+        self.Kill = kill.sum()
 
     
     def reproduction(self,day):           
@@ -621,10 +624,10 @@ class Grid():
         
         #STEP 1: Fungal translocation by calculating average biomass within fungal taxa 
         # Count the fungal taxa before cell division
-        Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize, index=Mic_index, name='Count', dtype='int8')
+        Fungi_df = pd.Series(data=[0]*self.n_taxa*self.gridsize, index=Mic_index, name='Count', dtype='uint8')
         # Add one or two fungi to the count series based on size
-        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)]               = np.int8(1)
-        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = np.int8(2)
+        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>0)]               = np.uint8(1)
+        Fungi_df.loc[(self.fb==1)&(self.Microbes['C']>self.max_size_f)] = np.uint8(2)
         Fungi_count = Fungi_df.groupby(level=0,sort=False).sum()
         # Derive average biomass of fungal taxa
         Microbes_grid              = self.Microbes.groupby(level=0,sort=False).sum()
@@ -662,7 +665,7 @@ class Grid():
         shift_x[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
         shift_y[daughters_b] = np.random.choice([i for i in range(-self.dist, self.dist+1)],num_b,replace=True).astype('int8')
         # Fungi always move positively in x direction, and in y direction constrained to one box away determined by probability "direct"                
-        shift_x[daughters_f] = np.int8(1)
+        shift_x[daughters_f] = np.uint8(1)
         shift_y[daughters_f] = np.random.choice([-1,0,1], num_f, replace=True, p=[0.5*(1-self.direct),self.direct,0.5*(1-self.direct)]).astype('int8')
         # Calculate x,y coordinates of dispersal destinations (% remainder of x/x) and substitute coordinates when there is no shift
         new_x           = (shift_x + list(np.repeat(range(1,self.x+1),self.n_taxa)) * self.y + self.x) % self.x
@@ -689,20 +692,24 @@ class Grid():
 
         Parameters:
             initialization: dictionary; site-specific initialization
-            microbes_pp: dataframe;taxon-specific mass in C, N, &P
-            output: an instance of the Output class, from which the var, MicrobesSeries_repop,
-                    referring to taxon-specific total mass over the grid is retrieved
+            microbes_pp:    dataframe; taxon-specific mass in C, N, & P of microbes preceding placement during initialization.
+            output: an instance of the Output class, from which the object, MicrobesSeries_repop
+                    (taxon-specific total mass over the grid), is retrieved
             mode:  string; 'defaul' or 'dispersal'
             pulse: integer; the pulse index
+            switch:integer; the number of pulses (years) to run before switching to different forcings.
         Returns:
             update temp, psi, Substrates, Monomers, Enzymes, and Microbes
         """
 
         # reinitialize temperature and water potential
-        if (pulse < switch-1):
+        if pulse < switch-1 or pulse > switch-1:
+          # continue using the starting foricing
           self.temp = initialization['Temp'].copy(deep=True)
           self.psi  = initialization['Psi'].copy(deep=True)
         else:
+           # dynamic reinitialization of the site we switch to per pulse (e.g., the site we switch to
+           # has 3 pulses, which entails this approach)
            self.temp = initialization['Temp'][(pulse-(switch-1))*365:(pulse-(switch-2))*365]
            self.psi  =  initialization['Psi'][(pulse-(switch-1))*365:(pulse-(switch-2))*365] 
 
@@ -722,11 +729,11 @@ class Grid():
         if mode == 0:
             index_l = (pulse+1)*self.cycle - 1
             index_u = (pulse+1)*self.cycle + 1
-            cum_abundance = output.MicrobesSeries_repop.iloc[:,index_l:index_u].sum(axis=1)
+            cum_abundance = output.MicrobesSeries.iloc[:,index_l:index_u].sum(axis=1)
         else:
             index_l = pulse*self.cycle + 1
             index_u = (pulse+1)*self.cycle + 1
-            cum_abundance = output.MicrobesSeries_repop.iloc[:,index_l:index_u].sum(axis=1)
+            cum_abundance = output.MicrobesSeries.iloc[:,index_l:index_u].sum(axis=1)
         
         # account for the cell mass size difference of bacteria vs fungi
         cum_abundance[self.fb[0:self.n_taxa]==1] *= self.max_size_b/self.max_size_f
@@ -735,7 +742,7 @@ class Grid():
         frequencies = frequencies.fillna(0)
         
         # last: assign microbes to each grid box randomly based on prior densities
-        choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
+        choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='uint8')
         for i in range(self.n_taxa):
             choose_taxa[i,:] = np.random.choice([1,0], self.gridsize, replace=True, p=[frequencies[i], 1-frequencies[i]])
         self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0) # NOTE order='F'

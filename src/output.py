@@ -66,12 +66,13 @@ class Output():
             data_init['EnzProdInduci_trait'][0:n_taxa],
             data_init['OsmoProdConsti_trait'][0:n_taxa],
             data_init['OsmoProdInduci_trait'][0:n_taxa],
-            data_init['TaxDroughtTol'][0:n_taxa]),
+            data_init['TaxDroughtTol'][0:n_taxa],
+            data_init['TaxThermalTol'][0:n_taxa]),
             axis=0
         )
         columns = [
             'F/B','C','N','P','Uptake_Gene','Enz_Gene','Osmo_Gene','Uptake_Cost','Enz_Consti_Cost',
-            'Enz_Induci_Cost','Osmo_Consti_Cost','Osmo_Induci_Cost','Drought_tolerance'
+            'Enz_Induci_Cost','Osmo_Consti_Cost','Osmo_Induci_Cost','Drought_tolerance','Thermal_tolerance'
         ]
         self.Microbial_traits = pd.DataFrame(data=data.reshape(13,n_taxa).T, index=Mic_index, columns=columns, dtype='float32')
         
@@ -202,7 +203,7 @@ class Output():
         Microbes_grid['C'].name = self.cycle*year + (day+1)
         self.MicrobesSeries     = pd.concat([self.MicrobesSeries, Microbes_grid['C']], axis=1, sort=False)
         #self.Microbes_Sum   = pd.concat([self.Microbes_Sum,pd.Series([Microbes_grid['C'].sum()],index=[day+1])],axis=0,sort=False)
-        self.microbes_grid_taxa  = pd.concat([self.microbes_grid_taxa,ecosystem.Microbes['C']],axis=1,sort=False)
+        self.microbes_grid_taxa = pd.concat([self.microbes_grid_taxa,ecosystem.Microbes['C']],axis=1,sort=False)
         
         # Microbe-Taxon-specific CUE
         #CUE_Taxon_grid = ecosystem.CUE_Taxon.groupby(level=0,sort=False).sum()
@@ -261,12 +262,12 @@ class Output():
         These components include: osmolytes, enzymes, and carbon gain
         """
 
-        # Microbe-Transporters
+        #### Microbe-Transporters
         #Transporter_grid = ecosystem.Transporters.groupby(level=0,sort=False).sum() #taxon-specific transpotors summed over the grid by taxon
         #Transporter_grid.name = day + 1
         #self.TransporterSeries = pd.concat([self.TransporterSeries,Transporter_grid],axis=1,sort=False)
         
-        # Microbe-Enzymes
+        #### Microbe-Enzymes
         # Constitutive
         #Enzyme_Con_grid = ecosystem.Enzyme_Con.groupby(level=0,sort=False).sum() # Taxon-specific osmolytes summed over the grid by taxon
         #Enzyme_Con_grid.name = day + 1
@@ -278,7 +279,7 @@ class Output():
         # Total
         self.Enzyme_TaxonSeries = pd.concat([self.Enzyme_TaxonSeries, Enzyme_Ind_grid],axis=1,sort=False)
         
-        # Microbe-Osmolytes
+        #### Microbe-Osmolytes
         # Constitutive
         #Osmolyte_Con_grid = ecosystem.Osmolyte_Con.groupby(level=0,sort=False).sum()
         #Osmolyte_Con_grid.name = day + 1
@@ -290,7 +291,8 @@ class Output():
         # Total
         self.Osmolyte_TaxonSeries = pd.concat([self.Osmolyte_TaxonSeries, Osmolyte_Ind_grid],axis=1,sort=False)
         
-         # Inducible
+        #### Microbe-HSPs
+        # Inducible
         Hsp_Ind_grid = ecosystem.Taxon_Hsp_Cost_C.groupby(level=0,sort=False).sum()
         Hsp_Ind_grid.name = self.cycle*year + (day+1)
         #self.OsmolyteIndSeries = pd.concat([self.OsmolyteIndSeries,Osmolyte_Ind_grid],axis=1,sort=False)
@@ -298,7 +300,7 @@ class Output():
         self.Hsp_TaxonSeries = pd.concat([self.Hsp_TaxonSeries, Hsp_Ind_grid],axis=1,sort=False)
 
 
-        # Growth yield by Taxon
+        #### Growth yield by Taxon
         GY_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
         GY_grid.name = self.cycle*year + (day+1)
         self.Growth_yield = pd.concat([self.Growth_yield,GY_grid],axis=1,sort=False)
