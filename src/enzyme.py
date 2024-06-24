@@ -260,25 +260,23 @@ class Enzyme():
         return Uptake_Km
 
 
-def Arrhenius(Vmax, Ea, temperature):
+def Arrhenius(Ea,temperature):
     """
     Temperature dependence of rate constant. 
 
     Parameters:
-        Vmax:        dataframe; max. reaction rates
-        Ea:          dataframe/scalar; activation energy
-        temperature: scalar;           daily temperature 
+       Ea:          dataframe/scalar; activation energy;
+       temperature: scalar;           daily temperature; 
     Return:
-        k:           dataframe
+       BA:          dataframe/scalar; dependent on Ea
     Reference:
         Wikipedia: https://en.wikipedia.org/wiki/Arrhenius_equation
     """
 
     Tref = 293
-    R    = np.float32(0.008314)
+    Gas_const = 0.008314 # kJ/(mol K)
+    k = np.exp((-Ea/(Gas_const*(temperature+273)))).astype('float32')
 
-    k = Vmax * np.exp((-Ea/R) * np.float32(1/(temperature+273) - 1/Tref))
-    
     return k
 
 
