@@ -298,7 +298,7 @@ class Microbe():
         
         # Give each taxon a random number of additional uptake genes between the number they have and n_upgenes
         for i in range(self.n_taxa):
-            n_zero = sum(UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0])
+            n_zero = len(UptakeGenes.iloc[i,:][UptakeGenes.iloc[i,:]==0])
             if n_zero == 0: # has all genes
                 continue
             probability_list = [0]*n_zero
