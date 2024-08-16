@@ -301,6 +301,6 @@ class Output():
 
 
         #### Growth yield by Taxon
-        GY_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
-        GY_grid.name = self.cycle*year + (day+1)
-        self.Growth_yield = pd.concat([self.Growth_yield,GY_grid],axis=1,sort=False)
+        gy_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
+        gy_grid.name = self.cycle*year + (day+1)
+        self.Growth_yield = pd.concat([self.Growth_yield,gy_grid],axis=1,sort=False)
