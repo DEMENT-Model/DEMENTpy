@@ -493,7 +493,7 @@ class Grid():
                 # Derive the Microbes wanted
                 Mic_subset    = self.Microbes[rat_index]
                 StartMicrobes = Mic_subset.copy(deep=True)
-                print(sum(mic_index_sub))
+                
                 # Derive new ratios and Calculate difference between actual and min ratios  
                 MicrobeRatios = Mic_subset.divide(Mic_subset.sum(axis=1),axis=0)
                 MinRat        = MinRatios[rat_index]  
@@ -653,7 +653,7 @@ class Grid():
         self.Microbes += Colonization.values
 
     
-    def reinitialization(self,initialization,microbes_pp,output,mode,pulse,switch):
+    def reinitialization(self,initialization,microbes_pp,output,mode,pulse,*args):
         """
         Reinitialize the system in a new pulse.
         
@@ -669,14 +669,18 @@ class Grid():
         Returns:
             update temp, psi, Substrates, Monomers, Enzymes, and Microbes
         """
-
-        # reinitialize temperature and water potential
-        if (pulse < switch-1):
-          self.temp = initialization['Temp'].copy()
-          self.psi  = initialization['Psi'].copy()
+        if len(args) == 0:
+            self.temp = initialization['Temp'].copy()
+            self.psi  = initialization['Psi'].copy()
         else:
-           self.temp = initialization['Temp'][(pulse-(switch-1))*365:(pulse-(switch-2))*365]
-           self.psi  =  initialization['Psi'][(pulse-(switch-1))*365:(pulse-(switch-2))*365] 
+            switch = args[0]
+            # reinitialize temperature and water potential
+            if (pulse < switch-1):
+                self.temp = initialization['Temp'].copy()
+                self.psi  = initialization['Psi'].copy()
+            else:
+                self.temp = initialization['Temp'][(pulse-(switch-1))*365:(pulse-(switch-2))*365]
+                self.psi  =  initialization['Psi'][(pulse-(switch-1))*365:(pulse-(switch-2))*365] 
 
         # reinitialize site-based substrates, monomers, and enzymes in a new pulse
         self.Substrates = initialization['Substrates'].copy(deep=True)

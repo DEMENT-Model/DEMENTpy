@@ -1,11 +1,11 @@
 pulse	1
-end_time	10
+end_time	365
 switch	5
 interval	1
 dispersal	0
-x	100
-y	100
-gridsize	10000
+x	10
+y	10
+gridsize	100
 n_taxa	100
 fb	0.0
 taxa_per_box	0.01
