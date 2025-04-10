@@ -488,71 +488,72 @@ class Grid():
             # Index only those taxa in Microbes that have below-minimum quotas: Mic_subset
             MicrobeRatios = self.Microbes[mic_index].divide(self.Microbes[mic_index].sum(axis=1),axis=0)
             mic_index_sub = (MicrobeRatios["C"]<MinRatios[mic_index]["C"])|(MicrobeRatios["N"]<MinRatios[mic_index]["N"])|(MicrobeRatios["P"]<MinRatios[mic_index]["P"])
-            rat_index     = self.Microbes.index.map(mic_index_sub).fillna(False)
-            # Derive the Microbes wanted
-            Mic_subset    = self.Microbes[rat_index]
-            StartMicrobes = Mic_subset.copy(deep=True)
+            if sum(mic_index_sub) != 0:
+                rat_index     = self.Microbes.index.map(mic_index_sub).fillna(False)
+                # Derive the Microbes wanted
+                Mic_subset    = self.Microbes[rat_index]
+                StartMicrobes = Mic_subset.copy(deep=True)
+                
+                # Derive new ratios and Calculate difference between actual and min ratios  
+                MicrobeRatios = Mic_subset.divide(Mic_subset.sum(axis=1),axis=0)
+                MinRat        = MinRatios[rat_index]  
+                Ratio_dif     = MicrobeRatios - MinRat
+                # Create a df recording the ratio differences < 0
+                Ratio_dif_0 = Ratio_dif.copy(deep=True)
+                Ratio_dif_0[Ratio_dif>0] = np.float32(0)  
+                # Create a df recording the ratio differences > 0
+                Excess = Ratio_dif.copy(deep=True)
+                Excess[Ratio_dif<0] = np.float32(0)
 
-            # Derive new ratios and Calculate difference between actual and min ratios  
-            MicrobeRatios = Mic_subset.divide(Mic_subset.sum(axis=1),axis=0)
-            MinRat        = MinRatios[rat_index]  
-            Ratio_dif     = MicrobeRatios - MinRat
-            # Create a df recording the ratio differences < 0
-            Ratio_dif_0 = Ratio_dif.copy(deep=True)
-            Ratio_dif_0[Ratio_dif>0] = np.float32(0)  
-            # Create a df recording the ratio differences > 0
-            Excess = Ratio_dif.copy(deep=True)
-            Excess[Ratio_dif<0] = np.float32(0)
+                # Determine the limiting nutrient that will be conserved
+                Limiting = (-Ratio_dif/MinRat).idxmax(axis=1) # Series of index of the first occurrence of maximum in each row
+                # Set all deficient ratios to their minima
+                MicrobeRatios[Ratio_dif<0] = MinRat[Ratio_dif<0]
+                # Reduce the mass fractions for non-deficient elements in proportion to the distance from the minimum
+                # ....Partition the total deficit to the excess element(s) in proportion to their distances from their minima
+                MicrobeRatios[Ratio_dif>0] += Excess.mul((Ratio_dif_0.sum(axis=1)/Excess.sum(axis=1)),axis=0)[Ratio_dif>0]
+                
+                # Construct hypothetical nutrient quotas for each possible minimum nutrient
+                MC  = Mic_subset["C"]
+                MN  = Mic_subset["N"]
+                MP  = Mic_subset["P"]
+                MRC = MicrobeRatios["C"]
+                MRN = MicrobeRatios["N"]
+                MRP = MicrobeRatios["P"]
 
-            # Determine the limiting nutrient that will be conserved
-            Limiting = (-Ratio_dif/MinRat).idxmax(axis=1) # Series of index of the first occurrence of maximum in each row
-            # Set all deficient ratios to their minima
-            MicrobeRatios[Ratio_dif<0] = MinRat[Ratio_dif<0]
-            # Reduce the mass fractions for non-deficient elements in proportion to the distance from the minimum
-            # ....Partition the total deficit to the excess element(s) in proportion to their distances from their minima
-            MicrobeRatios[Ratio_dif>0] += Excess.mul((Ratio_dif_0.sum(axis=1)/Excess.sum(axis=1)),axis=0)[Ratio_dif>0]
-            
-            # Construct hypothetical nutrient quotas for each possible minimum nutrient
-            MC  = Mic_subset["C"]
-            MN  = Mic_subset["N"]
-            MP  = Mic_subset["P"]
-            MRC = MicrobeRatios["C"]
-            MRN = MicrobeRatios["N"]
-            MRP = MicrobeRatios["P"]
+                new_C = pd.concat([MC, MN*MRC/MRN, MP*MRC/MRP],axis=1)
+                new_C = new_C.fillna(0)
+                new_C[np.isinf(new_C)] = np.float32(0)
+                new_C.columns = ['C','N','P']
 
-            new_C = pd.concat([MC, MN*MRC/MRN, MP*MRC/MRP],axis=1)
-            new_C = new_C.fillna(0)
-            new_C[np.isinf(new_C)] = np.float32(0)
-            new_C.columns = ['C','N','P']
+                new_N = pd.concat([MC*MRN/MRC, MN, MP*MRN/MRP],axis=1)
+                new_N = new_N.fillna(0)
+                new_N[np.isinf(new_N)] = np.float32(0)
+                new_N.columns = ['C','N','P']
+                
+                new_P = pd.concat([MC*MRP/MRC, MN*MRP/MRN, MP],axis=1)
+                new_P = new_P.fillna(0)
+                new_P[np.isinf(new_P)] = np.float32(0)
+                new_P.columns = ['C','N','P']
+                
+                # Insert the appropriate set of nutrient quotas scaled to the minimum nutrient
+                C = [new_C.loc[i,Limiting[i]] for i in Limiting.index] #list
+                N = [new_N.loc[i,Limiting[i]] for i in Limiting.index] #list
+                P = [new_P.loc[i,Limiting[i]] for i in Limiting.index] #list
+                
+                # Update Microbes
+                self.Microbes.loc[rat_index] = np.vstack((C,N,P)).transpose()
 
-            new_N = pd.concat([MC*MRN/MRC, MN, MP*MRN/MRP],axis=1)
-            new_N = new_N.fillna(0)
-            new_N[np.isinf(new_N)] = np.float32(0)
-            new_N.columns = ['C','N','P']
-            
-            new_P = pd.concat([MC*MRP/MRC, MN*MRP/MRN, MP],axis=1)
-            new_P = new_P.fillna(0)
-            new_P[np.isinf(new_P)] = np.float32(0)
-            new_P.columns = ['C','N','P']
-            
-            # Insert the appropriate set of nutrient quotas scaled to the minimum nutrient
-            C = [new_C.loc[i,Limiting[i]] for i in Limiting.index] #list
-            N = [new_N.loc[i,Limiting[i]] for i in Limiting.index] #list
-            P = [new_P.loc[i,Limiting[i]] for i in Limiting.index] #list
-            
-            # Update Microbes
-            self.Microbes.loc[rat_index] = np.vstack((C,N,P)).transpose()
-
-            # Sum up the element losses from biomass across whole grid and calculate average loss
-            MicLoss = StartMicrobes - self.Microbes[rat_index]
-            # Update total respiration by adding ...
-            self.Respiration += sum(MicLoss['C'])
-            # Update monomer pools 
-            self.Monomers.loc[is_NH4,"N"] += sum(MicLoss["N"])/self.gridsize
-            self.Monomers.loc[is_PO4,"P"] += sum(MicLoss["P"])/self.gridsize
-            
-            # Update Substrates pool by adding dead microbial biomass            
-            self.Substrates.loc[is_DeadMic] += Death_gridcell.values
+                # Sum up the element losses from biomass across whole grid and calculate average loss
+                MicLoss = StartMicrobes - self.Microbes[rat_index]
+                # Update total respiration by adding ...
+                self.Respiration += sum(MicLoss['C'])
+                # Update monomer pools 
+                self.Monomers.loc[is_NH4,"N"] += sum(MicLoss["N"])/self.gridsize
+                self.Monomers.loc[is_PO4,"P"] += sum(MicLoss["P"])/self.gridsize
+                
+                # Update Substrates pool by adding dead microbial biomass            
+                self.Substrates.loc[is_DeadMic] += Death_gridcell.values
         # End of if else clause
         
         # Calculate monomers' leaching and update Monomers 
@@ -652,7 +653,7 @@ class Grid():
         self.Microbes += Colonization.values
 
     
-    def reinitialization(self,initialization,microbes_pp,output,mode,pulse,switch):
+    def reinitialization(self,initialization,microbes_pp,output,mode,pulse,*args):
         """
         Reinitialize the system in a new pulse.
         
@@ -668,14 +669,18 @@ class Grid():
         Returns:
             update temp, psi, Substrates, Monomers, Enzymes, and Microbes
         """
-
-        # reinitialize temperature and water potential
-        if (pulse < switch-1):
-          self.temp = initialization['Temp'].copy(deep=True)
-          self.psi  = initialization['Psi'].copy(deep=True)
+        if len(args) == 0:
+            self.temp = initialization['Temp'].copy()
+            self.psi  = initialization['Psi'].copy()
         else:
-           self.temp = initialization['Temp'][(pulse-(switch-1))*365:(pulse-(switch-2))*365]
-           self.psi  =  initialization['Psi'][(pulse-(switch-1))*365:(pulse-(switch-2))*365] 
+            switch = args[0]
+            # reinitialize temperature and water potential
+            if (pulse < switch-1):
+                self.temp = initialization['Temp'].copy()
+                self.psi  = initialization['Psi'].copy()
+            else:
+                self.temp = initialization['Temp'][(pulse-(switch-1))*365:(pulse-(switch-2))*365]
+                self.psi  =  initialization['Psi'][(pulse-(switch-1))*365:(pulse-(switch-2))*365] 
 
         # reinitialize site-based substrates, monomers, and enzymes in a new pulse
         self.Substrates = initialization['Substrates'].copy(deep=True)

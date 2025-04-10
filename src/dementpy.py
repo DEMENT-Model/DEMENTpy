@@ -26,11 +26,14 @@ def main():
     
      
     #...Obtain the command line arguments
-    input_folder  = sys.argv[1]   # input folder name
+    input_folder  = sys.argv[1]   # input folder name; e.g., a study site or a project name
     output_folder = sys.argv[2]   # output folder name
     outname       = sys.argv[3]   # output file name and seed of Pseudo-RNG
-    site          = sys.argv[4]   # switch-site name
     
+    site = input_folder        # no forcing and/or parameter switching
+    if len(sys.argv) > 4:
+        site      = sys.argv[4]   # switch-site name
+
     #...Set up the working directory
     os.chdir('../'+input_folder)
 
@@ -42,12 +45,10 @@ def main():
     pulse      = int(runtime.loc['pulse',1])         # number of pulses
     cycle      = int(runtime.loc['end_time',1])      # number of time steps in each pulse
     interval   = int(runtime.loc['interval',1])      # interval of time step to record outputs
-    switch     = int(runtime.loc['switch',1])        # the pulse from which inputs to be changed onwards  
     mode       = int(runtime.loc['dispersal',1])     # 0:'default' or 1:'dispersal'
 
     #...Initialize data by calling the Function: Initialize_Data()
     data_initialization = initialize_data(runtime,'.') # starting site
-    data_switch = initialize_data(runtime, site)       # switching site
 
     #...Prepare for output by creating an instance of the Output class
     Output_init = Output(runtime,data_initialization)
@@ -86,12 +87,17 @@ def main():
             Output_init.microbes_abundance(Ecosystem, p, i)
 
         # re-initialize microbial community in each new pulse
-        if p < switch - 1:
-            # stick to the starting site
-            Ecosystem.reinitialization(data_initialization, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
-        else:
-            # switch to data of another site
-            Ecosystem.reinitialization(data_switch, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
+        if site == input_folder:
+            Ecosystem.reinitialization(data_initialization, data_initialization['Microbes_pp'], Output_init, mode, p)
+        else: 
+            switch     = int(runtime.loc['switch',1])        # the pulse from which inputs to be changed onwards  
+            data_switch = initialize_data(runtime, site)       # switching site
+            if p < switch - 1:
+                # stick to the starting site
+                Ecosystem.reinitialization(data_initialization, data_initialization['Microbes_pp'], Output_init, mode, p, switch) 
+            else:
+                # switch to data of another site
+                Ecosystem.reinitialization(data_switch, data_initialization['Microbes_pp'], Output_init, mode, p, switch)
     
     #...export the Output_init object to the output_folder using the export() funtion in the utility module 
     os.chdir('../'+output_folder)
