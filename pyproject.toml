@@ -1,0 +1,16 @@
+[project]
+name = "dementpy"
+version = "0.1.0"
+description = "DEMENT (Decomposition Model of Enzymatic Traits): A trait- and individual-based spatially explicit soil microbial systems modelling framework"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.2.3",
+    "scipy>=1.15.2",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.4",
+]
