@@ -62,10 +62,15 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 ```
 uv venv
 uv sync --dev 
+source .venv/bin/activate
 ```
 if you are not running as developer then leave off the `--dev` switch.
 
-A simple example of bash script, dementpy.sh, for running jobs on HPC is provided.
+A simple example of bash script, dementpy.sh, for running jobs on HPC is provided. For testing, a simple run can be carried out as follows:
+
+```
+python dementpy.py grassland output 20250402 scrubland
+```
 
 ### Contribution
 
