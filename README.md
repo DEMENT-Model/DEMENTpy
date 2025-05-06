@@ -57,7 +57,7 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 
 **Run DEMENTpy**:
 
-[UV](https://github.com/astral-sh/uv) can be used to manage dependencies in `pyproject.tom`. In order to create a virtual ennviroment with DEMENTpy dependencies, do the following: 
+[UV](https://github.com/astral-sh/uv) can be used to manage dependencies in `pyproject.toml`. In order to create a virtual ennviroment with DEMENTpy dependencies, do the following: 
 
 ```
 uv venv
