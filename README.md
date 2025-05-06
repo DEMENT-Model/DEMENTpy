@@ -57,12 +57,20 @@ git clone https://github.com/bioatmosphere/DEMENTpy
 
 **Run DEMENTpy**:
 
-- Configure Environment
-- - Python >= 3.7
-- - Numpy >= 1.16.4
-- - Pandas >= 0.24.2
+[UV](https://github.com/astral-sh/uv) can be used to manage dependencies in `pyproject.toml`. In order to create a virtual ennviroment with DEMENTpy dependencies, do the following: 
 
-A simple example of bash script, dementpy.sh, for running jobs on HPC is provided.
+```
+uv venv
+uv sync --dev 
+source .venv/bin/activate
+```
+if you are not running as developer then leave off the `--dev` switch.
+
+A simple example of bash script, dementpy.sh, for running jobs on HPC is provided. For testing, a simple run can be carried out as follows:
+
+```
+python dementpy.py grassland output 20250402 scrubland
+```
 
 ### Contribution
 
