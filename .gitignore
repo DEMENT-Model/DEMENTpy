@@ -1,6 +1,8 @@
 # vscode workspace
 .vscode/
 
+# Python module bytecode
+__pycache__
 
 # Jupyter Notebook
 */.ipynb_checkpoints
