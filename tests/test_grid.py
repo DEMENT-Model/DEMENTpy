@@ -28,6 +28,7 @@ def test_degradation_runs(grid):
 
 def test_uptake_runs(grid):
     """Test that Grid.uptake works without an error."""
+    grid.degradation(0) # degradation needs to run to initialize some DataFrames
     grid.uptake(0)
 
 
