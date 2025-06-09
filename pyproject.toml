@@ -15,9 +15,10 @@ dev = [
     "ruff>=0.11.4",
     "pytest>=7.0",
     "pytest-profiling",
+    "flameprof",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-addopts = "-v"
+addopts = "-v -m 'not profiling'"
