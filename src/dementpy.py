@@ -103,4 +103,5 @@ def main():
     os.chdir('../'+output_folder)
     export(Output_init, site, outname)
     
-main()
+if __name__ == '__main__':
+    main()
