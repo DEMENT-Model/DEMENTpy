@@ -98,8 +98,88 @@ class Enzyme():
         EnzAttrib_df    = pd.DataFrame(data=EnzAttrib_array, index=index, columns=columns, dtype='float32')
         
         return EnzAttrib_df
+
     
+    def enzyme_HT0(self):
+        """
+        Heat Capacity for enzymes.
+
+        Parameters:
+          HT0_min:     -2714
+          HT0_max:     -2714
+          Returns:
+          HT0:       dataframe(enzyme*substrate); will feed the expand()
+        """
+
+        HT0_array = LHS(self.n_substrates * self.n_enzymes, self.HT0_min, self.HT0_max, 'uniform')
+        HT0_array = HT0_array.reshape(self.n_substrates, self.n_enzymes)
+        columns = ['Enz' + str(i) for i in range(1, self.n_enzymes + 1)]
+        HT0 = pd.DataFrame(data=HT0_array, index=self.substrate_index, columns=columns, dtype='float32')
+        HT0 = HT0.astype('float32')
+
+        return HT0
     
+       def enzyme_ST0(self, ST0_input):
+        """
+        Enthalpy.
+
+        Parameter:
+            ST0_input: dataframe; substrate-specific entropy range (min = max for now)
+        Return:
+            ST0_df.T:  dataframe; Rows:enzymes; cols: substrates
+        """
+
+        ST0_series = ST0_input.apply(lambda df: np.random.uniform(df['S_min'], df['S_max'], self.n_enzymes),
+                                     axis=1)  # series of 1D array
+        columns = ['Enz' + str(i) for i in range(1, self.n_enzymes + 1)]
+        ST0 = pd.DataFrame(data=ST0_series.tolist(), index=self.substrate_index, columns=columns,
+                           dtype='float32')  # NOTE: .tolist()
+
+        return ST0
+
+
+    def enzyme_uptake_HT0(self):
+        """
+        Uptake activation enthalpy parameter across monomers.
+
+        Parameters:
+            Uptake_HT0_min: scalar; 66706
+            Uptake_HT0_max: scalar; 66706
+        Return:
+            Uptake_HT0: dataframe; Rows are monomers; cols are uptake enzymes
+        """
+
+        Uptake_HT0_array = np.random.uniform(self.Uptake_HT0_min, self.Uptake_HT0_max, self.n_uptake * self.n_monomers)
+        Uptake_HT0_array = Uptake_HT0_array.reshape(self.n_monomers, self.n_uptake)
+
+        index = ['Mon' + str(i) for i in range(1, self.n_monomers + 1)]
+        columns = ['Upt' + str(i) for i in range(1, self.n_uptake + 1)]
+        Uptake_HT0 = pd.DataFrame(data=Uptake_HT0_array, index=index, columns=columns, dtype='float32')
+
+
+        return Uptake_HT0
+
+    def enzyme_uptake_ST0(self):
+        """
+        Uptake activation entropy parameter across monomers.
+
+        Parameters:
+            Uptake_ST0_min: scalar; 66706
+            Uptake_ST0_max: scalar; 66706
+        Return:
+            Uptake_ST0: dataframe; Rows are monomers; cols are uptake enzymes
+        """
+
+        Uptake_ST0_array = np.random.uniform(self.Uptake_ST0_min, self.Uptake_ST0_max, self.n_uptake * self.n_monomers)
+        Uptake_ST0_array = Uptake_ST0_array.reshape(self.n_monomers, self.n_uptake)
+
+        index = ['Mon' + str(i) for i in range(1, self.n_monomers + 1)]
+        columns = ['Upt' + str(i) for i in range(1, self.n_uptake + 1)]
+        Uptake_ST0 = pd.DataFrame(data=Uptake_ST0_array, index=index, columns=columns, dtype='float32')
+
+
+        return Uptake_ST0
+ 
     def enzyme_Ea(self,Ea_input):
         """ 
         Enzyme specificity matrix of activation energies.
@@ -115,6 +195,83 @@ class Enzyme():
         Ea_df     = pd.DataFrame(data=Ea_series.tolist(), index=self.substrate_index, columns=columns, dtype='float32') # NOTE: .tolist()
         
         return Ea_df.T
+        
+    def enzyme_Cp(self):
+        """
+        Heat Capacity for enzymes.
+
+        Parameters:
+          Cp_min:     -2714
+          Cp_max:     -2714
+          Returns:
+          Cp:       dataframe(enzyme*substrate); will feed the expand()
+        """
+
+        Cp_array = LHS(self.n_substrates * self.n_enzymes, self.Cp_min, self.Cp_max, 'uniform')
+        Cp_array = Cp_array.reshape(self.n_substrates, self.n_enzymes)
+        columns = ['Enz' + str(i) for i in range(1, self.n_enzymes + 1)]
+        Cp = pd.DataFrame(data=Cp_array, index=self.substrate_index, columns=columns, dtype='float32')
+        Cp = Cp.astype('float32')
+
+        return Cp
+
+    def enzyme_uptake_Cp(self):
+        """
+        Heat Capacity for uptake.
+
+        Parameters:
+            Uptake_Cp_min: 1	(mg substrate mg-1 substrate day-1)	Minimum uptake Vmax
+            Uptake_Cp_max: 10 (mg substrate mg-1 substrate day-1)	Maximum uptake Vmax
+        Return:
+            Uptake_Cp: dataframe; Rows are monomers; cols are uptake enzymes
+        """
+
+        # Uptake_Cp_array = np.random.uniform(self.Uptake_Cp_min,self.Uptake_Cp_max,self.n_uptake*self.n_monomers)
+        Uptake_Cp_array = LHS(self.n_uptake * self.n_monomers, self.Uptake_Cp_min, self.Uptake_Cp_max,
+                              'uniform')
+        Uptake_Cp_array = Uptake_Cp_array.reshape(self.n_monomers, self.n_uptake)
+
+        index = ['Mon' + str(i) for i in range(1, self.n_monomers + 1)]
+        columns = ['Upt' + str(i) for i in range(1, self.n_uptake + 1)]
+        Uptake_Cp = pd.DataFrame(data=Uptake_Cp_array, index=index, columns=columns, dtype='float32')
+
+        Uptake_Cp = Uptake_Cp.astype('float32')
+
+        return Uptake_Cp
+
+    def uptake_sub_spec(self, Uptake_ReqEnz):
+        """
+        Pre-exponential constants for uptake.
+        
+        Parameters:
+            Uptake_ReqEnz:    uptake required enzymes; monomers * enzymes; from the monomer module
+            Uptake_Vmax0_min: 1	(mg substrate mg-1 substrate day-1)	Minimum uptake Vmax
+            Uptake_Vmax0_max: 10 (mg substrate mg-1 substrate day-1)	Maximum uptake Vmax
+            Specif_factor:    default 1; Efficiency-specificity 
+        Return:
+            Uptake_Vmax0: dataframe; Rows are monomers; cols are uptake enzymes
+        """
+
+        #Uptake_sub_spec_array = LHS(self.n_uptake * self.n_monomers, 1, 1,'uniform')
+        #Uptake_sub_spec_array = Uptake_sub_spec_array.reshape(self.n_monomers, self.n_uptake)
+
+        index = ['Mon' + str(i) for i in range(1, self.n_monomers + 1)]
+        columns = ['Upt' + str(i) for i in range(1, self.n_uptake + 1)]
+        #Uptake_sub_spec = pd.DataFrame(data=Uptake_sub_spec_array, index=index, columns=columns, dtype='float32')
+        Uptake_sub_spec = pd.DataFrame(columns=columns, index=index, dtype='float32', data=1)
+
+        # implement the tradeoff with specificity
+        total_monomers = Uptake_ReqEnz.sum(axis=0)
+        if self.Specif_factor == 0:
+            total_monomers[total_monomers > 1] = 1
+        else:
+            total_monomers[total_monomers > 1] = total_monomers[total_monomers > 1] * self.Specif_factor
+        Uptake_sub_spec = Uptake_sub_spec.divide(total_monomers, axis=1)
+        Uptake_sub_spec.loc[:, total_monomers == 0] = 0
+
+        Uptake_sub_spec = Uptake_sub_spec.astype('float32')
+
+        return Uptake_sub_spec
     
     
     def enzyme_uptake_Ea(self):
