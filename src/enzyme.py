@@ -57,6 +57,16 @@ class Enzyme():
         self.Uptake_Vmax_Km_int = parameters.loc['Uptake_Vmax_Km_int',1]    # intercept for Uptake Km-Vmax relationship:0
         self.Uptake_Km_min      = parameters.loc['Uptake_Km_min',1]         # Minimum uptake Km: 0.001
         self.Km_error           = parameters.loc['Km_error',1]              # Error term: default = 0
+        self.Cp_min             = parameters.loc['Enz_Cp_min', 1]  # Minimum Vmax for enzyme
+        self.Cp_max             = parameters.loc['Enz_Cp_max', 1]  # Maximum Vmax for enzyme
+        self.Uptake_Cp_min      = parameters.loc['Uptake_Cp_min', 1]  # Minimum Vmax for enzyme
+        self.Uptake_Cp_max      = parameters.loc['Uptake_Cp_max', 1]  # Maximum Vmax for enzyme
+        self.Uptake_HT0_min     = parameters.loc['Uptake_HT0_min', 1]  # Minimum Vmax for enzyme
+        self.Uptake_HT0_max     = parameters.loc['Uptake_HT0_max', 1]  # Maximum Vmax for enzyme
+        self.Uptake_ST0_min     = parameters.loc['Uptake_ST0_min', 1]  # Minimum Vmax for enzyme
+        self.Uptake_ST0_max     = parameters.loc['Uptake_ST0_max', 1]  # Maximum Vmax for enzyme
+        self.HT0_min            = parameters.loc['Enz_HT0_min', 1]  # Minimum Vmax for enzyme
+        self.HT0_max            = parameters.loc['Enz_HT0_max', 1]  # Maximum Vmax for enzyme
 
         self.substrate_index    = substrate_index                           # index of substrates in their actual names
 
