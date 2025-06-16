@@ -6,6 +6,10 @@ preceding the actual decompostion-related computations.
 import pandas as pd
 import numpy as np
 
+import warnings
+import numbers
+from pathlib import Path
+
 from substrate import Substrate
 from monomer   import Monomer
 from enzyme    import Enzyme
@@ -164,3 +168,49 @@ def initialize_data(runtime_parameters, site):
     }
 
     return Data_Dictionary
+
+
+def export_initialization_dict(base_path: Path | str, d: dict) -> None:
+    """Export contents of the initialisation directory to a folder.
+
+    Writes each of the items of a type below to a separate CSV file
+      - pandas.DataFrame
+      - pandas.Series
+      - numpy.ndarray of rank below 2
+    All scalar numbers are grouped in a single CSV 'scalars.csv' file.
+
+    Note:
+        All other items are ignored following a warning!
+        If you need them written you need to add extra entry.
+    """
+
+    # Create space for output
+    base_path = Path(base_path)
+    base_path.mkdir(parents=True, exist_ok=True)
+
+    # Collect all scalar numbers
+    scalar_numbers = dict()
+
+    for name, member in d.items():
+        if isinstance(member, (pd.DataFrame, pd.Series)):
+            fname = name + ".csv"
+            member.to_csv(base_path / fname)
+        elif isinstance(member, np.ndarray):
+            if len(member.shape) <= 2:
+                fname = name + ".csv"
+                np.savetxt(fname, member, delimiter=",")
+            else:
+                warnings.warn(
+                    f"Member '{name}' of initialisation dictionary could not be saved since "
+                    f"it is an array of rank higher than 2 (rank: {len(member.shape)})."
+                )
+        elif isinstance(member, numbers.Number):
+            scalar_numbers[name] = member
+        else:
+            warnings.warn(
+                f"Initialisation member '{name}' has unsupported type '{type(member)}'. "
+                f"It has not been exported to the output directory '{base_path}'."
+            )
+
+    # Print numbers
+    pd.Series(scalar_numbers).to_csv(base_path / "scalars.csv")

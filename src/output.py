@@ -1,6 +1,12 @@
 # output.py module dealing with outputs of DEMENTpy.
 # Bin Wang, January, 2020
 
+from pathlib import Path
+import warnings
+import numbers
+
+from initialization import export_initialization_dict
+
 import numpy as np
 import pandas as pd
 
@@ -293,3 +299,52 @@ class Output():
         GY_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
         GY_grid.name = self.cycle*year + (day+1)
         self.Growth_yield = pd.concat([self.Growth_yield,GY_grid],axis=1,sort=False)
+
+
+    def export(self, base_path: Path | str) -> None:
+        """Export contents of the output file to a directory.
+
+        Exports each class member of type pandas.DataFrame to a separate CSV file.
+        All pandas.Series members are combined in a DataFrame and printed dto 'series.csv' file.
+        Similarly all scalar numerical members are grouped in 'scalars.csv'.
+
+        Parameters:
+          base_path : Path
+            A path that names the root directory where contents will be exported.
+            If the directory does not exist it will be created.
+        """
+        # Create space for output
+        base_path = Path(base_path)
+        base_path.mkdir(parents=True, exist_ok=True)
+
+        # Collect all series and scalar data
+        # We will dump them at the end
+        series_data = dict()
+        scalar_numbers = dict()
+
+        for name, member in vars(self).items():
+            if isinstance(member, pd.DataFrame):
+                fname = name + ".csv"
+                member.to_csv(base_path / fname)
+            elif isinstance(member, pd.Series):
+                series_data[name] = member
+            elif isinstance(member, numbers.Number):
+                scalar_numbers[name] = member
+            elif name == "Initialization":
+                # Special case - Initialization dictionary
+                # Serialise it to a subfolder
+                path = base_path / name
+                export_initialization_dict(path, member)
+            else:
+                warnings.warn(
+                    f"Output member '{name}' has unsupported type '{type(member)}'. "
+                    f"It has not been exported to the output directory '{base_path}'."
+                )
+
+        # If it happens that Series have different lengths they will be padded
+        # with missing data labels (NaNs)
+        series_data = pd.concat(series_data, axis=1)
+        series_data.to_csv(base_path / "series.csv")
+
+        # Print numbers
+        pd.Series(scalar_numbers).to_csv(base_path / "scalars.csv")

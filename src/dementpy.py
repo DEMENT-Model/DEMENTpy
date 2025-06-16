@@ -101,6 +101,6 @@ def main():
     
     #...export the Output_init object to the output_folder using the export() funtion in the utility module 
     os.chdir('../'+output_folder)
-    export(Output_init, site, outname)
+    Output_init.export(outname)
     
 main()
