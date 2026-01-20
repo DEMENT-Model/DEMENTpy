@@ -420,8 +420,8 @@ class Grid():
         # Update Substrates pools with dead enzymes
         DeadEnz_df = pd.concat(
             [Enzyme_Loss,
-            Enzyme_Loss.mul(self.Enz_Attrib['N_cost'].tolist()*self.gridsize,axis=0),
-            Enzyme_Loss.mul(self.Enz_Attrib['P_cost'].tolist()*self.gridsize,axis=0)],
+            Enzyme_Loss.mul(np.repeat(self.Enz_Attrib['N_cost'].values, self.gridsize), axis=0),
+            Enzyme_Loss.mul(np.repeat(self.Enz_Attrib['P_cost'].values, self.gridsize), axis=0)],
             axis=1
         )
         DeadEnz_df.index = [np.arange(self.gridsize).repeat(self.n_enzymes), DeadEnz_df.index] # create a multi-index
@@ -713,5 +713,5 @@ class Grid():
         # last: assign microbes to each grid box randomly based on prior densities
         choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
         for i in range(self.n_taxa):
-            choose_taxa[i,:] = np.random.choice([1,0], self.gridsize, replace=True, p=[frequencies[i], 1-frequencies[i]])
+            choose_taxa[i,:] = np.random.binomial(1, frequencies[i], self.gridsize)
         self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0) # NOTE order='F'

@@ -107,4 +107,5 @@ def main():
     else:
         Output_init.export_to_netcdf(outname)
     
-main()
+if __name__ == '__main__':
+    main()
