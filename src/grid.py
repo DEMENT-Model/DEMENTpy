@@ -712,11 +712,6 @@ class Grid():
         frequencies = frequencies.clip(lower=0, upper=1)          # guard against any stray negative/over-1 values (sum of 1) 
         frequencies = frequencies / frequencies.sum() if frequencies.sum() > 0 else frequencies  # renormalize to exactly 1
 
-        #print("sum of frequencies:", frequencies.sum())
-        #print("any NaN?", frequencies.isna().any())
-        #print("min/max:", frequencies.min(), frequencies.max())
-        #print("dtype:", frequencies.dtype)
-        
         # last: assign microbes to each grid box randomly based on prior densities
         choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
         for i in range(self.n_taxa):
