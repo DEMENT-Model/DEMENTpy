@@ -303,6 +303,31 @@ class Output():
         self.Growth_yield = pd.concat([self.Growth_yield,GY_grid],axis=1,sort=False)
 
 
+    def _assemble_series(self):
+        """Convert per-day list buffers to DataFrames (called once per export).
+
+        Replaces the incremental pd.concat pattern (O(n²)) with a single
+        pd.concat per series (O(n)).  The initial-state column stored in
+        self.NAME during __init__ is prepended automatically.
+        """
+        for name, buf in self._buf.items():
+            if not buf:
+                continue
+            axis = 0 if name == "Kill" else 1
+            new_data = pd.concat(buf, axis=axis, sort=False)
+            existing = getattr(self, name, None)
+            if existing is not None and not (
+                    hasattr(existing, "__len__") and len(existing) == 0):
+                try:
+                    setattr(self, name, pd.concat([existing, new_data],
+                                                  axis=axis, sort=False))
+                except Exception:
+                    setattr(self, name, new_data)
+            else:
+                setattr(self, name, new_data)
+            self._buf[name] = []
+
+    
     def export_to_csv(self, base_path: Path | str) -> None:
         """Export contents of the output file to a directory.
 
@@ -315,6 +340,7 @@ class Output():
             A path that names the root directory where contents will be exported.
             If the directory does not exist it will be created.
         """
+        self._assemble_series()
         # Create space for output
         base_path = Path(base_path)
         base_path.mkdir(parents=True, exist_ok=True)
@@ -325,6 +351,8 @@ class Output():
         scalar_numbers = dict()
 
         for name, member in vars(self).items():
+            if name.startswith('_'):
+                continue  # skip private helper attributes (indices, caches)
             if isinstance(member, pd.DataFrame):
                 fname = name + ".csv"
                 member.to_csv(base_path / fname)
@@ -336,20 +364,22 @@ class Output():
                 # Special case - Initialization dictionary
                 # Serialise it to a subfolder
                 path = base_path / name
-                export_initialization_dict(path, member)
+                export_initialization_dict_to_csv(path, member)
             else:
                 warnings.warn(
                     f"Output member '{name}' has unsupported type '{type(member)}'. "
                     f"It has not been exported to the output directory '{base_path}'."
                 )
 
-        # If it happens that Series have different lengths they will be padded
-        # with missing data labels (NaNs)
-        series_data = pd.concat(series_data, axis=1)
-        series_data.to_csv(base_path / "series.csv")
+        for name, series in series_data.items():
+            try:
+                series.to_csv(base_path / f"{name}.csv", header=[name])
+            except Exception as e:
+                warnings.warn(f"Could not export series '{name}': {e}")
 
         # Print numbers
         pd.Series(scalar_numbers).to_csv(base_path / "scalars.csv")
+
 
     def export_to_netcdf(self, base_path: Path | str) -> None:
         """Export contents of the output file to a directory in NetCDF format.
@@ -362,6 +392,7 @@ class Output():
             A path that names the root directory where contents will be exported.
             If the directory does not exist it will be created.
         """
+        self._assemble_series()
         # Create space for output
         base_path = Path(base_path)
         base_path.mkdir(parents=True, exist_ok=True)
@@ -371,6 +402,8 @@ class Output():
         scalar_numbers = dict()
 
         for name, member in vars(self).items():
+            if name.startswith('_'):
+                continue  # skip private helper attributes (indices, caches)
             # convert each DataFrame to an xarray Dataset and save to .nc
             if isinstance(member, pd.DataFrame):
                 # Ensure column names are strings
@@ -380,7 +413,8 @@ class Output():
                 fname = name + ".nc" # use the .nc extension
                 try:
                     xarray_member = xr.Dataset.from_dataframe(member)
-                    xarray_member.to_netcdf(base_path / fname)
+                    encoding = {var: {"zlib": True, "complevel": 4} for var in xarray_member.data_vars}
+                    xarray_member.to_netcdf(base_path / fname, encoding=encoding, format="NETCDF4")
                 except Exception as e:
                     warnings.warn(
                         f"Could not export DataFrame '{name}' to NetCDF. Error: {e}"
@@ -397,10 +431,6 @@ class Output():
                 # Serialise it to a subfolder
                 path = base_path / name
                 export_initialization_dict_to_netcdf(path, member)
-            elif isinstance(member, pd.Series):
-                xrmember = xr.DataArray(member)
-                fname = name + ".nc"
-                xrmember.to_netcdf(base_path / fname)
 
             else:
                 warnings.warn(
@@ -408,25 +438,29 @@ class Output():
                     f"It has not been exported to the output directory '{base_path}'."
                 )
 
-        # process and save Series
-        if series_data:
+        # process and save Series — each written to its own .nc file
+        for name, series in series_data.items():
             try:
-                # Combine all Series into a single DataFrame.
-                combined_series_df = pd.concat(series_data, axis=1)
-                # Convert the combined DataFrame to an xarray Dataset.
-                series_dataset = xr.Dataset.from_dataframe(combined_series_df)
-                # Save the Series Dataset to a single NetCDF file.
-                series_dataset.to_netcdf(base_path / "series.nc")
-            except ValueError as e:
-                # This handles the "duplicate labels" error if it occurs.
-                warnings.warn(
-                    f"Could not export combined series due to an error: {e}. "
-                    "Consider cleaning the index of your Series data first."
-                )
-
+                if isinstance(series.index, pd.MultiIndex):
+                    da = xr.DataArray.from_series(series)
+                else:
+                    da = xr.DataArray(series.values, dims=["index"], name=name)
+                    da = da.assign_coords(index=series.index.values)
+                da.name = name
+                da.to_netcdf(base_path / f"{name}.nc",
+                             encoding={name: {"zlib": True, "complevel": 4}},
+                             format="NETCDF4")
+            except Exception as e:
+                warnings.warn(f"Could not export Series '{name}' to NetCDF. Error: {e}")
+                    
+        
         if scalar_numbers:
             # Create an xarray Dataset directly from the dictionary of scalars.
             # Each key will become a variable in the NetCDF file.
             scalars_dataset = xr.Dataset(scalar_numbers)
             # Save the scalars Dataset to a NetCDF file.
-            scalars_dataset.to_netcdf(base_path / "scalars.nc")
+            encoding = {var: {"zlib": True, "complevel": 4} for var in scalars_dataset.data_vars}
+            scalars_dataset.to_netcdf(base_path / "scalars.nc",
+                                      encoding=encoding, format="NETCDF4")
+            
+
