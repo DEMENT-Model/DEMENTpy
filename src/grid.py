@@ -59,6 +59,7 @@ class Grid():
         self.Km0             = data_init['Km0']                           # Half-saturation constant
         self.SubstrateRatios = np.float32('nan')                          # Substrate stoichiometry
         self.DecayRates      = np.float32('nan')                          # Substrate decay rate
+        self.R_moist_decay   = data_init['R_moist_decay']                 # Rate for change of moisture reaction in decay module
 
         #Uptake
         #self.Microbes_init   = data_init['Microbes_pp']                   # microbial community before placement
@@ -75,7 +76,8 @@ class Grid():
         self.Taxon_Uptake_C  = np.float32('nan')                          # taxon uptake of C 
         self.Taxon_Uptake_N  = np.float32('nan')                          # taxon uptake of N 
         self.Taxon_Uptake_P  = np.float32('nan')                          # taxon uptake of P
-        
+        self.R_moist_uptake  = data_init['R_moist_uptake']                # Rate for change of moisture reaction in uptake module
+         
         #Metabolism
         self.Consti_Enzyme_C   = data_init["EnzProdConstit"]    # C cost of encoding constitutive enzyme
         self.Induci_Enzyme_C   = data_init["EnzProdInduce"]     # C Cost of encoding inducible enzyme 
@@ -154,7 +156,7 @@ class Grid():
         SubstrateRatios = SubstrateRatios.fillna(0) # NOTE:ensure NA(b/c of 0/0 in df) = 0
         
         # Arrhenius equation for Vmax and Km multiplied by exponential decay for Psi sensitivity
-        Vmax = Arrhenius(self.Vmax0, self.Ea,    self.temp[day]) * Allison(0.05, self.wp_fc, self.psi[day])  # Vmax: (enz*gridsize) * sub
+        Vmax = Arrhenius(self.Vmax0, self.Ea,    self.temp[day]) * Allison(self.R_moist_decay, self.wp_fc, self.psi[day])  # Vmax: (enz*gridsize) * sub
         Km   = Arrhenius(self.Km0,   self.Km_Ea, self.temp[day])                                             # Km:   (sub*gridsize) * enz
 
         # Multiply Vmax by enzyme concentration
@@ -231,7 +233,7 @@ class Grid():
 
         # Start calculating monomer uptake
         # Caculate uptake enzyme kinetic parameters, multiplied by moisture multiplier accounting for the diffusivity implications
-        Uptake_Vmax = Arrhenius(self.Uptake_Vmax0, self.Uptake_Ea, self.temp[day]) * Allison(0.1, self.wp_fc, self.psi[day])
+        Uptake_Vmax = Arrhenius(self.Uptake_Vmax0, self.Uptake_Ea, self.temp[day]) * Allison(self.R_moist_uptake, self.wp_fc, self.psi[day])
         Uptake_Km   = Arrhenius(self.Uptake_Km0,   self.Km_Ea,     self.temp[day])
 
         # Equation for hypothetical potential uptake (per unit of compatible uptake protein)
