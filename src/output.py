@@ -336,7 +336,7 @@ class Output():
                 # Special case - Initialization dictionary
                 # Serialise it to a subfolder
                 path = base_path / name
-                export_initialization_dict(path, member)
+                export_initialization_dict_to_csv(path, member)
             else:
                 warnings.warn(
                     f"Output member '{name}' has unsupported type '{type(member)}'. "
