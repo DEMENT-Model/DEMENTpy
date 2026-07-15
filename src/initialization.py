@@ -5,6 +5,12 @@ preceding the actual decompostion-related computations.
 """
 import pandas as pd
 import numpy as np
+import xarray as xr
+
+import warnings
+import numbers
+from pathlib import Path
+from typing import Union
 
 from substrate import Substrate
 from monomer   import Monomer
@@ -159,8 +165,137 @@ def initialize_data(runtime_parameters, site):
         'wp_fc':             parameters.loc['wp_fc',1],             # threshold below which microbes start to respond to drought
         'wp_th':             parameters.loc['wp_th',1],             # threshold below which microbes in full swing to respond to drought
         'alpha':             parameters.loc['alpha',1],             # factor delineating curve concavity of microbial response to drought
+        'R_moist_decay':     parameters.loc['R_moist_decay',1],         # factor in the Allison equation for moisture (Decay part)
+        'R_moist_uptake':    parameters.loc['R_moist_uptake',1],        # factor in the Allison equation for moisture (Uptake part)
         'Temp': daily_temp,                                         # temperature
         'Psi':  daily_psi                                           # water potential
     }
 
     return Data_Dictionary
+
+
+def export_initialization_dict_to_csv(base_path: Path | str, d: dict) -> None:
+    """Export contents of the initialisation directory to a folder.
+
+    Writes each of the items of a type below to a separate CSV file
+      - pandas.DataFrame
+      - pandas.Series
+      - numpy.ndarray of rank below 2
+    All scalar numbers are grouped in a single CSV 'scalars.csv' file.
+
+    Note:
+        All other items are ignored following a warning!
+        If you need them written you need to add extra entry.
+    """
+
+    # Create space for output
+    base_path = Path(base_path)
+    base_path.mkdir(parents=True, exist_ok=True)
+
+    # Collect all scalar numbers
+    scalar_numbers = dict()
+
+    for name, member in d.items():
+        if isinstance(member, (pd.DataFrame, pd.Series)):
+            fname = name + ".csv"
+            member.to_csv(base_path / fname)
+        elif isinstance(member, np.ndarray):
+            if len(member.shape) <= 2:
+                fname = name + ".csv"
+                np.savetxt(fname, member, delimiter=",")
+            else:
+                warnings.warn(
+                    f"Member '{name}' of initialisation dictionary could not be saved since "
+                    f"it is an array of rank higher than 2 (rank: {len(member.shape)})."
+                )
+        elif isinstance(member, numbers.Number):
+            scalar_numbers[name] = member
+        else:
+            warnings.warn(
+                f"Initialisation member '{name}' has unsupported type '{type(member)}'. "
+                f"It has not been exported to the output directory '{base_path}'."
+            )
+
+    # Print numbers
+    pd.Series(scalar_numbers).to_csv(base_path / "scalars.csv")
+
+    def export_to_netcdf(self, base_path: Path | str) -> None:
+        """Export contents of the output file to a directory in NetCDF format.
+        - Each pandas.DataFrame member is saved to a separate .nc file.
+        - All pandas.Series members are combined and saved to a single 'series.nc' file.
+        - All scalar numerical members are grouped and saved to 'scalars.nc'.
+
+        Parameters:
+          base_path : Path
+            A path that names the root directory where contents will be exported.
+            If the directory does not exist it will be created.
+        """
+        # Create space for output
+        base_path = Path(base_path)
+        base_path.mkdir(parents=True, exist_ok=True)
+
+        # Collect all series and scalar data
+        series_data = dict()
+        scalar_numbers = dict()
+
+        for name, member in vars(self).items():
+            # convert each DataFrame to an xarray Dataset and save to .nc
+            if isinstance(member, pd.DataFrame):
+                # Ensure column names are strings
+                member.columns = member.columns.astype(str)
+                if member.index.name is not None:
+                    member.index.name = str(member.index.name)
+                fname = name + ".nc" # use the .nc extension
+                try:
+                    xarray_member = xr.Dataset.from_dataframe(member)
+                    xarray_member.to_netcdf(base_path / fname)
+                except Exception as e:
+                    warnings.warn(
+                        f"Could not export DataFrame '{name}' to NetCDF. Error: {e}"
+                    )
+
+            elif isinstance(member, pd.Series):
+                series_data[name] = member
+
+            elif isinstance(member, numbers.Number):
+                scalar_numbers[name] = member
+
+            elif name == "Initialization":
+                # Special case - Initialization dictionary
+                # Serialise it to a subfolder
+                path = base_path / name
+                export_initialization_dict_to_netcdf(path, member)
+            elif isinstance(member, pd.Series):
+                xrmember = xr.DataArray(member)
+                fname = name + ".nc"
+                xrmember.to_netcdf(base_path / fname)
+
+            else:
+                warnings.warn(
+                    f"Output member '{name}' has unsupported type '{type(member)}'. "
+                    f"It has not been exported to the output directory '{base_path}'."
+                )
+
+        # process and save Series
+        if series_data:
+            try:
+                # Combine all Series into a single DataFrame.
+                combined_series_df = pd.concat(series_data, axis=1)
+                # Convert the combined DataFrame to an xarray Dataset.
+                series_dataset = xr.Dataset.from_dataframe(combined_series_df)
+                # Save the Series Dataset to a single NetCDF file.
+                series_dataset.to_netcdf(base_path / "series.nc")
+            except ValueError as e:
+                # This handles the "duplicate labels" error if it occurs.
+                warnings.warn(
+                    f"Could not export combined series due to an error: {e}. "
+                    "Consider cleaning the index of your Series data first."
+                )
+
+        if scalar_numbers:
+            # Create an xarray Dataset directly from the dictionary of scalars.
+            # Each key will become a variable in the NetCDF file.
+            scalars_dataset = xr.Dataset(scalar_numbers)
+            # Save the scalars Dataset to a NetCDF file.
+            scalars_dataset.to_netcdf(base_path / "scalars.nc")
+

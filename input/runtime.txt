@@ -25,3 +25,4 @@ Input_PO4	0
 direct	0.95
 dist	1
 interval	1
+output_CSV	1

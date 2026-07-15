@@ -162,7 +162,7 @@ class Microbe():
         pb = self.taxa_per_box
         choose_taxa = np.random.choice([1,0], self.n_taxa*self.gridsize,replace=True, p=[pb,(1-pb)])
         pf = pb * self.max_size_b/self.max_size_f
-        choose_taxa[fb_grid==1] = np.random.choice([1,0], sum(fb_grid),replace=True, p=[pf,(1-pf)])
+        choose_taxa[fb_grid==1] = np.random.choice([1,0], np.sum(fb_grid),replace=True, p=[pf,(1-pf)])
         microbes_df.loc[choose_taxa==0] = np.float32(0)
         
 
