@@ -711,9 +711,15 @@ class Grid():
         # calculate frequency of every taxon 
         frequencies = cum_abundance/cum_abundance.sum()
         frequencies = frequencies.fillna(0)
-        
+        frequencies = frequencies.clip(lower=0, upper=1)          # guard against any stray negative/over-1 values (sum of 1) 
+        frequencies = frequencies / frequencies.sum() if frequencies.sum() > 0 else frequencies  # renormalize to exactly 1
+
         # last: assign microbes to each grid box randomly based on prior densities
         choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
         for i in range(self.n_taxa):
             choose_taxa[i,:] = np.random.binomial(1, frequencies[i], self.gridsize)
+            freq=np.float64(frequencies.iloc[1]) #working independent of indexing (based on location not index labels)
+            p_vec = np.array([freq, 1.0 - freq], dtype=np.float64) #solve numoy issues
+            p_vec = p_vec / p_vec.sum()
+            choose_taxa[i,:] = np.random.choice([1,0], self.gridsize, replace=True, p=p_vec)
         self.Microbes.loc[np.ravel(choose_taxa,order='F')==0] = np.float32(0) # NOTE order='F'
