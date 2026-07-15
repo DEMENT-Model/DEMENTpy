@@ -45,7 +45,7 @@ def main():
     pulse      = int(runtime.loc['pulse',1])         # number of pulses
     cycle      = int(runtime.loc['end_time',1])      # number of time steps in each pulse
     interval   = int(runtime.loc['interval',1])      # interval of time step to record outputs
-    Export_format = int(runtime.loc['output_CSV',1])      # interval of time step to record outputs
+    #Export_format = int(runtime.loc['output_CSV',1])      # interval of time step to record outputs
     mode       = int(runtime.loc['dispersal',1])     # 0:'default' or 1:'dispersal'
 
     #...Initialize data by calling the Function: Initialize_Data()
@@ -102,10 +102,7 @@ def main():
     
     #...export the Output_init object to the output_folder using the export() funtion in the utility module 
     os.chdir('../'+output_folder)
-    if Export_format == 1:
-        Output_init.export_to_csv(outname)
-    else:
-        Output_init.export_to_netcdf(outname)
-    
+    Output_init.export_to_csv(outname)
+        
 if __name__ == '__main__':
     main()
