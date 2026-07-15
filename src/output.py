@@ -301,32 +301,6 @@ class Output():
         GY_grid = ecosystem.Microbe_C_Gain.groupby(level=0,sort=False).sum()
         GY_grid.name = self.cycle*year + (day+1)
         self.Growth_yield = pd.concat([self.Growth_yield,GY_grid],axis=1,sort=False)
-
-
-    def _assemble_series(self):
-        """Convert per-day list buffers to DataFrames (called once per export).
-
-        Replaces the incremental pd.concat pattern (O(n²)) with a single
-        pd.concat per series (O(n)).  The initial-state column stored in
-        self.NAME during __init__ is prepended automatically.
-        """
-        for name, buf in self._buf.items():
-            if not buf:
-                continue
-            axis = 0 if name == "Kill" else 1
-            new_data = pd.concat(buf, axis=axis, sort=False)
-            existing = getattr(self, name, None)
-            if existing is not None and not (
-                    hasattr(existing, "__len__") and len(existing) == 0):
-                try:
-                    setattr(self, name, pd.concat([existing, new_data],
-                                                  axis=axis, sort=False))
-                except Exception:
-                    setattr(self, name, new_data)
-            else:
-                setattr(self, name, new_data)
-            self._buf[name] = []
-
     
     def export_to_csv(self, base_path: Path | str) -> None:
         """Export contents of the output file to a directory.
@@ -340,7 +314,7 @@ class Output():
             A path that names the root directory where contents will be exported.
             If the directory does not exist it will be created.
         """
-        self._assemble_series()
+        # self._assemble_series()
         # Create space for output
         base_path = Path(base_path)
         base_path.mkdir(parents=True, exist_ok=True)
@@ -371,6 +345,8 @@ class Output():
                     f"It has not been exported to the output directory '{base_path}'."
                 )
 
+        series_data = pd.concat(series_data, axis=1)
+
         for name, series in series_data.items():
             try:
                 series.to_csv(base_path / f"{name}.csv", header=[name])
@@ -380,87 +356,4 @@ class Output():
         # Print numbers
         pd.Series(scalar_numbers).to_csv(base_path / "scalars.csv")
 
-
-    def export_to_netcdf(self, base_path: Path | str) -> None:
-        """Export contents of the output file to a directory in NetCDF format.
-        - Each pandas.DataFrame member is saved to a separate .nc file.
-        - All pandas.Series members are combined and saved to a single 'series.nc' file.
-        - All scalar numerical members are grouped and saved to 'scalars.nc'.
-
-        Parameters:
-          base_path : Path
-            A path that names the root directory where contents will be exported.
-            If the directory does not exist it will be created.
-        """
-        self._assemble_series()
-        # Create space for output
-        base_path = Path(base_path)
-        base_path.mkdir(parents=True, exist_ok=True)
-
-        # Collect all series and scalar data
-        series_data = dict()
-        scalar_numbers = dict()
-
-        for name, member in vars(self).items():
-            if name.startswith('_'):
-                continue  # skip private helper attributes (indices, caches)
-            # convert each DataFrame to an xarray Dataset and save to .nc
-            if isinstance(member, pd.DataFrame):
-                # Ensure column names are strings
-                member.columns = member.columns.astype(str)
-                if member.index.name is not None:
-                    member.index.name = str(member.index.name)
-                fname = name + ".nc" # use the .nc extension
-                try:
-                    xarray_member = xr.Dataset.from_dataframe(member)
-                    encoding = {var: {"zlib": True, "complevel": 4} for var in xarray_member.data_vars}
-                    xarray_member.to_netcdf(base_path / fname, encoding=encoding, format="NETCDF4")
-                except Exception as e:
-                    warnings.warn(
-                        f"Could not export DataFrame '{name}' to NetCDF. Error: {e}"
-                    )
-
-            elif isinstance(member, pd.Series):
-                series_data[name] = member
-
-            elif isinstance(member, numbers.Number):
-                scalar_numbers[name] = member
-
-            elif name == "Initialization":
-                # Special case - Initialization dictionary
-                # Serialise it to a subfolder
-                path = base_path / name
-                export_initialization_dict_to_netcdf(path, member)
-
-            else:
-                warnings.warn(
-                    f"Output member '{name}' has unsupported type '{type(member)}'. "
-                    f"It has not been exported to the output directory '{base_path}'."
-                )
-
-        # process and save Series — each written to its own .nc file
-        for name, series in series_data.items():
-            try:
-                if isinstance(series.index, pd.MultiIndex):
-                    da = xr.DataArray.from_series(series)
-                else:
-                    da = xr.DataArray(series.values, dims=["index"], name=name)
-                    da = da.assign_coords(index=series.index.values)
-                da.name = name
-                da.to_netcdf(base_path / f"{name}.nc",
-                             encoding={name: {"zlib": True, "complevel": 4}},
-                             format="NETCDF4")
-            except Exception as e:
-                warnings.warn(f"Could not export Series '{name}' to NetCDF. Error: {e}")
-                    
-        
-        if scalar_numbers:
-            # Create an xarray Dataset directly from the dictionary of scalars.
-            # Each key will become a variable in the NetCDF file.
-            scalars_dataset = xr.Dataset(scalar_numbers)
-            # Save the scalars Dataset to a NetCDF file.
-            encoding = {var: {"zlib": True, "complevel": 4} for var in scalars_dataset.data_vars}
-            scalars_dataset.to_netcdf(base_path / "scalars.nc",
-                                      encoding=encoding, format="NETCDF4")
-            
 
