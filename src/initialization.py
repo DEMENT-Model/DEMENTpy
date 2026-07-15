@@ -174,7 +174,7 @@ def initialize_data(runtime_parameters, site):
     return Data_Dictionary
 
 
-def export_initialization_dict_to_csv(base_path: Path | str, d: dict) -> None:
+def export_initialization_dict_to_csv(base_path: Union[Path, str], d: dict) -> None:
     """Export contents of the initialisation directory to a folder.
 
     Writes each of the items of a type below to a separate CSV file
@@ -202,7 +202,7 @@ def export_initialization_dict_to_csv(base_path: Path | str, d: dict) -> None:
         elif isinstance(member, np.ndarray):
             if len(member.shape) <= 2:
                 fname = name + ".csv"
-                np.savetxt(fname, member, delimiter=",")
+                np.savetxt(base_path / fname, member, delimiter=",")
             else:
                 warnings.warn(
                     f"Member '{name}' of initialisation dictionary could not be saved since "
@@ -210,6 +210,8 @@ def export_initialization_dict_to_csv(base_path: Path | str, d: dict) -> None:
                 )
         elif isinstance(member, numbers.Number):
             scalar_numbers[name] = member
+        elif isinstance(member, pd.Index):
+            pass  # Index objects are already captured as DataFrame row labels; no separate export needed
         else:
             warnings.warn(
                 f"Initialisation member '{name}' has unsupported type '{type(member)}'. "
@@ -219,83 +221,91 @@ def export_initialization_dict_to_csv(base_path: Path | str, d: dict) -> None:
     # Print numbers
     pd.Series(scalar_numbers).to_csv(base_path / "scalars.csv")
 
-    def export_to_netcdf(self, base_path: Path | str) -> None:
-        """Export contents of the output file to a directory in NetCDF format.
-        - Each pandas.DataFrame member is saved to a separate .nc file.
-        - All pandas.Series members are combined and saved to a single 'series.nc' file.
-        - All scalar numerical members are grouped and saved to 'scalars.nc'.
+def export_initialization_dict_to_netcdf(base_path: Union[Path, str], d: dict) -> None:
+    """
+    Export contents of the initialisation directory to a folder in NetCDF format.
+    - pandas.DataFrame, pandas.Series, and numpy.ndarray (rank <= 2) are each
+      written to a separate .nc file.
+    - All scalar numbers are grouped in a single 'scalars.nc' file.
 
-        Parameters:
-          base_path : Path
-            A path that names the root directory where contents will be exported.
-            If the directory does not exist it will be created.
-        """
-        # Create space for output
-        base_path = Path(base_path)
-        base_path.mkdir(parents=True, exist_ok=True)
+    Note:
+        All other items are ignored following a warning!
+    """
+    # Create space for output
+    base_path = Path(base_path)
+    base_path.mkdir(parents=True, exist_ok=True)
 
-        # Collect all series and scalar data
-        series_data = dict()
-        scalar_numbers = dict()
+    # Collect all scalar numbers to be processed at the end
+    scalar_numbers = dict()
 
-        for name, member in vars(self).items():
-            # convert each DataFrame to an xarray Dataset and save to .nc
-            if isinstance(member, pd.DataFrame):
-                # Ensure column names are strings
-                member.columns = member.columns.astype(str)
-                if member.index.name is not None:
-                    member.index.name = str(member.index.name)
-                fname = name + ".nc" # use the .nc extension
+    for name, member in d.items():
+        fname = name + ".nc"  # Use .nc extension for all files
+
+        if isinstance(member, pd.DataFrame):
+            try:
+                df_to_save = member.copy()
+                if isinstance(df_to_save.index, pd.MultiIndex):
+                    df_to_save = df_to_save.reset_index()
+                ds = xr.Dataset.from_dataframe(df_to_save)
+                encoding = {var: {"zlib": True, "complevel": 4} for var in ds.data_vars}
+                ds.to_netcdf(base_path / fname, encoding=encoding, format="NETCDF4")
+            except Exception as e:
+                warnings.warn(f"Could not convert DataFrame '{name}' to NetCDF. Error: {e}")
+            
+        elif isinstance(member, pd.Series):
+            try:
+                da = xr.DataArray.from_series(member.reset_index(drop=True))
+                da.name = name 
+                da.to_netcdf(base_path / fname, encoding={name: {"zlib": True, "complevel": 4}},
+                             format="NETCDF4")
+            except Exception as e:
+                warnings.warn(f"Could not convert Series '{name}' to NetCDF. Error: {e}")
+
+        elif isinstance(member, pd.Index):
+            try:
+                # Use the index's name for the dimension and variable, or a default.
+                index_name = member.name if member.name is not None else "index_data"
+                # Convert the Index to a self-describing DataArray and save.
+                da = xr.DataArray(member, dims=[index_name], name=index_name)
+                da.to_netcdf(base_path / fname, encoding={index_name: {"zlib": True, "complevel": 4}},
+                             format="NETCDF4")
+            except Exception as e:
+                warnings.warn(f"Could not convert Index '{name}' to NetCDF. Error: {e}")
+
+        elif isinstance(member, np.ndarray):
+            if member.ndim <= 2:
                 try:
-                    xarray_member = xr.Dataset.from_dataframe(member)
-                    xarray_member.to_netcdf(base_path / fname)
-                except Exception as e:
-                    warnings.warn(
-                        f"Could not export DataFrame '{name}' to NetCDF. Error: {e}"
+                    # Convert numpy array to an xarray DataArray.
+                    # We give it a name and default dimension names.
+                    data_array = xr.DataArray(
+                        member,
+                        name=name,
+                        dims=[f"dim_{i}" for i in range(member.ndim)]
                     )
-
-            elif isinstance(member, pd.Series):
-                series_data[name] = member
-
-            elif isinstance(member, numbers.Number):
-                scalar_numbers[name] = member
-
-            elif name == "Initialization":
-                # Special case - Initialization dictionary
-                # Serialise it to a subfolder
-                path = base_path / name
-                export_initialization_dict_to_netcdf(path, member)
-            elif isinstance(member, pd.Series):
-                xrmember = xr.DataArray(member)
-                fname = name + ".nc"
-                xrmember.to_netcdf(base_path / fname)
-
+                    data_array.to_netcdf(base_path / fname, encoding={name: {"zlib": True, "complevel": 4}},
+                                         format="NETCDF4")
+                except Exception as e:
+                    warnings.warn(f"Could not convert array '{name}' to NetCDF. Error: {e}")
             else:
                 warnings.warn(
-                    f"Output member '{name}' has unsupported type '{type(member)}'. "
-                    f"It has not been exported to the output directory '{base_path}'."
+                    f"Member '{name}' of initialisation dictionary could not be saved since "
+                    f"it is an array of rank higher than 2 (rank: {member.ndim})."
                 )
 
-        # process and save Series
-        if series_data:
-            try:
-                # Combine all Series into a single DataFrame.
-                combined_series_df = pd.concat(series_data, axis=1)
-                # Convert the combined DataFrame to an xarray Dataset.
-                series_dataset = xr.Dataset.from_dataframe(combined_series_df)
-                # Save the Series Dataset to a single NetCDF file.
-                series_dataset.to_netcdf(base_path / "series.nc")
-            except ValueError as e:
-                # This handles the "duplicate labels" error if it occurs.
-                warnings.warn(
-                    f"Could not export combined series due to an error: {e}. "
-                    "Consider cleaning the index of your Series data first."
-                )
+        elif isinstance(member, numbers.Number):
+            scalar_numbers[name] = member
 
-        if scalar_numbers:
-            # Create an xarray Dataset directly from the dictionary of scalars.
-            # Each key will become a variable in the NetCDF file.
-            scalars_dataset = xr.Dataset(scalar_numbers)
-            # Save the scalars Dataset to a NetCDF file.
-            scalars_dataset.to_netcdf(base_path / "scalars.nc")
+        else:
+            warnings.warn(
+                f"Initialisation member '{name}' has unsupported type '{type(member)}'. "
+                f"It has not been exported to the output directory '{base_path}'."
+            )
+
+    # Process and save all collected scalars
+    if scalar_numbers:
+        # Create an xarray Dataset from the dictionary of scalars and save to .nc
+        scalars_dataset = xr.Dataset(scalar_numbers)
+        encoding = {var: {"zlib": True, "complevel": 4} for var in scalars_dataset.data_vars}
+        scalars_dataset.to_netcdf(base_path / "scalars.nc",
+                                  encoding=encoding, format="NETCDF4")
 
