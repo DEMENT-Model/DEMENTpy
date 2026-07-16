@@ -10,7 +10,7 @@ This module, utility.py, contains three functions facilitating the calculation.
 import numpy as np
 import pandas as pd
 import pickle
-from scipy.stats import distributions
+from scipy.stats import uniform, norm # instead of calling the whole distributions package (heavy) we call only the needed objects
 
 
 def LHS(n,loc,upc,dist):
@@ -34,9 +34,9 @@ def LHS(n,loc,upc,dist):
     
     scale = upc - loc
     if dist == 'uniform':
-        rv = distributions.uniform(loc=loc, scale=scale)  
+        rv = uniform(loc=loc, scale=scale)  
     elif dist == 'normal':
-        rv = distributions.norm(loc=loc, scale=scale)
+        rv = norm(loc=loc, scale=scale)
     
     lhs = rv.ppf(points)
     
