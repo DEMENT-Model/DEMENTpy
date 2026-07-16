@@ -23,6 +23,6 @@ Init_PO4	0
 Input_NH4	0
 Input_PO4	0
 direct	0.95
+dispersal  0
 dist	1
 interval	1
-output_CSV	1
