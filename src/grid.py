@@ -717,7 +717,6 @@ class Grid():
         # last: assign microbes to each grid box randomly based on prior densities
         choose_taxa = np.zeros((self.n_taxa,self.gridsize), dtype='int8')
         for i in range(self.n_taxa):
-            choose_taxa[i,:] = np.random.binomial(1, frequencies[i], self.gridsize)
             freq=np.float64(frequencies.iloc[1]) #working independent of indexing (based on location not index labels)
             p_vec = np.array([freq, 1.0 - freq], dtype=np.float64) #solve numoy issues
             p_vec = p_vec / p_vec.sum()
