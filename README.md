@@ -83,6 +83,15 @@ The space for contribution is HUGE and OPEN! For instance:
 
 Feel free to reach out, or directly fork, change, and create pull requests, or create new branches to contribute.
 
+All contributed code should be formatted and linted with `ruff`. We use `pre-commit` to make sure all commits satisfy this requirement. To use this run:
+```
+pre-commit install
+```
+You can also manually perform the formatting using:
+```
+pre-commit run --all-files
+```
+
 ### License
 
 [MIT LICENSE](https://github.com/bioatmosphere/DEMENTpy/blob/master/LICENSE)
