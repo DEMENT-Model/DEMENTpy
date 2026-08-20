@@ -185,7 +185,7 @@ class Enzyme:
 
         return HT0
     
-       def enzyme_ST0(self, ST0_input):
+    def enzyme_ST0(self, ST0_input):
         """
         Enthalpy.
 
