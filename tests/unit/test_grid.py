@@ -3,8 +3,8 @@
 import pandas as pd
 import pytest
 
-from initialization import initialize_data
 from grid import Grid
+from initialization import initialize_data
 
 
 @pytest.fixture
@@ -20,7 +20,6 @@ def grid():
 
 def test_initialization_runs(grid):
     """Test that the initialization of Grid works without an error."""
-    pass
 
 
 def test_degradation_runs(grid):

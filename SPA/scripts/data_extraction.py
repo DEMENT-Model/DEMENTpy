@@ -4,11 +4,12 @@ By Bin Wang
 """
 
 # import numpy as np
-import pandas as pd
+import glob
+import os
 import pickle
 import sys
-import os
-import glob
+
+import pandas as pd
 
 
 # define a function of extracting data from files in .pickle

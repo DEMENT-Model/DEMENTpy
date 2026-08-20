@@ -8,6 +8,7 @@ This microbe.py module has one class and two functions.
 
 import numpy as np
 import pandas as pd
+
 from utility import LHS, random_assignment
 
 

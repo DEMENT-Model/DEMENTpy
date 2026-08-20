@@ -4,8 +4,9 @@
 # ............Allison():   function
 # Bin Wang in Janunary, 2020
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 from utility import LHS
 
 

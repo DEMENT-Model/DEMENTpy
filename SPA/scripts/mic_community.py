@@ -5,11 +5,12 @@ By Bin Wang
 September 2020
 """
 
-import pandas as pd
+import glob
+import os
 import pickle
 import sys
-import os
-import glob
+
+import pandas as pd
 
 
 # define a function of extracting data from files in .pickle
@@ -26,7 +27,7 @@ def get_pickled_data(key):
 
 
 site = sys.argv[1]  # site name
-key = sys.argv[2]  #
+key = sys.argv[2]
 
 
 os.chdir("../output_" + site)

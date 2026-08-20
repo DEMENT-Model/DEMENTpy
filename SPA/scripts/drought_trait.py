@@ -2,11 +2,12 @@
 Script of extracting and calculating community level drought tolerance from the source data (.pickle)
 """
 
-import pandas as pd
+import glob
+import os
 import pickle
 import sys
-import os
-import glob
+
+import pandas as pd
 
 
 # define a function of extracting data from files in .pickle

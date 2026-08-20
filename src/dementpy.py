@@ -7,11 +7,12 @@
 
 import os
 import sys
-import pandas as pd
-import numpy as np
 
-from initialization import initialize_data
+import numpy as np
+import pandas as pd
+
 from grid import Grid
+from initialization import initialize_data
 from output import Output
 
 

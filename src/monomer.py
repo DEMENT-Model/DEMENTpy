@@ -1,8 +1,8 @@
 # This module, monomer.py, handles monomer-related properties in a class, Monomer().
 # and leaching of monomers with a function, monomer_leaching()
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class Monomer:

@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # Add the src/ directory to the pythonpath
 sys.path.insert(

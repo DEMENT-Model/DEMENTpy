@@ -6,9 +6,9 @@
 import numpy as np
 import pandas as pd
 
-from microbe import microbe_osmo_psi
+from enzyme import Allison, Arrhenius
 from microbe import microbe_mortality_prob as MMP
-from enzyme import Arrhenius, Allison
+from microbe import microbe_osmo_psi
 from monomer import monomer_leaching
 from utility import expand
 

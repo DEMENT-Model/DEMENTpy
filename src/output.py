@@ -1,15 +1,16 @@
 # output.py module dealing with outputs of DEMENTpy.
 # Bin Wang, January, 2020
 
-from pathlib import Path
-import warnings
 import numbers
+import warnings
+from pathlib import Path
 
-from initialization import export_initialization_dict_to_csv
 # from initialization import export_initialization_dict_to_netcdf
-
 import numpy as np
 import pandas as pd
+
+from initialization import export_initialization_dict_to_csv
+
 # import xarray as xr
 
 

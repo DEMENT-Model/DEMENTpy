@@ -7,12 +7,13 @@ This module, utility.py, contains three functions facilitating the calculation.
     3) export():            export the output object to the local disk
 """
 
+import pickle
+
 import numpy as np
 import pandas as pd
-import pickle
 from scipy.stats import (
-    uniform,
     norm,
+    uniform,
 )  # instead of calling the whole distributions package (heavy) we call only the needed objects
 
 

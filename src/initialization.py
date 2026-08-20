@@ -4,18 +4,19 @@ substrate, monomer, enzyme, and microbe, as well as their distribution on the sp
 preceding the actual decompostion-related computations.
 """
 
-import pandas as pd
-import numpy as np
-# import xarray as xr
-
-import warnings
 import numbers
+
+# import xarray as xr
+import warnings
 from pathlib import Path
 
-from substrate import Substrate
-from monomer import Monomer
+import numpy as np
+import pandas as pd
+
 from enzyme import Enzyme
 from microbe import Microbe
+from monomer import Monomer
+from substrate import Substrate
 from utility import expand
 
 
