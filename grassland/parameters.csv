@@ -54,3 +54,5 @@ Uptake_Vmax_Km,0.2
 Uptake_Vmax_Km_int,0
 Km_error,0
 Specif_factor,1
+R_moist_decay,0.05
+R_moist_uptake,0.1

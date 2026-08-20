@@ -3,7 +3,7 @@ end_time	365
 x	10
 y	10
 gridsize	100
-n_taxa	100
+n_taxa	50
 fb	0.0
 taxa_per_box	0.01
 n_enzymes	50
@@ -23,5 +23,6 @@ Init_PO4	0
 Input_NH4	0
 Input_PO4	0
 direct	0.95
+dispersal  0
 dist	1
 interval	1

@@ -102,3 +102,5 @@ Uptake_mmrt_Vmax_Km_slope,0.15
 Uptake_per_monomer,1
 Uptake_ST0_max,-131.9
 Uptake_ST0_min,-132
+R_moist_decay,0.05
+R_moist_uptake,0.1
