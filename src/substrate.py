@@ -56,7 +56,8 @@ class Substrate:
         SubInputN.name = "N"
         SubInputP.name = "P"
         SubInput_df = pd.concat([SubInputC, SubInputN, SubInputP], axis=1, sort=False)
-        SubInput_df["DeadMic"] = SubInput_df.fillna(0) # fill NaN rows (e.g. DeadMic, DeadEnz) with 0
+        SubInput_df["DeadMic"] = SubInput_df.fillna(0) 
+        # fill NaN rows (e.g. DeadMic, DeadEnz) with 0
         SubInput_df = SubInput_df.astype("float32")
 
         return SubInput_df
