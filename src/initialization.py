@@ -45,7 +45,9 @@ def initialize_data(runtime_parameters, site):
     Ea_input = pd.read_csv(site + "/" + "enzyme_ea.csv", header=0, index_col=0).astype(
         "float32"
     )  # enzyme activation energy
-    elem_ratios     = pd.read_csv(site+'/'+'elem_ratios.csv', header=0, index_col=0).astype('float32')   # elemental (C:N:P) ratios of organic monomer inputs
+    elem_ratios = pd.read_csv(
+        site + "/" + "elem_ratios.csv", header=0, index_col=0
+    ).astype("float32")  # elemental (C:N:P) ratios of organic monomer inputs
     # climate forcings
     climate = pd.read_csv(site + "/" + "climate.csv", header=0, index_col=0)
     # daily temperature and water potential
@@ -143,7 +145,7 @@ def initialize_data(runtime_parameters, site):
         "Monomers": expand(monomers_initial_pool, gridsize),
         "Monomer_ratio": expand(monomer_ratio_inital, gridsize),
         "MonInput": expand(monomers_input_rate, gridsize),
-        "elem_fracs":   elem_fracs,
+        "elem_fracs": elem_fracs,
         "Uptake_ReqEnz": expand(monomers_uptake_reqenzyme, gridsize),
         "Enzymes": expand(enzymes_initial_pool, gridsize),
         "Km0": expand(enzymes_Km, gridsize),  # enzyme half-saturation constant
