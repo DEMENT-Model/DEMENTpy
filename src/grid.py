@@ -240,9 +240,11 @@ class Grid:
         )
 
         # Update Substrates Pool by removing decayed C, N, & P. Depending on specific needs, adding inputs of substrates can be done here
-        self.Substrates -= SubstrateRatios.mul(DecayRates, axis=0) 
-        self.Substrates += self.SubInput
-        self.Substrates[self.Substrates < 0] = np.float32(0)  # avoid negative values
+        self.Substrates -= SubstrateRatios.mul(
+        DecayRates, axis=0
+        )  # First remove decayed matter
+        self.Substrates += self.SubInput  # then add daily substrates
+        self.Substrates[self.Substrates < 0] = np.float32(0)  
 
         # Pass these two back to the global variables to be used in the next method
         self.SubstrateRatios = SubstrateRatios
