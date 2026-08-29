@@ -244,7 +244,7 @@ class Grid:
             DecayRates, axis=0
         )  # First remove decayed matter
         self.Substrates += self.SubInput  # then add daily substrates
-        self.Substrates[self.Substrates < 0] = np.float32(0)  
+        self.Substrates[self.Substrates < 0] = np.float32(0)
 
         # Pass these two back to the global variables to be used in the next method
         self.SubstrateRatios = SubstrateRatios
