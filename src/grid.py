@@ -67,13 +67,18 @@ class Grid:
         ]  # Rate for change of moisture reaction in decay module
 
         # Uptake
-        # self.Microbes_init   = data_init['Microbes_pp']                   # microbial community before placement
+        self.Microbes_init = data_init[
+            "Microbes_pp"
+        ]  # microbial community before placement
         self.Microbes = data_init["Microbes"].copy(
             deep=True
         )  # microbial community after placement
-        # self.Monomers_init   = data_init['Monomers']                      # Monomers initialized
+        self.Monomers_init = data_init["Monomers"]  # Monomers initialized
         self.Monomers = data_init["Monomers"].copy(deep=True)  # Monomers
         self.MonInput = data_init["MonInput"]  # Inputs of monomers
+        self.C_frac_org = np.tile(data_init["elem_fracs"]["C"].values, self.gridsize)
+        self.N_frac_org = np.tile(data_init["elem_fracs"]["N"].values, self.gridsize)
+        self.P_frac_org = np.tile(data_init["elem_fracs"]["P"].values, self.gridsize)
         self.Uptake_Ea = data_init["Uptake_Ea"]  # transporter enzyme Ea
         self.Uptake_Vmax0 = data_init["Uptake_Vmax0"]  # transporter Vmax
         self.Uptake_Km0 = data_init["Uptake_Km0"]  # transporter Km
@@ -235,7 +240,11 @@ class Grid:
         )
 
         # Update Substrates Pool by removing decayed C, N, & P. Depending on specific needs, adding inputs of substrates can be done here
-        self.Substrates -= SubstrateRatios.mul(DecayRates, axis=0)  # + self.SubInput
+        self.Substrates -= SubstrateRatios.mul(
+            DecayRates, axis=0
+        )  # First remove decayed matter
+        self.Substrates += self.SubInput  # then add daily substrates
+        self.Substrates[self.Substrates < 0] = np.float32(0)
 
         # Pass these two back to the global variables to be used in the next method
         self.SubstrateRatios = SubstrateRatios
@@ -264,6 +273,8 @@ class Grid:
             self.Monomers.index != "PO4"
         )  # organic monomers
         # is_mineral = (Monomers.index == "NH4") | (Monomers.index == "PO4")
+        is_NH4 = self.Monomers.index == "NH4"
+        is_PO4 = self.Monomers.index == "PO4"
 
         # Update monomer ratios in each time step with organic monomers following the substrates
         self.Monomer_ratios[is_org] = self.SubstrateRatios.values
@@ -271,11 +282,32 @@ class Grid:
         # Determine monomer pool from decay and input
         # Organic monomers derived from substrate-decomposition
         Decay_Org = self.Monomer_ratios[is_org].mul(self.DecayRates.values, axis=0)
+        # Monomer pool determined
+        self.Monomers.loc[is_org] += Decay_Org  # + Input_Org
+
+        # --- Route monomer inputs by pool ---
+        input_vals = self.MonInput.values  # positionally aligned with self.Monomers
+
+        # Organic monomers: input is carbon, goes to the C column
+        org_input = input_vals[is_org]
+        self.Monomers.loc[is_org, "C"] += org_input * self.C_frac_org
+        self.Monomers.loc[is_org, "N"] += org_input * self.N_frac_org
+        self.Monomers.loc[is_org, "P"] += org_input * self.P_frac_org
+
+        # Mineral N: NH4 input goes to the N column
+        self.Monomers.loc[is_NH4, "N"] += input_vals[is_NH4]
+
+        # Mineral P: PO4 input goes to the P column
+        self.Monomers.loc[is_PO4, "P"] += input_vals[is_PO4]
+
+        self.Monomers = self.Monomers.fillna(0.0)
+        self.Monomers[self.Monomers < 0] = np.float32(0)
+
         # inputs of organic and mineral monomers
         # Input_Org = MR_transition[is_org].mul(self.MonInput[is_org].tolist(),axis=0)
         # Input_Mineral = MR_transition[is_mineral].mul((self.MonInput[is_mineral]).tolist(),axis=0)
         # Monomer pool determined
-        self.Monomers.loc[is_org] += Decay_Org  # + Input_Org
+        # self.Monomers.loc[is_org] += Decay_Org  # + Input_Org
         # self.Monomers.loc[is_mineral] += Input_Mineral
 
         # Get the total mass of each monomer: C+N+P
@@ -330,6 +362,7 @@ class Grid:
         # Update Monomers
         # By monomer: total uptake (monomer*gridsize) * 3(C-N-P)
         self.Monomers -= self.Monomer_ratios.mul(Uptake.sum(axis=1), axis=0)
+        self.Monomers[self.Monomers < 0] = np.float32(0)
 
         # Derive Taxon-specific total uptake of C, N, & P
         # By taxon: total uptake; (monomer*gridsize) * taxon
@@ -744,6 +777,7 @@ class Grid:
                 # Update monomer pools
                 self.Monomers.loc[is_NH4, "N"] += sum(MicLoss["N"]) / self.gridsize
                 self.Monomers.loc[is_PO4, "P"] += sum(MicLoss["P"]) / self.gridsize
+                self.Monomers[self.Monomers < 0] = np.float32(0)
 
                 # Update Substrates pool by adding dead microbial biomass
                 self.Substrates.loc[is_DeadMic] += Death_gridcell.values
@@ -911,6 +945,15 @@ class Grid:
         self.Substrates = initialization["Substrates"].copy(deep=True)
         self.Monomers = initialization["Monomers"].copy(deep=True)
         self.Enzymes = initialization["Enzymes"].copy(deep=True)
+        self.SubstrateRatios = pd.DataFrame(
+            np.zeros_like(initialization["Substrates"]),
+            index=initialization["Substrates"].index,
+            columns=initialization["Substrates"].columns,
+        )
+        self.DecayRates = pd.Series(
+            np.zeros(len(initialization["Substrates"])),
+            index=initialization["Substrates"].index,
+        )
 
         # reinitialize microbial community in a new pulse as per the mode in three steps
         # first: retrieve the microbial pool; NOTE: copy()
@@ -940,23 +983,12 @@ class Grid:
         # calculate frequency of every taxon
         frequencies = cum_abundance / cum_abundance.sum()
         frequencies = frequencies.fillna(0)
-        frequencies = frequencies.clip(
-            lower=0, upper=1
-        )  # guard against any stray negative/over-1 values (sum of 1)
-        frequencies = (
-            frequencies / frequencies.sum() if frequencies.sum() > 0 else frequencies
-        )  # renormalize to exactly 1
 
         # last: assign microbes to each grid box randomly based on prior densities
         choose_taxa = np.zeros((self.n_taxa, self.gridsize), dtype="int8")
         for i in range(self.n_taxa):
-            freq = np.float64(
-                frequencies.iloc[1]
-            )  # working independent of indexing (based on location not index labels)
-            p_vec = np.array([freq, 1.0 - freq], dtype=np.float64)  # solve numoy issues
-            p_vec = p_vec / p_vec.sum()
-            choose_taxa[i, :] = np.random.choice(
-                [1, 0], self.gridsize, replace=True, p=p_vec
+            choose_taxa[i, :] = np.random.binomial(
+                1, frequencies.iloc[i], self.gridsize
             )
         self.Microbes.loc[np.ravel(choose_taxa, order="F") == 0] = np.float32(
             0
