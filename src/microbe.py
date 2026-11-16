@@ -426,7 +426,7 @@ class Microbe:
                 continue
             probability_list = [0] * n_zero
             locator = np.random.choice(
-                range(1, n_zero + 1),  replace=True
+                range(1, n_zero + 1), replace=True
             )  # derive n_zero >= locater >= 1 (NOTE)
             probability_list[0 : int(locator)] = [1] * int(locator)
             UptakeGenes.iloc[i, zero_index] = np.random.choice(
